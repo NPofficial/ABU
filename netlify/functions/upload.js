@@ -2,77 +2,118 @@ const cloudinary = require('cloudinary').v2;
 const multipart = require('parse-multipart-data');
 
 exports.handler = async (event, context) => {
-    if (event.httpMethod !== 'POST') {
-        return {
-            statusCode: 405,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS'
-            },
-            body: JSON.stringify({ error: 'Method not allowed' })
-        };
-    }
+    // Add CORS headers to all responses
+    const headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+        'Content-Type': 'application/json'
+    };
 
     // Handle CORS preflight
     if (event.httpMethod === 'OPTIONS') {
         return {
             statusCode: 200,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Access-Control-Allow-Headers': 'Content-Type',
-                'Access-Control-Allow-Methods': 'POST, OPTIONS'
-            },
+            headers,
             body: ''
         };
     }
 
+    if (event.httpMethod !== 'POST') {
+        return {
+            statusCode: 405,
+            headers,
+            body: JSON.stringify({ error: 'Method not allowed' })
+        };
+    }
+
     try {
+        // Check environment variables
+        if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+            console.error('Missing Cloudinary environment variables');
+            return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({ error: 'Server configuration error' })
+            };
+        }
+
+        // Configure Cloudinary
         cloudinary.config({
             cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
             api_key: process.env.CLOUDINARY_API_KEY,
             api_secret: process.env.CLOUDINARY_API_SECRET
         });
 
-        const boundary = event.headers['content-type'].split('boundary=')[1];
-        const parts = multipart.parse(Buffer.from(event.body, 'base64'), boundary);
+        // Parse multipart data
+        const contentType = event.headers['content-type'] || event.headers['Content-Type'] || '';
+        console.log('Content-Type:', contentType);
         
-        const file = parts.find(part => part.name === 'image');
-        if (!file) {
+        if (!contentType.includes('multipart/form-data')) {
             return {
                 statusCode: 400,
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ error: 'File not found' })
+                headers,
+                body: JSON.stringify({ error: 'Invalid content type. Expected multipart/form-data' })
+            };
+        }
+
+        const boundaryMatch = contentType.match(/boundary=(.+)$/);
+        if (!boundaryMatch) {
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Missing boundary in content-type' })
+            };
+        }
+
+        const boundary = boundaryMatch[1];
+        const buffer = event.isBase64Encoded ? Buffer.from(event.body, 'base64') : Buffer.from(event.body);
+        
+        let parts;
+        try {
+            parts = multipart.parse(buffer, boundary);
+        } catch (parseError) {
+            console.error('Multipart parse error:', parseError);
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Failed to parse uploaded file' })
+            };
+        }
+
+        const file = parts.find(part => part.name === 'image');
+        if (!file || !file.data || file.data.length === 0) {
+            console.log('Available parts:', parts.map(p => ({ name: p.name, dataLength: p.data?.length })));
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'No image file found in upload' })
             };
         }
 
         // File validation
         const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-        if (!allowedTypes.includes(file.type)) {
+        const fileType = file.type || 'unknown';
+        
+        if (!allowedTypes.includes(fileType)) {
             return {
                 statusCode: 400,
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ error: 'Only JPG, PNG, WebP allowed' })
+                headers,
+                body: JSON.stringify({ error: `Invalid file type: ${fileType}. Only JPG, PNG, WebP allowed` })
             };
         }
 
         if (file.data.length > 10 * 1024 * 1024) {
             return {
                 statusCode: 400,
-                headers: {
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ error: 'File too large (max 10MB)' })
+                headers,
+                body: JSON.stringify({ error: `File too large: ${Math.round(file.data.length / 1024 / 1024)}MB. Max 10MB allowed` })
             };
         }
 
+        console.log(`Uploading file: ${fileType}, size: ${file.data.length} bytes`);
+
+        // Upload to Cloudinary
         const result = await new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream(
                 {
@@ -84,33 +125,36 @@ exports.handler = async (event, context) => {
                     ]
                 },
                 (error, result) => {
-                    if (error) reject(error);
-                    else resolve(result);
+                    if (error) {
+                        console.error('Cloudinary upload error:', error);
+                        reject(error);
+                    } else {
+                        console.log('Cloudinary upload success:', result.secure_url);
+                        resolve(result);
+                    }
                 }
             ).end(file.data);
         });
 
         return {
             statusCode: 200,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Content-Type': 'application/json'
-            },
+            headers,
             body: JSON.stringify({ 
+                success: true,
                 url: result.secure_url,
                 publicId: result.public_id 
             })
         };
 
     } catch (error) {
-        console.error('Upload error:', error);
+        console.error('Upload function error:', error);
         return {
             statusCode: 500,
-            headers: {
-                'Access-Control-Allow-Origin': '*',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ error: 'Upload failed' })
+            headers,
+            body: JSON.stringify({ 
+                error: 'Upload failed', 
+                details: error.message 
+            })
         };
     }
 };
