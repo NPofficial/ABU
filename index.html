@@ -433,13 +433,13 @@
 
         .tongue-guide {
             position: absolute;
-            top: 35%;
+            top: 65%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 200px;
-            height: 250px;
+            width: 180px;
+            height: 220px;
             border: 4px solid #00ff88;
-            border-radius: 50% 50% 60% 60%;
+            border-radius: 50% 50% 65% 65%;
             background: rgba(0, 255, 136, 0.1);
             animation: tongueGuide 3s ease-in-out infinite;
             box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
@@ -447,33 +447,49 @@
 
         .tongue-guide-text {
             position: absolute;
-            top: 20%;
+            top: 45%;
             left: 50%;
             transform: translate(-50%, -50%);
             color: #00ff88;
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 700;
             text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
             text-align: center;
             white-space: nowrap;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 8px 16px;
-            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 6px 12px;
+            border-radius: 15px;
             backdrop-filter: blur(5px);
+        }
+
+        .tongue-guide-arrow {
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00ff88;
+            font-size: 2rem;
+            animation: bounce 1.5s ease-in-out infinite;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+            50% { transform: translate(-50%, -50%) translateY(-10px); }
         }
 
         @keyframes tongueGuide {
             0%, 100% { 
-                opacity: 0.8; 
+                opacity: 0.9; 
                 transform: translate(-50%, -50%) scale(1);
                 border-color: #00ff88;
-                box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+                box-shadow: 0 0 25px rgba(0, 255, 136, 0.4);
             }
             50% { 
                 opacity: 1; 
-                transform: translate(-50%, -50%) scale(1.05);
+                transform: translate(-50%, -50%) scale(1.08);
                 border-color: #00ff44;
-                box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+                box-shadow: 0 0 35px rgba(0, 255, 136, 0.6);
             }
         }
 
@@ -694,15 +710,25 @@
             }
             
             .tongue-guide {
-                width: 180px;
-                height: 220px;
-                top: 30%;
+                width: 160px;
+                height: 200px;
+                top: 68%;
+            }
+            
+            .tongue-guide-text {
+                top: 42%;
+                font-size: 0.9rem;
+            }
+            
+            .tongue-guide-arrow {
+                top: 52%;
+                font-size: 1.8rem;
             }
         }
 
         @media (max-height: 700px) {
             .camera-container {
-                padding-top: 5vh;
+                padding-top: 3vh;
             }
             
             #cameraPreview {
@@ -726,20 +752,26 @@
             }
             
             .tongue-guide {
-                width: 160px;
-                height: 200px;
-                top: 32%;
+                width: 150px;
+                height: 180px;
+                top: 70%;
             }
             
             .tongue-guide-text {
-                font-size: 0.9rem;
-                padding: 6px 12px;
+                font-size: 0.85rem;
+                padding: 5px 10px;
+                top: 40%;
+            }
+            
+            .tongue-guide-arrow {
+                top: 50%;
+                font-size: 1.5rem;
             }
         }
 
         @media (min-height: 800px) {
             .camera-container {
-                padding-top: 15vh;
+                padding-top: 12vh;
             }
             
             #cameraPreview {
@@ -748,14 +780,20 @@
             }
             
             .tongue-guide {
-                width: 220px;
-                height: 280px;
-                top: 38%;
+                width: 200px;
+                height: 240px;
+                top: 63%;
             }
             
             .tongue-guide-text {
-                font-size: 1.2rem;
-                padding: 10px 18px;
+                font-size: 1.1rem;
+                padding: 8px 16px;
+                top: 47%;
+            }
+            
+            .tongue-guide-arrow {
+                top: 57%;
+                font-size: 2.2rem;
             }
         }
 
@@ -770,15 +808,43 @@
             }
             
             .tongue-guide {
-                width: 140px;
-                height: 180px;
-                top: 35%;
+                width: 130px;
+                height: 160px;
+                top: 72%;
+            }
+            
+            .tongue-guide-text {
+                font-size: 0.8rem;
+                padding: 4px 8px;
+                top: 38%;
+            }
+            
+            .tongue-guide-arrow {
+                top: 48%;
+                font-size: 1.3rem;
             }
             
             .capture-btn {
                 width: 55px;
                 height: 55px;
                 font-size: 1rem;
+            }
+        }
+
+        /* Дополнительные адаптивные настройки для широких экранов */
+        @media (min-width: 600px) and (orientation: landscape) {
+            .tongue-guide {
+                top: 62%;
+                width: 170px;
+                height: 210px;
+            }
+            
+            .tongue-guide-text {
+                top: 44%;
+            }
+            
+            .tongue-guide-arrow {
+                top: 54%;
             }
         }
     </style>
@@ -812,6 +878,7 @@
                         <div class="camera-overlay">
                             <div class="tongue-guide"></div>
                             <div class="tongue-guide-text">👅 Поместите язык в овал</div>
+                            <div class="tongue-guide-arrow">⬇</div>
                         </div>
                         
                         <div class="camera-controls-top">
