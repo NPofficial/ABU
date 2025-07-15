@@ -65,7 +65,7 @@ exports.handler = async (event, context) => {
             };
         }
 
-        const { imageUrl } = requestBody;
+        const { imageUrl, analysisId, timestamp } = requestBody;
         
         if (!imageUrl) {
             return {
@@ -75,7 +75,7 @@ exports.handler = async (event, context) => {
             };
         }
 
-        console.log('Analyzing image:', imageUrl);
+        console.log('Analyzing image:', imageUrl, 'Analysis ID:', analysisId, 'Timestamp:', timestamp);
 
         // Initialize Anthropic client
         const anthropic = new Anthropic({
@@ -108,166 +108,7 @@ exports.handler = async (event, context) => {
   ],
   "lifestyle_advice": "Рекомендации по образу жизни",
   "monitoring": "Как отслеживать изменения",
-  "disclaimer": "Это wellness анализ, не медицинская диагностика. При серьезных симптомах к врачу."
-}`;
-
-        // Convert image URL to base64 for Anthropic
-        let imageResponse;
-        try {
-            imageResponse = await axios.get(imageUrl, { 
-                responseType: 'arraybuffer',
-                timeout: 30000,
-                maxContentLength: 10 * 1024 * 1024 // 10MB limit
-            });
-        } catch (fetchError) {
-            console.error('Failed to fetch image:', fetchError.message);
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: 'Failed to fetch image from provided URL' })
-            };
-        }
-
-        const base64Image = Buffer.from(imageResponse.data).toString('base64');
-        
-        // Detect image type from URL or content-type
-        let mediaType = 'image/jpeg';
-        const contentType = imageResponse.headers['content-type'];
-        if (contentType) {
-            if (contentType.includes('png')) mediaType = 'image/png';
-            else if (contentType.includes('webp')) mediaType = 'image/webp';
-        } else {
-            if (imageUrl.includes('.png')) mediaType = 'image/png';
-            else if (imageUrl.includes('.webp')) mediaType = 'image/webp';
-        }
-
-        console.log(`Image fetched: ${mediaType}, size: ${base64Image.length} chars`);
-
-        // Try Claude 4.0 first, fallback to Claude 3.5 if needed
-        let message;
-        let modelUsed = MODELS.PRIMARY;
-
-        try {
-            console.log('Attempting analysis with Claude 4.0 Sonnet...');
-            message = await anthropic.messages.create({
-                model: MODELS.PRIMARY,
-                max_tokens: 2000,
-                system: SYSTEM_PROMPT,
-                messages: [
-                    {
-                        role: 'user',
-                        content: [
-                            {
-                                type: 'image',
-                                source: {
-                                    type: 'base64',
-                                    media_type: mediaType,
-                                    data: base64Image
-                                }
-                            },
-                            {
-                                type: 'text',
-                                text: 'Проанализируй это изображение языка согласно алгоритму wellness диагностики.'
-                            }
-                        ]
-                    }
-                ]
-            });
-            console.log('Claude 4.0 analysis completed successfully');
-        } catch (claude4Error) {
-            console.warn('Claude 4.0 failed, trying Claude 3.5:', claude4Error.message);
-            
-            try {
-                modelUsed = MODELS.FALLBACK;
-                message = await anthropic.messages.create({
-                    model: MODELS.FALLBACK,
-                    max_tokens: 2000,
-                    system: SYSTEM_PROMPT,
-                    messages: [
-                        {
-                            role: 'user',
-                            content: [
-                                {
-                                    type: 'image',
-                                    source: {
-                                        type: 'base64',
-                                        media_type: mediaType,
-                                        data: base64Image
-                                    }
-                                },
-                                {
-                                    type: 'text',
-                                    text: 'Проанализируй это изображение языка согласно алгоритму wellness диагностики.'
-                                }
-                            ]
-                        }
-                    ]
-                });
-                console.log('Claude 3.5 analysis completed successfully');
-            } catch (claude35Error) {
-                console.error('Both Claude models failed:', claude35Error.message);
-                
-                // Handle specific API errors
-                if (claude4Error.status === 401 || claude35Error.status === 401) {
-                    return {
-                        statusCode: 500,
-                        headers,
-                        body: JSON.stringify({ error: 'API authentication failed' })
-                    };
-                } else if (claude4Error.status === 429 || claude35Error.status === 429) {
-                    return {
-                        statusCode: 429,
-                        headers,
-                        body: JSON.stringify({ error: 'API rate limit exceeded. Please try again later.' })
-                    };
-                }
-                
-                return {
-                    statusCode: 500,
-                    headers,
-                    body: JSON.stringify({ 
-                        error: 'AI analysis failed', 
-                        details: `Claude 4.0: ${claude4Error.message}, Claude 3.5: ${claude35Error.message}`
-                    })
-                };
-            }
-        }
-
-        // Parse Claude's response
-        let analysisResult;
-        try {
-            const responseText = message.content[0].text;
-            console.log(`Raw ${modelUsed} response:`, responseText);
-            
-            // Extract JSON from response - support multiple formats
-            let jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
-            if (!jsonMatch) {
-                jsonMatch = responseText.match(/\{[\s\S]*\}/);
-            }
-            
-            if (!jsonMatch) {
-                console.error('No JSON found in Claude response:', responseText);
-                return {
-                    statusCode: 500,
-                    headers,
-                    body: JSON.stringify({ 
-                        error: 'AI analysis failed to return valid results',
-                        model_used: modelUsed
-                    })
-                };
-            }
-            
-            const jsonText = jsonMatch[1] || jsonMatch[0];
-            analysisResult = JSON.parse(jsonText);
-            
-            // Add model info to result
-            analysisResult.model_used = modelUsed;
-            
-        } catch (parseError) {
-            console.error(`Failed to parse ${modelUsed} response:`, parseError);
-            return {
-                statusCode: 500,
-                headers,
+...
                 body: JSON.stringify({ 
                     error: 'Failed to parse AI analysis result',
                     details: parseError.message,
@@ -285,6 +126,7 @@ exports.handler = async (event, context) => {
                 success: true,
                 analysis: analysisResult,
                 model_used: modelUsed,
+                analysisId: analysisId,
                 timestamp: new Date().toISOString()
             })
         };
