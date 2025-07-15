@@ -404,40 +404,80 @@
             width: 100%;
             max-width: 500px;
             margin: 0 auto;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
 
         #cameraPreview {
             width: 100%;
-            height: auto;
-            border-radius: 15px;
+            height: 400px;
             background: #000;
-            min-height: 300px;
             object-fit: cover;
+            display: block;
         }
 
         .camera-controls {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .camera-controls-top {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+        }
+
+        .camera-controls-bottom {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 10;
         }
 
         .capture-btn {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 25px;
-            font-size: 1rem;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.1rem;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-weight: 500;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+            min-width: 150px;
         }
 
         .capture-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .capture-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(40, 167, 69, 0.5);
+        }
+
+        /* Prevent context menu on mobile */
+        .capture-btn, .switch-btn, .close-btn {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         .switch-btn, .close-btn {
@@ -496,13 +536,25 @@
             }
             
             .camera-controls {
-                flex-direction: column;
+                bottom: 20px;
+                flex-direction: row;
                 gap: 8px;
             }
             
+            .camera-controls-bottom {
+                bottom: 100px;
+            }
+            
             .capture-btn, .switch-btn, .close-btn {
-                width: 100%;
-                max-width: 200px;
+                padding: 12px 20px;
+                font-size: 0.9rem;
+                min-width: 120px;
+            }
+            
+            .capture-btn {
+                font-size: 1rem;
+                padding: 16px 24px;
+                min-width: 140px;
             }
             
             .zone-grid {
@@ -540,10 +592,14 @@
                     <div class="camera-container">
                         <video id="cameraPreview" autoplay playsinline muted></video>
                         <canvas id="captureCanvas" style="display: none;"></canvas>
+                        <div class="camera-controls-top">
+                            <button id="closeCameraBtn" class="close-btn">❌</button>
+                        </div>
                         <div class="camera-controls">
-                            <button id="captureBtn" class="capture-btn">📸 Сделать снимок</button>
-                            <button id="switchCameraBtn" class="switch-btn">🔄 Переключить камеру</button>
-                            <button id="closeCameraBtn" class="close-btn">❌ Закрыть</button>
+                            <button id="captureBtn" class="capture-btn">📸 Фото</button>
+                        </div>
+                        <div class="camera-controls-bottom">
+                            <button id="switchCameraBtn" class="switch-btn">🔄 Сменить камеру</button>
                         </div>
                     </div>
                 </div>
@@ -677,17 +733,25 @@
 
                 console.log('Attempting to start camera with facingMode:', currentFacingMode);
 
-                // Try different constraint configurations
+                // Try different constraint configurations for Android compatibility
                 const constraints = [
                     // First try: specific facingMode with ideal resolution
                     {
                         video: {
-                            facingMode: currentFacingMode,
+                            facingMode: { exact: currentFacingMode },
                             width: { ideal: 1280, max: 1920 },
                             height: { ideal: 720, max: 1080 }
                         }
                     },
-                    // Fallback 1: simpler constraints
+                    // Fallback 1: facingMode without exact
+                    {
+                        video: {
+                            facingMode: currentFacingMode,
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    },
+                    // Fallback 2: lower resolution
                     {
                         video: {
                             facingMode: currentFacingMode,
@@ -695,13 +759,13 @@
                             height: { ideal: 480 }
                         }
                     },
-                    // Fallback 2: basic video only
+                    // Fallback 3: basic video with facingMode
                     {
                         video: {
                             facingMode: currentFacingMode
                         }
                     },
-                    // Fallback 3: any video
+                    // Fallback 4: any video
                     {
                         video: true
                     }
@@ -728,21 +792,51 @@
                 cameraStream = stream;
                 cameraPreview.srcObject = stream;
                 
-                // Wait for video to load
+                // Clear loading background
+                cameraPreview.style.background = '#000';
+                
+                // Wait for video to load with better error handling
                 await new Promise((resolve, reject) => {
-                    cameraPreview.onloadedmetadata = () => {
-                        console.log('Camera video loaded, dimensions:', cameraPreview.videoWidth, 'x', cameraPreview.videoHeight);
-                        resolve();
-                    };
-                    cameraPreview.onerror = (error) => {
-                        console.error('Video element error:', error);
-                        reject(new Error('Ошибка отображения видео'));
+                    let resolved = false;
+                    
+                    const handleSuccess = () => {
+                        if (!resolved) {
+                            resolved = true;
+                            console.log('Camera video loaded, dimensions:', cameraPreview.videoWidth, 'x', cameraPreview.videoHeight);
+                            resolve();
+                        }
                     };
                     
-                    // Timeout after 10 seconds
+                    const handleError = (error) => {
+                        if (!resolved) {
+                            resolved = true;
+                            console.error('Video element error:', error);
+                            reject(new Error('Ошибка отображения видео'));
+                        }
+                    };
+                    
+                    // Multiple event listeners for better compatibility
+                    cameraPreview.onloadedmetadata = handleSuccess;
+                    cameraPreview.oncanplay = handleSuccess;
+                    cameraPreview.onloadeddata = handleSuccess;
+                    cameraPreview.onerror = handleError;
+                    
+                    // Force play for mobile devices
+                    cameraPreview.play().catch(console.error);
+                    
+                    // Timeout after 15 seconds
                     setTimeout(() => {
-                        reject(new Error('Таймаут загрузки видео'));
-                    }, 10000);
+                        if (!resolved) {
+                            resolved = true;
+                            // If video dimensions are available, consider it success
+                            if (cameraPreview.videoWidth > 0 && cameraPreview.videoHeight > 0) {
+                                console.log('Camera working despite timeout');
+                                resolve();
+                            } else {
+                                reject(new Error('Таймаут загрузки видео'));
+                            }
+                        }
+                    }, 15000);
                 });
                 
                 console.log('Camera started successfully');
@@ -1151,7 +1245,11 @@
             showCameraView();
         });
 
-        captureBtn.addEventListener('click', capturePhoto);
+        captureBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            capturePhoto();
+        });
         switchCameraBtn.addEventListener('click', switchCamera);
         closeCameraBtn.addEventListener('click', () => {
             stopCamera();
