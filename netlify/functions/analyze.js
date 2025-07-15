@@ -92,23 +92,164 @@ exports.handler = async (event, context) => {
 3. WELLNESS ИНТЕРПРЕТАЦИЯ: связь признаков с самочувствием
 4. РЕКОМЕНДАЦИИ: БАДы ABU, образ жизни
 
-Ответь СТРОГО в JSON:
+Ответь СТРОГО в JSON формате:
 {
-  "detailed_analysis": "Подробное описание языка",
+  "detailed_analysis": "Подробное описание языка с визуальными характеристиками",
   "zone_analysis": {
-    "anterior": "Анализ кончика",
-    "middle": "Анализ середины", 
-    "posterior": "Анализ корня",
-    "lateral": "Анализ краев"
+    "anterior": "Анализ кончика языка (сердце/легкие)",
+    "middle": "Анализ середины языка (пищеварение)", 
+    "posterior": "Анализ корня языка (почки)",
+    "lateral": "Анализ краев языка (печень)"
   },
-  "health_interpretation": "Wellness интерпретация",
+  "health_interpretation": "Wellness интерпретация состояния здоровья",
   "wellness_recommendations": [
-    {"product": "Extra BWL+ ABU", "reason": "Обоснование", "expected_effect": "Эффект"},
-    {"product": "Magnesium Glycinate ABU", "reason": "Обоснование", "expected_effect": "Эффект"}
+    {"product": "Extra BWL+ ABU", "reason": "Обоснование назначения", "expected_effect": "Ожидаемый эффект"},
+    {"product": "Magnesium Glycinate ABU", "reason": "Обоснование назначения", "expected_effect": "Ожидаемый эффект"}
   ],
   "lifestyle_advice": "Рекомендации по образу жизни",
   "monitoring": "Как отслеживать изменения",
-...
+  "disclaimer": "Это wellness анализ, не медицинская диагностика. При серьезных симптомах обратитесь к врачу."
+}
+
+Используй только валидный JSON без дополнительных комментариев.`;
+
+        // Convert image URL to base64 for Anthropic
+        let imageResponse;
+        try {
+            imageResponse = await axios.get(imageUrl, { 
+                responseType: 'arraybuffer',
+                timeout: 30000,
+                maxContentLength: 10 * 1024 * 1024 // 10MB limit
+            });
+        } catch (fetchError) {
+            console.error('Failed to fetch image:', fetchError.message);
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ error: 'Failed to fetch image from provided URL' })
+            };
+        }
+
+        const base64Image = Buffer.from(imageResponse.data).toString('base64');
+        
+        // Detect image type from URL or content-type
+        let mediaType = 'image/jpeg';
+        const contentType = imageResponse.headers['content-type'];
+        if (contentType) {
+            if (contentType.includes('png')) mediaType = 'image/png';
+            else if (contentType.includes('webp')) mediaType = 'image/webp';
+        } else {
+            if (imageUrl.includes('.png')) mediaType = 'image/png';
+            else if (imageUrl.includes('.webp')) mediaType = 'image/webp';
+        }
+
+        console.log(`Image fetched: ${mediaType}, size: ${base64Image.length} chars`);
+
+        // Try Claude 4.0 first, fallback to Claude 3.5 if needed
+        let message;
+        let modelUsed = MODELS.PRIMARY;
+
+        try {
+            console.log('Attempting analysis with Claude 4.0 Sonnet...');
+            message = await anthropic.messages.create({
+                model: MODELS.PRIMARY,
+                max_tokens: 2000,
+                system: SYSTEM_PROMPT,
+                messages: [
+                    {
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'image',
+                                source: {
+                                    type: 'base64',
+                                    media_type: mediaType,
+                                    data: base64Image
+                                }
+                            },
+                            {
+                                type: 'text',
+                                text: 'Проанализируй это изображение языка согласно алгоритму wellness диагностики. Верни результат в строгом JSON формате.'
+                            }
+                        ]
+                    }
+                ]
+            });
+            console.log('Claude 4.0 analysis successful');
+        } catch (primaryError) {
+            console.log('Claude 4.0 failed, trying Claude 3.5 fallback:', primaryError.message);
+            modelUsed = MODELS.FALLBACK;
+            
+            try {
+                message = await anthropic.messages.create({
+                    model: MODELS.FALLBACK,
+                    max_tokens: 2000,
+                    system: SYSTEM_PROMPT,
+                    messages: [
+                        {
+                            role: 'user',
+                            content: [
+                                {
+                                    type: 'image',
+                                    source: {
+                                        type: 'base64',
+                                        media_type: mediaType,
+                                        data: base64Image
+                                    }
+                                },
+                                {
+                                    type: 'text',
+                                    text: 'Проанализируй это изображение языка согласно алгоритму wellness диагностики. Верни результат в строгом JSON формате.'
+                                }
+                            ]
+                        }
+                    ]
+                });
+                console.log('Claude 3.5 fallback analysis successful');
+            } catch (fallbackError) {
+                console.error('Both models failed:', fallbackError.message);
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({ 
+                        error: 'AI analysis failed with both models',
+                        details: fallbackError.message
+                    })
+                };
+            }
+        }
+
+        // Extract and parse the analysis result
+        let analysisResult;
+        try {
+            const responseText = message.content[0].text;
+            console.log('Raw AI response:', responseText);
+            
+            // Try to extract JSON from the response
+            const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            if (!jsonMatch) {
+                console.error('No JSON found in response');
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({ 
+                        error: 'Invalid AI response format',
+                        model_used: modelUsed
+                    })
+                };
+            }
+            
+            const jsonText = jsonMatch[0];
+            analysisResult = JSON.parse(jsonText);
+            
+            // Add model info to result
+            analysisResult.model_used = modelUsed;
+            
+        } catch (parseError) {
+            console.error(`Failed to parse ${modelUsed} response:`, parseError);
+            return {
+                statusCode: 500,
+                headers,
                 body: JSON.stringify({ 
                     error: 'Failed to parse AI analysis result',
                     details: parseError.message,
