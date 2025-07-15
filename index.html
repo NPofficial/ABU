@@ -416,49 +416,100 @@
             background: #000;
             object-fit: cover;
             display: block;
+            position: relative;
+        }
+
+        .camera-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 15;
+        }
+
+        .tongue-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 220px;
+            height: 160px;
+            border: 3px solid #00ff88;
+            border-radius: 50%;
+            animation: breathe 2s ease-in-out infinite;
+        }
+
+        .tongue-guide-text {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #00ff88;
+            font-size: 1rem;
+            font-weight: 600;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
         }
 
         .camera-controls {
             position: absolute;
-            bottom: 20px;
+            bottom: 40px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 15px;
-            z-index: 10;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            z-index: 20;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 15px 25px;
+            border-radius: 50px;
+            backdrop-filter: blur(10px);
         }
 
         .camera-controls-top {
             position: absolute;
-            top: 15px;
-            right: 15px;
-            z-index: 10;
+            top: 25px;
+            right: 25px;
+            z-index: 20;
         }
 
         .camera-controls-bottom {
             position: absolute;
-            bottom: 70px;
+            bottom: 120px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 15px;
-            z-index: 10;
+            z-index: 15;
         }
 
         .capture-btn {
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: #27ae60;
             color: white;
-            border: none;
-            padding: 18px 35px;
-            border-radius: 50px;
-            font-size: 1.2rem;
+            border: 4px solid white;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            font-size: 1.5rem;
             cursor: pointer;
             transition: all 0.2s ease;
             font-weight: 700;
-            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
-            min-width: 160px;
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
             position: relative;
-            z-index: 20;
+            z-index: 25;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
         }
 
         .capture-btn:hover {
@@ -499,11 +550,25 @@
         }
 
         .close-btn {
-            background: #dc3545;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
         }
 
         .close-btn:hover {
-            background: #c82333;
+            background: rgba(220, 53, 69, 0.8);
+            transform: scale(1.1);
         }
 
         @media (max-width: 768px) {
@@ -548,29 +613,45 @@
             }
             
             .camera-controls {
-                bottom: 15px;
-                gap: 8px;
+                bottom: 30px;
+                padding: 12px 20px;
+                gap: 15px;
             }
             
             .camera-controls-bottom {
-                bottom: 80px;
+                bottom: 100px;
             }
             
             .camera-controls-top {
-                top: 10px;
-                right: 10px;
+                top: 20px;
+                right: 20px;
             }
             
             .capture-btn {
-                font-size: 1rem;
-                padding: 16px 28px;
-                min-width: 140px;
+                width: 70px;
+                height: 70px;
+                font-size: 1.3rem;
             }
             
-            .switch-btn, .close-btn {
-                padding: 10px 18px;
-                font-size: 0.85rem;
+            .switch-btn {
+                padding: 8px 16px;
+                font-size: 0.8rem;
                 min-width: 100px;
+            }
+            
+            .close-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+            
+            .tongue-guide {
+                width: 180px;
+                height: 130px;
+            }
+            
+            .tongue-guide-text {
+                font-size: 0.9rem;
             }
             
             .zone-grid {
@@ -579,6 +660,49 @@
             
             .recommendations-grid {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        /* Адаптивность для разных ориентаций */
+        @media (orientation: portrait) {
+            .camera-container {
+                max-width: 95%;
+            }
+            
+            #cameraPreview {
+                height: 60vh;
+                min-height: 400px;
+            }
+            
+            .tongue-guide {
+                width: 200px;
+                height: 150px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            #cameraPreview {
+                height: 350px;
+            }
+            
+            .camera-controls {
+                bottom: 20px;
+                padding: 8px 15px;
+            }
+            
+            .camera-controls-bottom {
+                bottom: 80px;
+            }
+            
+            .capture-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.1rem;
+            }
+            
+            .tongue-guide {
+                width: 160px;
+                height: 120px;
             }
         }
     </style>
@@ -608,12 +732,20 @@
                     <div class="camera-container">
                         <video id="cameraPreview" autoplay playsinline muted></video>
                         <canvas id="captureCanvas" style="display: none;"></canvas>
+                        
+                        <div class="camera-overlay">
+                            <div class="tongue-guide"></div>
+                            <div class="tongue-guide-text">👅 Поместите язык в овал</div>
+                        </div>
+                        
                         <div class="camera-controls-top">
-                            <button id="closeCameraBtn" class="close-btn">❌</button>
+                            <button id="closeCameraBtn" class="close-btn">×</button>
                         </div>
+                        
                         <div class="camera-controls">
-                            <button id="captureBtn" class="capture-btn">📸 Фото</button>
+                            <button id="captureBtn" class="capture-btn">📸</button>
                         </div>
+                        
                         <div class="camera-controls-bottom">
                             <button id="switchCameraBtn" class="switch-btn">🔄 Сменить камеру</button>
                         </div>
