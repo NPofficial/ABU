@@ -412,7 +412,7 @@
 
         #cameraPreview {
             width: 100%;
-            height: 400px;
+            height: 500px;
             background: #000;
             object-fit: cover;
             display: block;
@@ -420,7 +420,7 @@
 
         .camera-controls {
             position: absolute;
-            bottom: 30px;
+            bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -430,14 +430,14 @@
 
         .camera-controls-top {
             position: absolute;
-            top: 20px;
-            right: 20px;
+            top: 15px;
+            right: 15px;
             z-index: 10;
         }
 
         .camera-controls-bottom {
             position: absolute;
-            bottom: 80px;
+            bottom: 70px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -449,14 +449,16 @@
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
             border: none;
-            padding: 15px 30px;
+            padding: 18px 35px;
             border-radius: 50px;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
-            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
-            min-width: 150px;
+            transition: all 0.2s ease;
+            font-weight: 700;
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+            min-width: 160px;
+            position: relative;
+            z-index: 20;
         }
 
         .capture-btn:hover {
@@ -535,26 +537,40 @@
                 min-height: 250px;
             }
             
+            .camera-container {
+                max-width: 100%;
+                margin: 10px auto;
+            }
+            
+            #cameraPreview {
+                height: 400px;
+                min-height: 300px;
+            }
+            
             .camera-controls {
-                bottom: 20px;
-                flex-direction: row;
+                bottom: 15px;
                 gap: 8px;
             }
             
             .camera-controls-bottom {
-                bottom: 100px;
+                bottom: 80px;
             }
             
-            .capture-btn, .switch-btn, .close-btn {
-                padding: 12px 20px;
-                font-size: 0.9rem;
-                min-width: 120px;
+            .camera-controls-top {
+                top: 10px;
+                right: 10px;
             }
             
             .capture-btn {
                 font-size: 1rem;
-                padding: 16px 24px;
+                padding: 16px 28px;
                 min-width: 140px;
+            }
+            
+            .switch-btn, .close-btn {
+                padding: 10px 18px;
+                font-size: 0.85rem;
+                min-width: 100px;
             }
             
             .zone-grid {
@@ -866,8 +882,40 @@
                 return;
             }
 
+            // Visual feedback for capture
+            const captureBtn = document.getElementById('captureBtn');
+            captureBtn.style.transform = 'scale(0.95)';
+            captureBtn.style.background = 'linear-gradient(135deg, #20c997 0%, #28a745 100%)';
+            
+            // Camera flash effect
+            const flashOverlay = document.createElement('div');
+            flashOverlay.style.cssText = `
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: white;
+                opacity: 0.8;
+                z-index: 30;
+                pointer-events: none;
+            `;
+            document.querySelector('.camera-container').appendChild(flashOverlay);
+            
+            setTimeout(() => {
+                flashOverlay.remove();
+                captureBtn.style.transform = '';
+                captureBtn.style.background = '';
+            }, 150);
+
             const canvas = captureCanvas;
             const video = cameraPreview;
+            
+            // Ensure video has dimensions
+            if (video.videoWidth === 0 || video.videoHeight === 0) {
+                showError('Видео не готово для съемки');
+                return;
+            }
             
             // Set canvas dimensions to match video
             canvas.width = video.videoWidth;
@@ -880,13 +928,17 @@
             // Convert canvas to blob
             canvas.toBlob(async (blob) => {
                 try {
+                    if (!blob) {
+                        throw new Error('Не удалось создать изображение');
+                    }
+                    
                     // Create file from blob
                     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
                     const file = new File([blob], `tongue-photo-${timestamp}.jpg`, { type: 'image/jpeg' });
                     
                     // Validate and process the captured image
                     validateFile(file);
-                    await handleImageFile(file);
+                    handleFileSelect(file);
                     
                     // Close camera and switch to upload view
                     stopCamera();
