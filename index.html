@@ -408,11 +408,13 @@
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            padding-top: 10vh;
         }
 
         #cameraPreview {
             width: 100%;
-            height: 500px;
+            height: 80vh;
+            max-height: 600px;
             background: #000;
             object-fit: cover;
             display: block;
@@ -431,37 +433,53 @@
 
         .tongue-guide {
             position: absolute;
-            top: 50%;
+            top: 35%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 220px;
-            height: 160px;
-            border: 3px solid #00ff88;
-            border-radius: 50%;
-            animation: breathe 2s ease-in-out infinite;
+            width: 200px;
+            height: 250px;
+            border: 4px solid #00ff88;
+            border-radius: 50% 50% 60% 60%;
+            background: rgba(0, 255, 136, 0.1);
+            animation: tongueGuide 3s ease-in-out infinite;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
         }
 
         .tongue-guide-text {
             position: absolute;
-            top: 30%;
+            top: 20%;
             left: 50%;
             transform: translate(-50%, -50%);
             color: #00ff88;
-            font-size: 1rem;
-            font-weight: 600;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-shadow: 2px 2px 6px rgba(0,0,0,0.9);
             text-align: center;
             white-space: nowrap;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
         }
 
-        @keyframes breathe {
-            0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
-            50% { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+        @keyframes tongueGuide {
+            0%, 100% { 
+                opacity: 0.8; 
+                transform: translate(-50%, -50%) scale(1);
+                border-color: #00ff88;
+                box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            }
+            50% { 
+                opacity: 1; 
+                transform: translate(-50%, -50%) scale(1.05);
+                border-color: #00ff44;
+                box-shadow: 0 0 30px rgba(0, 255, 136, 0.5);
+            }
         }
 
         .camera-controls {
             position: absolute;
-            bottom: 40px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -469,8 +487,8 @@
             justify-content: center;
             gap: 20px;
             z-index: 20;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 15px 25px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 12px 20px;
             border-radius: 50px;
             backdrop-filter: blur(10px);
         }
@@ -667,22 +685,29 @@
         @media (orientation: portrait) {
             .camera-container {
                 max-width: 95%;
+                padding-top: 5vh;
             }
             
             #cameraPreview {
-                height: 60vh;
-                min-height: 400px;
+                height: 70vh;
+                min-height: 450px;
             }
             
             .tongue-guide {
-                width: 200px;
-                height: 150px;
+                width: 180px;
+                height: 220px;
+                top: 30%;
             }
         }
 
-        @media (max-height: 600px) {
+        @media (max-height: 700px) {
+            .camera-container {
+                padding-top: 5vh;
+            }
+            
             #cameraPreview {
-                height: 350px;
+                height: 75vh;
+                max-height: 500px;
             }
             
             .camera-controls {
@@ -691,18 +716,69 @@
             }
             
             .camera-controls-bottom {
-                bottom: 80px;
+                bottom: 70px;
             }
             
             .capture-btn {
-                width: 60px;
-                height: 60px;
-                font-size: 1.1rem;
+                width: 65px;
+                height: 65px;
+                font-size: 1.2rem;
             }
             
             .tongue-guide {
                 width: 160px;
-                height: 120px;
+                height: 200px;
+                top: 32%;
+            }
+            
+            .tongue-guide-text {
+                font-size: 0.9rem;
+                padding: 6px 12px;
+            }
+        }
+
+        @media (min-height: 800px) {
+            .camera-container {
+                padding-top: 15vh;
+            }
+            
+            #cameraPreview {
+                height: 70vh;
+                max-height: 650px;
+            }
+            
+            .tongue-guide {
+                width: 220px;
+                height: 280px;
+                top: 38%;
+            }
+            
+            .tongue-guide-text {
+                font-size: 1.2rem;
+                padding: 10px 18px;
+            }
+        }
+
+        @media (max-height: 600px) {
+            .camera-container {
+                padding-top: 2vh;
+            }
+            
+            #cameraPreview {
+                height: 80vh;
+                max-height: 400px;
+            }
+            
+            .tongue-guide {
+                width: 140px;
+                height: 180px;
+                top: 35%;
+            }
+            
+            .capture-btn {
+                width: 55px;
+                height: 55px;
+                font-size: 1rem;
             }
         }
     </style>
