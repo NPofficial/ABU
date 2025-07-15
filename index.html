@@ -2,7 +2,10 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>Health Analyzer Pro - Анализ здоровья по языку</title>
     <style>
         * {
@@ -672,22 +675,81 @@
                     cameraStream.getTracks().forEach(track => track.stop());
                 }
 
-                const constraints = {
-                    video: {
-                        facingMode: currentFacingMode,
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
-                };
+                console.log('Attempting to start camera with facingMode:', currentFacingMode);
 
-                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
-                cameraPreview.srcObject = cameraStream;
+                // Try different constraint configurations
+                const constraints = [
+                    // First try: specific facingMode with ideal resolution
+                    {
+                        video: {
+                            facingMode: currentFacingMode,
+                            width: { ideal: 1280, max: 1920 },
+                            height: { ideal: 720, max: 1080 }
+                        }
+                    },
+                    // Fallback 1: simpler constraints
+                    {
+                        video: {
+                            facingMode: currentFacingMode,
+                            width: { ideal: 640 },
+                            height: { ideal: 480 }
+                        }
+                    },
+                    // Fallback 2: basic video only
+                    {
+                        video: {
+                            facingMode: currentFacingMode
+                        }
+                    },
+                    // Fallback 3: any video
+                    {
+                        video: true
+                    }
+                ];
+
+                let stream = null;
+                for (let i = 0; i < constraints.length; i++) {
+                    try {
+                        console.log(`Trying constraint set ${i + 1}:`, constraints[i]);
+                        stream = await navigator.mediaDevices.getUserMedia(constraints[i]);
+                        break;
+                    } catch (err) {
+                        console.log(`Constraint set ${i + 1} failed:`, err.message);
+                        if (i === constraints.length - 1) {
+                            throw err;
+                        }
+                    }
+                }
+
+                if (!stream) {
+                    throw new Error('Не удалось получить поток камеры');
+                }
+
+                cameraStream = stream;
+                cameraPreview.srcObject = stream;
+                
+                // Wait for video to load
+                await new Promise((resolve, reject) => {
+                    cameraPreview.onloadedmetadata = () => {
+                        console.log('Camera video loaded, dimensions:', cameraPreview.videoWidth, 'x', cameraPreview.videoHeight);
+                        resolve();
+                    };
+                    cameraPreview.onerror = (error) => {
+                        console.error('Video element error:', error);
+                        reject(new Error('Ошибка отображения видео'));
+                    };
+                    
+                    // Timeout after 10 seconds
+                    setTimeout(() => {
+                        reject(new Error('Таймаут загрузки видео'));
+                    }, 10000);
+                });
                 
                 console.log('Camera started successfully');
                 
             } catch (error) {
                 console.error('Camera start error:', error);
-                showError('Не удалось запустить камеру: ' + error.message);
+                showError('Ошибка камеры: ' + error.message + '. Попробуйте разрешить доступ к камере в настройках браузера.');
             }
         }
 
@@ -751,12 +813,23 @@
             cameraContent.style.display = 'none';
         }
 
-        function showCameraView() {
+        async function showCameraView() {
             cameraBtn.classList.add('active');
             uploadBtn.classList.remove('active');
             uploadContent.style.display = 'none';
             cameraContent.style.display = 'block';
-            initCamera();
+            
+            // Add loading indicator
+            cameraPreview.style.background = '#000 url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMTgiIHN0cm9rZT0iIzY2N2VlYSIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1kYXNoYXJyYXk9IjI4LjI3IDI4LjI3IiB0cmFuc2Zvcm09InJvdGF0ZSgtOTAgMjAgMjApIj4KPGFuaW1hdGVUcmFuc2Zvcm0gYXR0cmlidXRlTmFtZT0idHJhbnNmb3JtIiB0eXBlPSJyb3RhdGUiIHZhbHVlcz0iLTkwIDIwIDIwOzI3MCAyMCAyMCIgZHVyPSIxcyIgcmVwZWF0Q291bnQ9ImluZGVmaW5pdGUiLz4KPC9jaXJjbGU+Cjwvc3ZnPgo=") center center no-repeat';
+            cameraPreview.style.backgroundSize = '40px 40px';
+            
+            try {
+                await initCamera();
+            } catch (error) {
+                console.error('Camera initialization failed:', error);
+                showError('Не удалось инициализировать камеру: ' + error.message);
+                showUploadView();
+            }
         }
 
         // Clear previous results
@@ -1056,12 +1129,26 @@
             showUploadView();
         });
 
-        cameraBtn.addEventListener('click', () => {
-            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                showCameraView();
-            } else {
-                showError('Камера не поддерживается вашим браузером или устройством');
+        cameraBtn.addEventListener('click', async () => {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showError('Камера не поддерживается вашим браузером');
+                return;
             }
+
+            // Check camera permissions
+            try {
+                const permission = await navigator.permissions.query({ name: 'camera' });
+                console.log('Camera permission:', permission.state);
+                
+                if (permission.state === 'denied') {
+                    showError('Доступ к камере запрещен. Разрешите доступ в настройках браузера и обновите страницу.');
+                    return;
+                }
+            } catch (error) {
+                console.log('Permission API not available, proceeding with camera request');
+            }
+
+            showCameraView();
         });
 
         captureBtn.addEventListener('click', capturePhoto);
