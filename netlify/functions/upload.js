@@ -28,22 +28,27 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        // Check environment variables
-        if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
-            console.error('Missing Cloudinary environment variables');
+        // Configure Cloudinary using CLOUDINARY_URL or individual variables
+        if (process.env.CLOUDINARY_URL) {
+            // Use CLOUDINARY_URL for simplified configuration
+            cloudinary.config(process.env.CLOUDINARY_URL);
+            console.log('Cloudinary configured with CLOUDINARY_URL');
+        } else if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+            // Fallback to individual environment variables
+            cloudinary.config({
+                cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+                api_key: process.env.CLOUDINARY_API_KEY,
+                api_secret: process.env.CLOUDINARY_API_SECRET
+            });
+            console.log('Cloudinary configured with individual variables');
+        } else {
+            console.error('Missing Cloudinary configuration');
             return {
                 statusCode: 500,
                 headers,
                 body: JSON.stringify({ error: 'Server configuration error' })
             };
         }
-
-        // Configure Cloudinary
-        cloudinary.config({
-            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-            api_key: process.env.CLOUDINARY_API_KEY,
-            api_secret: process.env.CLOUDINARY_API_SECRET
-        });
 
         // Parse multipart data
         const contentType = event.headers['content-type'] || event.headers['Content-Type'] || '';
