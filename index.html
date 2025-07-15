@@ -126,11 +126,10 @@
             transition: all 0.3s ease;
             display: block;
             margin: 0 auto;
-            position: relative;
-            overflow: hidden;
+            min-width: 200px;
         }
 
-        .analyze-btn:hover {
+        .analyze-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
         }
@@ -138,18 +137,17 @@
         .analyze-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
-            transform: none;
         }
 
         .loading-spinner {
             display: none;
+            margin-right: 10px;
             width: 20px;
             height: 20px;
-            border: 2px solid #ffffff;
-            border-top: 2px solid transparent;
+            border: 2px solid transparent;
+            border-top: 2px solid #ffffff;
             border-radius: 50%;
             animation: spin 1s linear infinite;
-            margin-right: 10px;
         }
 
         @keyframes spin {
@@ -157,11 +155,33 @@
             100% { transform: rotate(360deg); }
         }
 
+        .message {
+            display: none;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .error-message {
+            background: #ffe6e6;
+            color: #d63031;
+            border: 1px solid #fab1a0;
+        }
+
+        .success-message {
+            background: #e6ffe6;
+            color: #00b894;
+            border: 1px solid #81ecec;
+        }
+
         .results-section {
             display: none;
             background: white;
             border-radius: 20px;
-            padding: 40px;
+            padding: 30px;
+            margin-bottom: 30px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
         }
 
@@ -176,38 +196,58 @@
             margin-bottom: 10px;
         }
 
+        .results-subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
         .analysis-card {
             background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
             border-radius: 15px;
             padding: 25px;
             margin-bottom: 20px;
             border-left: 5px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .analysis-card:hover {
+            transform: translateX(5px);
         }
 
         .analysis-card h3 {
-            color: #333;
+            color: #667eea;
+            font-size: 1.4rem;
             margin-bottom: 15px;
-            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
         .analysis-card p {
             line-height: 1.6;
-            color: #666;
+            color: #555;
+            font-size: 1rem;
         }
 
         .zone-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 20px;
-            margin: 20px 0;
+            margin-top: 20px;
         }
 
         .zone-card {
             background: white;
-            border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-top: 3px solid #764ba2;
+            border-radius: 12px;
+            border: 2px solid #e8f2ff;
+            transition: all 0.3s ease;
+        }
+
+        .zone-card:hover {
+            border-color: #667eea;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
         }
 
         .zone-card h4 {
@@ -216,71 +256,110 @@
             font-size: 1.1rem;
         }
 
+        .zone-card p {
+            color: #666;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+
         .recommendations-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 20px;
-            margin: 20px 0;
+            margin-top: 20px;
         }
 
         .recommendation-card {
-            background: linear-gradient(135deg, #fff8f8 0%, #ffe8f8 100%);
-            border-radius: 15px;
+            background: white;
             padding: 25px;
-            border: 1px solid #e0e0e0;
-            transition: transform 0.3s ease;
+            border-radius: 12px;
+            border: 2px solid #e8f2ff;
+            transition: all 0.3s ease;
         }
 
         .recommendation-card:hover {
+            border-color: #667eea;
             transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
         }
 
         .recommendation-card h4 {
-            color: #764ba2;
+            color: #667eea;
             margin-bottom: 15px;
             font-size: 1.2rem;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
         }
 
         .recommendation-reason {
-            color: #666;
-            margin-bottom: 10px;
-            font-weight: 500;
+            margin-bottom: 12px;
+            padding: 10px;
+            background: #f8f9ff;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #555;
         }
 
         .recommendation-effect {
-            color: #999;
-            font-style: italic;
-        }
-
-        .error-message {
-            display: none;
-            background: #ffe6e6;
-            color: #d00;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 5px solid #d00;
-        }
-
-        .success-message {
-            display: none;
-            background: #e6ffe6;
-            color: #0a0;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 20px 0;
-            border-left: 5px solid #0a0;
+            padding: 10px;
+            background: #e8ffe8;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #2d8930;
         }
 
         .disclaimer {
-            background: #fff3cd;
-            color: #856404;
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #fdcb6e;
+            border-radius: 15px;
             padding: 20px;
-            border-radius: 10px;
             margin-top: 30px;
-            border: 1px solid #ffeaa7;
             text-align: center;
+        }
+
+        .disclaimer p {
+            color: #856404;
+            font-weight: 500;
+            margin: 0;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { 
+                opacity: 0; 
+                transform: translateY(20px); 
+            }
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            }
+        }
+
+        .analysis-meta {
+            background: #f8f9ff;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid #e8f2ff;
+        }
+
+        .analysis-meta p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .model-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
             font-weight: 500;
         }
 
@@ -288,84 +367,71 @@
             .container {
                 padding: 15px;
             }
-
+            
             .header h1 {
                 font-size: 2rem;
             }
-
-            .upload-section, .preview-section, .results-section {
+            
+            .upload-section {
                 padding: 25px;
-                border-radius: 15px;
             }
-
-            .upload-area {
-                padding: 40px 15px;
-            }
-
-            .zone-grid, .recommendations-grid {
+            
+            .zone-grid {
                 grid-template-columns: 1fr;
             }
-
-            .analyze-btn {
-                width: 100%;
-                padding: 18px;
+            
+            .recommendations-grid {
+                grid-template-columns: 1fr;
             }
-        }
-
-        .fade-in {
-            animation: fadeIn 0.5s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>🔬 Health Analyzer Pro</h1>
-            <p>Профессиональный анализ здоровья по фотографии языка</p>
+            <h1>Health Analyzer Pro</h1>
+            <p>Wellness диагностика на основе ИИ анализа языка</p>
         </div>
 
         <div class="upload-section">
             <div class="upload-area" id="uploadArea">
                 <span class="upload-icon">📸</span>
-                <div class="upload-text">Перетащите фото языка сюда или нажмите для выбора</div>
-                <div class="upload-hint">Поддерживаются JPG, PNG, WebP (макс. 10MB)</div>
+                <div class="upload-text">Загрузите фото языка</div>
+                <div class="upload-hint">Перетащите файл сюда или нажмите для выбора<br>
+                Поддерживаются JPG, PNG, WebP до 10MB</div>
             </div>
-            <input type="file" id="fileInput" class="file-input" accept="image/jpeg,image/png,image/webp">
+            <input type="file" class="file-input" id="fileInput" accept="image/jpeg,image/png,image/webp">
         </div>
 
         <div class="preview-section" id="previewSection">
-            <img id="previewImage" class="preview-image" alt="Предварительный просмотр">
-            <button id="analyzeBtn" class="analyze-btn">
+            <img class="preview-image" id="previewImage" alt="Предварительный просмотр">
+            <button class="analyze-btn" id="analyzeBtn">
                 <span class="loading-spinner" id="loadingSpinner"></span>
                 <span id="btnText">Анализировать изображение</span>
             </button>
         </div>
 
-        <div class="error-message" id="errorMessage"></div>
-        <div class="success-message" id="successMessage"></div>
+        <div class="message error-message" id="errorMessage"></div>
+        <div class="message success-message" id="successMessage"></div>
 
         <div class="results-section" id="resultsSection">
             <div class="results-header">
                 <h2>📊 Результаты анализа</h2>
-                <p>Wellness диагностика на основе ИИ</p>
+                <p class="results-subtitle">Wellness диагностика на основе ИИ</p>
             </div>
-
             <div id="analysisResults"></div>
+        </div>
 
-            <div class="disclaimer">
-                ⚠️ Это wellness анализ, не медицинская диагностика. При серьезных симптомах обратитесь к врачу.
-            </div>
+        <div class="disclaimer">
+            <p><strong>⚠️ Важное уведомление:</strong> Это wellness анализ, не медицинская диагностика. При серьезных симптомах обратитесь к врачу.</p>
         </div>
     </div>
 
     <script>
+        // Global variables
         let currentImageFile = null;
         let uploadedImageUrl = null;
+        let currentAnalysisId = null;
 
         // DOM elements
         const uploadArea = document.getElementById('uploadArea');
@@ -379,6 +445,11 @@
         const successMessage = document.getElementById('successMessage');
         const resultsSection = document.getElementById('resultsSection');
         const analysisResults = document.getElementById('analysisResults');
+
+        // Generate unique analysis ID
+        function generateAnalysisId() {
+            return 'analysis_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
 
         // File validation
         function validateFile(file) {
@@ -416,22 +487,35 @@
             }, 3000);
         }
 
+        // Clear previous results
+        function clearResults() {
+            resultsSection.style.display = 'none';
+            analysisResults.innerHTML = '';
+            resultsSection.classList.remove('fade-in');
+        }
+
         // Handle file selection
         function handleFileSelect(file) {
             try {
                 validateFile(file);
                 currentImageFile = file;
+                
+                // Generate new analysis ID for this upload
+                currentAnalysisId = generateAnalysisId();
+                
+                // Clear previous results
+                clearResults();
 
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     previewImage.src = e.target.result;
                     previewSection.style.display = 'block';
                     previewSection.classList.add('fade-in');
-                    resultsSection.style.display = 'none';
                 };
                 reader.readAsDataURL(file);
 
                 showSuccess('Изображение загружено. Нажмите "Анализировать" для начала обработки.');
+                console.log('New image loaded with ID:', currentAnalysisId);
             } catch (error) {
                 showError(error.message);
             }
@@ -441,6 +525,9 @@
         async function uploadFile(file) {
             const formData = new FormData();
             formData.append('image', file);
+            
+            // Add timestamp to prevent caching
+            formData.append('timestamp', Date.now().toString());
 
             const response = await fetch('/.netlify/functions/upload', {
                 method: 'POST',
@@ -452,17 +539,28 @@
                 throw new Error(error.error || 'Ошибка загрузки файла');
             }
 
-            return await response.json();
+            const result = await response.json();
+            console.log('Upload result:', result);
+            return result;
         }
 
         // Analyze image with Claude
-        async function analyzeImage(imageUrl) {
+        async function analyzeImage(imageUrl, analysisId) {
+            const requestBody = { 
+                imageUrl,
+                analysisId,
+                timestamp: Date.now()
+            };
+            
+            console.log('Sending analysis request:', requestBody);
+
             const response = await fetch('/.netlify/functions/analyze', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
                 },
-                body: JSON.stringify({ imageUrl })
+                body: JSON.stringify(requestBody)
             });
 
             if (!response.ok) {
@@ -470,60 +568,90 @@
                 throw new Error(error.error || 'Ошибка анализа изображения');
             }
 
-            return await response.json();
+            const result = await response.json();
+            console.log('Analysis result:', result);
+            return result;
         }
 
         // Display analysis results
-        function displayResults(analysisData) {
+        function displayResults(analysisData, analysisId) {
+            // Ensure we're displaying results for the current analysis
+            if (analysisId !== currentAnalysisId) {
+                console.warn('Ignoring outdated analysis result');
+                return;
+            }
+
             const analysis = analysisData.analysis;
+            const modelUsed = analysisData.model_used || 'Claude AI';
+            const timestamp = new Date().toLocaleString('ru-RU');
+            
+            console.log('Displaying results for analysis:', analysisId);
+            console.log('Analysis data:', analysis);
+
+            // Clear and rebuild results with unique content
+            analysisResults.innerHTML = '';
             
             let resultsHTML = `
-                <div class="analysis-card fade-in">
+                <div class="analysis-meta">
+                    <p><strong>Время анализа:</strong> ${timestamp}</p>
+                    <p><strong>Модель ИИ:</strong> <span class="model-badge">${modelUsed}</span></p>
+                    <p><strong>ID анализа:</strong> ${analysisId}</p>
+                </div>
+
+                <div class="analysis-card fade-in" data-analysis="${analysisId}">
                     <h3>🔍 Детальный анализ</h3>
-                    <p>${analysis.detailed_analysis}</p>
-                </div>
-
-                <div class="analysis-card fade-in">
-                    <h3>🗺️ Зональный анализ</h3>
-                    <div class="zone-grid">
-                        <div class="zone-card">
-                            <h4>Передняя зона (Сердце/Легкие)</h4>
-                            <p>${analysis.zone_analysis.anterior}</p>
-                        </div>
-                        <div class="zone-card">
-                            <h4>Средняя зона (Пищеварение)</h4>
-                            <p>${analysis.zone_analysis.middle}</p>
-                        </div>
-                        <div class="zone-card">
-                            <h4>Задняя зона (Почки)</h4>
-                            <p>${analysis.zone_analysis.posterior}</p>
-                        </div>
-                        <div class="zone-card">
-                            <h4>Боковые зоны (Печень)</h4>
-                            <p>${analysis.zone_analysis.lateral}</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="analysis-card fade-in">
-                    <h3>💡 Wellness интерпретация</h3>
-                    <p>${analysis.health_interpretation}</p>
+                    <p>${analysis.detailed_analysis || 'Анализ не доступен'}</p>
                 </div>
             `;
 
+            if (analysis.zone_analysis) {
+                resultsHTML += `
+                    <div class="analysis-card fade-in" data-analysis="${analysisId}">
+                        <h3>🗺️ Зональный анализ</h3>
+                        <div class="zone-grid">
+                            <div class="zone-card">
+                                <h4>Передняя зона (Сердце/Легкие)</h4>
+                                <p>${analysis.zone_analysis.anterior || 'Не указано'}</p>
+                            </div>
+                            <div class="zone-card">
+                                <h4>Средняя зона (Пищеварение)</h4>
+                                <p>${analysis.zone_analysis.middle || 'Не указано'}</p>
+                            </div>
+                            <div class="zone-card">
+                                <h4>Задняя зона (Почки)</h4>
+                                <p>${analysis.zone_analysis.posterior || 'Не указано'}</p>
+                            </div>
+                            <div class="zone-card">
+                                <h4>Боковые зоны (Печень)</h4>
+                                <p>${analysis.zone_analysis.lateral || 'Не указано'}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (analysis.health_interpretation) {
+                resultsHTML += `
+                    <div class="analysis-card fade-in" data-analysis="${analysisId}">
+                        <h3>💡 Wellness интерпретация</h3>
+                        <p>${analysis.health_interpretation}</p>
+                    </div>
+                `;
+            }
+
             if (analysis.wellness_recommendations && analysis.wellness_recommendations.length > 0) {
                 resultsHTML += `
-                    <div class="analysis-card fade-in">
+                    <div class="analysis-card fade-in" data-analysis="${analysisId}">
                         <h3>💊 Рекомендации по добавкам ABU</h3>
                         <div class="recommendations-grid">
                 `;
 
-                analysis.wellness_recommendations.forEach(rec => {
+                analysis.wellness_recommendations.forEach((rec, index) => {
                     resultsHTML += `
-                        <div class="recommendation-card">
-                            <h4>${rec.product}</h4>
-                            <div class="recommendation-reason"><strong>Обоснование:</strong> ${rec.reason}</div>
-                            <div class="recommendation-effect"><strong>Ожидаемый эффект:</strong> ${rec.expected_effect}</div>
+                        <div class="recommendation-card" data-rec="${index}">
+                            <h4>${rec.product || 'Продукт ABU'}</h4>
+                            <div class="recommendation-reason"><strong>Обоснование:</strong> ${rec.reason || 'Не указано'}</div>
+                            <div class="recommendation-effect"><strong>Ожидаемый эффект:</strong> ${rec.expected_effect || 'Не указано'}</div>
                         </div>
                     `;
                 });
@@ -536,7 +664,7 @@
 
             if (analysis.lifestyle_advice) {
                 resultsHTML += `
-                    <div class="analysis-card fade-in">
+                    <div class="analysis-card fade-in" data-analysis="${analysisId}">
                         <h3>🌱 Рекомендации по образу жизни</h3>
                         <p>${analysis.lifestyle_advice}</p>
                     </div>
@@ -545,19 +673,23 @@
 
             if (analysis.monitoring) {
                 resultsHTML += `
-                    <div class="analysis-card fade-in">
+                    <div class="analysis-card fade-in" data-analysis="${analysisId}">
                         <h3>📈 Мониторинг изменений</h3>
                         <p>${analysis.monitoring}</p>
                     </div>
                 `;
             }
 
+            // Force DOM update and display
             analysisResults.innerHTML = resultsHTML;
             resultsSection.style.display = 'block';
-            resultsSection.classList.add('fade-in');
+            resultsSection.classList.remove('fade-in');
             
-            // Smooth scroll to results
-            resultsSection.scrollIntoView({ behavior: 'smooth' });
+            // Trigger reflow and add animation
+            setTimeout(() => {
+                resultsSection.classList.add('fade-in');
+                resultsSection.scrollIntoView({ behavior: 'smooth' });
+            }, 50);
         }
 
         // Set loading state
@@ -574,21 +706,30 @@
                 return;
             }
 
+            const analysisId = currentAnalysisId;
+            console.log('Starting analysis with ID:', analysisId);
+            
             setLoading(true);
+            clearResults();
 
             try {
                 // Step 1: Upload to Cloudinary
                 showSuccess('Загружаем изображение...');
                 const uploadResult = await uploadFile(currentImageFile);
                 uploadedImageUrl = uploadResult.url;
+                console.log('Image uploaded:', uploadedImageUrl);
 
                 // Step 2: Analyze with Claude
                 showSuccess('Анализируем с помощью ИИ...');
-                const analysisResult = await analyzeImage(uploadedImageUrl);
+                const analysisResult = await analyzeImage(uploadedImageUrl, analysisId);
 
-                // Step 3: Display results
-                displayResults(analysisResult);
-                showSuccess('Анализ завершен успешно!');
+                // Step 3: Display results (only if this is still the current analysis)
+                if (analysisId === currentAnalysisId) {
+                    displayResults(analysisResult, analysisId);
+                    showSuccess('Анализ завершен успешно!');
+                } else {
+                    console.log('Analysis result ignored - newer analysis in progress');
+                }
 
             } catch (error) {
                 console.error('Analysis error:', error);
@@ -628,13 +769,15 @@
 
         analyzeBtn.addEventListener('click', performAnalysis);
 
-        // Prevent default drag behaviors
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            document.addEventListener(eventName, (e) => {
+        // Prevent form submission and double-clicks
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && e.target !== analyzeBtn) {
                 e.preventDefault();
-                e.stopPropagation();
-            });
+            }
         });
+
+        // Debug logging
+        console.log('Health Analyzer Pro initialized');
     </script>
 </body>
 </html>
