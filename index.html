@@ -408,7 +408,7 @@
             border-radius: 15px;
             overflow: hidden;
             box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-            padding-top: 10vh;
+            padding-top: 2vh;
         }
 
         #cameraPreview {
@@ -503,7 +503,7 @@
 
         .camera-controls {
             position: absolute;
-            bottom: 30px;
+            bottom: 15px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -526,7 +526,7 @@
 
         .camera-controls-bottom {
             position: absolute;
-            bottom: 100px;
+            bottom: 75px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -716,18 +716,18 @@
         @media (orientation: portrait) {
             .camera-container {
                 max-width: 95%;
-                padding-top: 5vh;
+                padding-top: 1vh;
             }
             
             #cameraPreview {
-                height: 70vh;
-                min-height: 450px;
+                height: 75vh;
+                min-height: 500px;
             }
             
             .tongue-guide {
                 width: 140px;
                 height: 180px;
-                top: 68%;
+                top: 60%;
             }
             
             .tongue-guide-text {
@@ -740,25 +740,33 @@
                 top: 52%;
                 font-size: 1.6rem;
             }
+            
+            .camera-controls {
+                bottom: 10px;
+            }
+            
+            .camera-controls-bottom {
+                bottom: 70px;
+            }
         }
 
         @media (max-height: 700px) {
             .camera-container {
-                padding-top: 3vh;
+                padding-top: 1vh;
             }
             
             #cameraPreview {
-                height: 75vh;
-                max-height: 500px;
+                height: 80vh;
+                max-height: 550px;
             }
             
             .camera-controls {
-                bottom: 20px;
+                bottom: 8px;
                 padding: 8px 15px;
             }
             
             .camera-controls-bottom {
-                bottom: 85px;
+                bottom: 65px;
             }
             
             .capture-btn {
@@ -770,7 +778,7 @@
             .tongue-guide {
                 width: 130px;
                 height: 160px;
-                top: 70%;
+                top: 58%;
             }
             
             .tongue-guide-text {
@@ -787,18 +795,18 @@
 
         @media (min-height: 800px) {
             .camera-container {
-                padding-top: 12vh;
+                padding-top: 3vh;
             }
             
             #cameraPreview {
-                height: 70vh;
-                max-height: 650px;
+                height: 75vh;
+                max-height: 700px;
             }
             
             .tongue-guide {
                 width: 180px;
                 height: 220px;
-                top: 63%;
+                top: 55%;
             }
             
             .tongue-guide-text {
@@ -811,22 +819,30 @@
                 top: 57%;
                 font-size: 2rem;
             }
+            
+            .camera-controls {
+                bottom: 20px;
+            }
+            
+            .camera-controls-bottom {
+                bottom: 85px;
+            }
         }
 
         @media (max-height: 600px) {
             .camera-container {
-                padding-top: 2vh;
+                padding-top: 0.5vh;
             }
             
             #cameraPreview {
-                height: 80vh;
-                max-height: 400px;
+                height: 85vh;
+                max-height: 450px;
             }
             
             .tongue-guide {
                 width: 110px;
                 height: 140px;
-                top: 72%;
+                top: 60%;
             }
             
             .tongue-guide-text {
@@ -845,12 +861,29 @@
                 height: 55px;
                 font-size: 1rem;
             }
+            
+            .camera-controls {
+                bottom: 5px;
+                padding: 6px 12px;
+            }
+            
+            .camera-controls-bottom {
+                bottom: 55px;
+            }
         }
 
         /* Дополнительные адаптивные настройки для широких экранов */
         @media (min-width: 600px) and (orientation: landscape) {
+            .camera-container {
+                padding-top: 1vh;
+            }
+            
+            #cameraPreview {
+                height: 80vh;
+            }
+            
             .tongue-guide {
-                top: 62%;
+                top: 55%;
                 width: 150px;
                 height: 190px;
             }
@@ -864,6 +897,14 @@
             .tongue-guide-arrow {
                 top: 54%;
                 font-size: 1.7rem;
+            }
+            
+            .camera-controls {
+                bottom: 12px;
+            }
+            
+            .camera-controls-bottom {
+                bottom: 70px;
             }
         }
     </style>
