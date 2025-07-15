@@ -363,6 +363,104 @@
             font-weight: 500;
         }
 
+        /* Camera Controls */
+        .upload-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .control-btn {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            color: #495057;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .control-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #667eea;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        /* Camera Interface */
+        .camera-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        #cameraPreview {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            background: #000;
+            min-height: 300px;
+            object-fit: cover;
+        }
+
+        .camera-controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .capture-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .capture-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .switch-btn, .close-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .switch-btn:hover, .close-btn:hover {
+            background: #545b62;
+            transform: translateY(-1px);
+        }
+
+        .close-btn {
+            background: #dc3545;
+        }
+
+        .close-btn:hover {
+            background: #c82333;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 15px;
@@ -374,6 +472,34 @@
             
             .upload-section {
                 padding: 25px;
+            }
+            
+            .upload-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .control-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+            
+            .camera-container {
+                max-width: 100%;
+            }
+            
+            #cameraPreview {
+                min-height: 250px;
+            }
+            
+            .camera-controls {
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .capture-btn, .switch-btn, .close-btn {
+                width: 100%;
+                max-width: 200px;
             }
             
             .zone-grid {
@@ -394,11 +520,30 @@
         </div>
 
         <div class="upload-section">
+            <div class="upload-controls">
+                <button id="uploadBtn" class="control-btn active">📁 Загрузить файл</button>
+                <button id="cameraBtn" class="control-btn">📷 Сделать фото</button>
+            </div>
+            
             <div class="upload-area" id="uploadArea">
-                <span class="upload-icon">📸</span>
-                <div class="upload-text">Загрузите фото языка</div>
-                <div class="upload-hint">Перетащите файл сюда или нажмите для выбора<br>
-                Поддерживаются JPG, PNG, WebP до 10MB</div>
+                <div id="uploadContent">
+                    <span class="upload-icon">📸</span>
+                    <div class="upload-text">Загрузите фото языка</div>
+                    <div class="upload-hint">Перетащите файл сюда или нажмите для выбора<br>
+                    Поддерживаются JPG, PNG, WebP до 10MB</div>
+                </div>
+                
+                <div id="cameraContent" style="display: none;">
+                    <div class="camera-container">
+                        <video id="cameraPreview" autoplay playsinline muted></video>
+                        <canvas id="captureCanvas" style="display: none;"></canvas>
+                        <div class="camera-controls">
+                            <button id="captureBtn" class="capture-btn">📸 Сделать снимок</button>
+                            <button id="switchCameraBtn" class="switch-btn">🔄 Переключить камеру</button>
+                            <button id="closeCameraBtn" class="close-btn">❌ Закрыть</button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <input type="file" class="file-input" id="fileInput" accept="image/jpeg,image/png,image/webp">
         </div>
@@ -432,6 +577,9 @@
         let currentImageFile = null;
         let uploadedImageUrl = null;
         let currentAnalysisId = null;
+        let cameraStream = null;
+        let currentFacingMode = 'user'; // 'user' for front camera, 'environment' for back camera
+        let availableCameras = [];
 
         // DOM elements
         const uploadArea = document.getElementById('uploadArea');
@@ -445,6 +593,17 @@
         const successMessage = document.getElementById('successMessage');
         const resultsSection = document.getElementById('resultsSection');
         const analysisResults = document.getElementById('analysisResults');
+
+        // Camera elements
+        const uploadBtn = document.getElementById('uploadBtn');
+        const cameraBtn = document.getElementById('cameraBtn');
+        const uploadContent = document.getElementById('uploadContent');
+        const cameraContent = document.getElementById('cameraContent');
+        const cameraPreview = document.getElementById('cameraPreview');
+        const captureCanvas = document.getElementById('captureCanvas');
+        const captureBtn = document.getElementById('captureBtn');
+        const switchCameraBtn = document.getElementById('switchCameraBtn');
+        const closeCameraBtn = document.getElementById('closeCameraBtn');
 
         // Generate unique analysis ID
         function generateAnalysisId() {
@@ -485,6 +644,119 @@
             setTimeout(() => {
                 successMessage.style.display = 'none';
             }, 3000);
+        }
+
+        // Camera functions
+        async function initCamera() {
+            try {
+                // Get available cameras
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                availableCameras = devices.filter(device => device.kind === 'videoinput');
+                
+                // Show/hide switch camera button based on available cameras
+                switchCameraBtn.style.display = availableCameras.length > 1 ? 'block' : 'none';
+                
+                // Start camera with current facing mode
+                await startCamera();
+                
+            } catch (error) {
+                console.error('Camera initialization error:', error);
+                showError('Не удалось получить доступ к камере. Проверьте разрешения.');
+            }
+        }
+
+        async function startCamera() {
+            try {
+                // Stop existing stream
+                if (cameraStream) {
+                    cameraStream.getTracks().forEach(track => track.stop());
+                }
+
+                const constraints = {
+                    video: {
+                        facingMode: currentFacingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                cameraPreview.srcObject = cameraStream;
+                
+                console.log('Camera started successfully');
+                
+            } catch (error) {
+                console.error('Camera start error:', error);
+                showError('Не удалось запустить камеру: ' + error.message);
+            }
+        }
+
+        function stopCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+                cameraPreview.srcObject = null;
+            }
+        }
+
+        function switchCamera() {
+            currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            startCamera();
+        }
+
+        function capturePhoto() {
+            if (!cameraStream) {
+                showError('Камера не активна');
+                return;
+            }
+
+            const canvas = captureCanvas;
+            const video = cameraPreview;
+            
+            // Set canvas dimensions to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Draw the video frame to canvas
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Convert canvas to blob
+            canvas.toBlob(async (blob) => {
+                try {
+                    // Create file from blob
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+                    const file = new File([blob], `tongue-photo-${timestamp}.jpg`, { type: 'image/jpeg' });
+                    
+                    // Validate and process the captured image
+                    validateFile(file);
+                    await handleImageFile(file);
+                    
+                    // Close camera and switch to upload view
+                    stopCamera();
+                    showUploadView();
+                    
+                    showSuccess('Фото сделано успешно! Нажмите "Анализировать" для обработки.');
+                    
+                } catch (error) {
+                    showError(error.message);
+                }
+            }, 'image/jpeg', 0.9);
+        }
+
+        function showUploadView() {
+            uploadBtn.classList.add('active');
+            cameraBtn.classList.remove('active');
+            uploadContent.style.display = 'block';
+            cameraContent.style.display = 'none';
+        }
+
+        function showCameraView() {
+            cameraBtn.classList.add('active');
+            uploadBtn.classList.remove('active');
+            uploadContent.style.display = 'none';
+            cameraContent.style.display = 'block';
+            initCamera();
         }
 
         // Clear previous results
@@ -680,6 +952,15 @@
                 `;
             }
 
+            if (analysis.overall_health_score) {
+                resultsHTML += `
+                    <div class="analysis-card fade-in" data-analysis="${analysisId}">
+                        <h3>🏆 Общая оценка здоровья</h3>
+                        <p><strong>Оценка:</strong> ${analysis.overall_health_score}</p>
+                    </div>
+                `;
+            }
+
             // Force DOM update and display
             analysisResults.innerHTML = resultsHTML;
             resultsSection.style.display = 'block';
@@ -768,6 +1049,27 @@
         });
 
         analyzeBtn.addEventListener('click', performAnalysis);
+
+        // Camera event listeners
+        uploadBtn.addEventListener('click', () => {
+            stopCamera();
+            showUploadView();
+        });
+
+        cameraBtn.addEventListener('click', () => {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                showCameraView();
+            } else {
+                showError('Камера не поддерживается вашим браузером или устройством');
+            }
+        });
+
+        captureBtn.addEventListener('click', capturePhoto);
+        switchCameraBtn.addEventListener('click', switchCamera);
+        closeCameraBtn.addEventListener('click', () => {
+            stopCamera();
+            showUploadView();
+        });
 
         // Prevent form submission and double-clicks
         document.addEventListener('keydown', (e) => {
