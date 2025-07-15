@@ -10,7 +10,10 @@ When copying code from this code snippet, ensure you also include this informati
 */
 
 // <important_do_not_delete>
-const DEFAULT_MODEL_STR = "claude-sonnet-4-20250514";
+const MODELS = {
+    PRIMARY: "claude-sonnet-4-20250514",      // Claude 4.0 Sonnet - новейшая модель
+    FALLBACK: "claude-3-5-sonnet-20241022"   // Claude 3.5 Sonnet - резервная модель
+};
 // </important_do_not_delete>
 
 exports.handler = async (event, context) => {
@@ -140,66 +143,148 @@ exports.handler = async (event, context) => {
 
         console.log(`Image fetched: ${mediaType}, size: ${base64Image.length} chars`);
 
-        // Call Claude Vision API
-        const message = await anthropic.messages.create({
-            // "claude-sonnet-4-20250514"
-            model: DEFAULT_MODEL_STR,
-            max_tokens: 2000,
-            messages: [
-                {
-                    role: 'user',
-                    content: [
-                        {
-                            type: 'image',
-                            source: {
-                                type: 'base64',
-                                media_type: mediaType,
-                                data: base64Image
+        // Try Claude 4.0 first, fallback to Claude 3.5 if needed
+        let message;
+        let modelUsed = MODELS.PRIMARY;
+
+        try {
+            console.log('Attempting analysis with Claude 4.0 Sonnet...');
+            message = await anthropic.messages.create({
+                model: MODELS.PRIMARY,
+                max_tokens: 2000,
+                system: SYSTEM_PROMPT,
+                messages: [
+                    {
+                        role: 'user',
+                        content: [
+                            {
+                                type: 'image',
+                                source: {
+                                    type: 'base64',
+                                    media_type: mediaType,
+                                    data: base64Image
+                                }
+                            },
+                            {
+                                type: 'text',
+                                text: 'Проанализируй это изображение языка согласно алгоритму wellness диагностики.'
                             }
-                        },
+                        ]
+                    }
+                ]
+            });
+            console.log('Claude 4.0 analysis completed successfully');
+        } catch (claude4Error) {
+            console.warn('Claude 4.0 failed, trying Claude 3.5:', claude4Error.message);
+            
+            try {
+                modelUsed = MODELS.FALLBACK;
+                message = await anthropic.messages.create({
+                    model: MODELS.FALLBACK,
+                    max_tokens: 2000,
+                    system: SYSTEM_PROMPT,
+                    messages: [
                         {
-                            type: 'text',
-                            text: SYSTEM_PROMPT
+                            role: 'user',
+                            content: [
+                                {
+                                    type: 'image',
+                                    source: {
+                                        type: 'base64',
+                                        media_type: mediaType,
+                                        data: base64Image
+                                    }
+                                },
+                                {
+                                    type: 'text',
+                                    text: 'Проанализируй это изображение языка согласно алгоритму wellness диагностики.'
+                                }
+                            ]
                         }
                     ]
+                });
+                console.log('Claude 3.5 analysis completed successfully');
+            } catch (claude35Error) {
+                console.error('Both Claude models failed:', claude35Error.message);
+                
+                // Handle specific API errors
+                if (claude4Error.status === 401 || claude35Error.status === 401) {
+                    return {
+                        statusCode: 500,
+                        headers,
+                        body: JSON.stringify({ error: 'API authentication failed' })
+                    };
+                } else if (claude4Error.status === 429 || claude35Error.status === 429) {
+                    return {
+                        statusCode: 429,
+                        headers,
+                        body: JSON.stringify({ error: 'API rate limit exceeded. Please try again later.' })
+                    };
                 }
-            ]
-        });
-
-        const content = message.content[0].text;
-        console.log('Claude response length:', content.length);
-
-        // Extract JSON from Claude's response
-        const jsonMatch = content.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            console.error('Claude returned invalid JSON:', content);
-            return {
-                statusCode: 500,
-                headers,
-                body: JSON.stringify({ error: 'AI analysis failed to return valid results' })
-            };
+                
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({ 
+                        error: 'AI analysis failed', 
+                        details: `Claude 4.0: ${claude4Error.message}, Claude 3.5: ${claude35Error.message}`
+                    })
+                };
+            }
         }
 
-        let analysis;
+        // Parse Claude's response
+        let analysisResult;
         try {
-            analysis = JSON.parse(jsonMatch[0]);
-        } catch (jsonError) {
-            console.error('Failed to parse Claude JSON:', jsonError.message);
+            const responseText = message.content[0].text;
+            console.log(`Raw ${modelUsed} response:`, responseText);
+            
+            // Extract JSON from response - support multiple formats
+            let jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
+            if (!jsonMatch) {
+                jsonMatch = responseText.match(/\{[\s\S]*\}/);
+            }
+            
+            if (!jsonMatch) {
+                console.error('No JSON found in Claude response:', responseText);
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({ 
+                        error: 'AI analysis failed to return valid results',
+                        model_used: modelUsed
+                    })
+                };
+            }
+            
+            const jsonText = jsonMatch[1] || jsonMatch[0];
+            analysisResult = JSON.parse(jsonText);
+            
+            // Add model info to result
+            analysisResult.model_used = modelUsed;
+            
+        } catch (parseError) {
+            console.error(`Failed to parse ${modelUsed} response:`, parseError);
             return {
                 statusCode: 500,
                 headers,
-                body: JSON.stringify({ error: 'AI analysis returned invalid format' })
+                body: JSON.stringify({ 
+                    error: 'Failed to parse AI analysis result',
+                    details: parseError.message,
+                    model_used: modelUsed
+                })
             };
         }
 
-        console.log('Analysis completed successfully');
-        
+        console.log('Analysis completed successfully with', modelUsed);
+
         return {
             statusCode: 200,
             headers,
-            body: JSON.stringify({ 
+            body: JSON.stringify({
                 success: true,
-                analysis: analysis,
+                analysis: analysisResult,
+                model_used: modelUsed,
                 timestamp: new Date().toISOString()
             })
         };
