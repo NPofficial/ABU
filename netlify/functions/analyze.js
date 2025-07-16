@@ -251,7 +251,8 @@ Wellness интерпретация: [функция печени, желчно�
             console.log('Attempting analysis with Claude 4.0 Sonnet...');
             message = await anthropic.messages.create({
                 model: MODELS.PRIMARY,
-                max_tokens: 2000,
+                max_tokens: 4000,
+                temperature: 0.1,
                 system: SYSTEM_PROMPT,
                 messages: [
                     {
@@ -309,7 +310,8 @@ Wellness интерпретация: [функция печени, желчно�
             try {
                 message = await anthropic.messages.create({
                     model: MODELS.FALLBACK,
-                    max_tokens: 2000,
+                    max_tokens: 4000,
+                    temperature: 0.1,
                     system: SYSTEM_PROMPT,
                     messages: [
                         {
