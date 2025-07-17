@@ -7,10 +7,7 @@ exports.handler = async (event, context) => {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0'
+        'Content-Type': 'application/json'
     };
 
     // Handle CORS preflight
@@ -121,20 +118,12 @@ exports.handler = async (event, context) => {
 
         console.log(`Uploading file: ${fileType}, size: ${file.data.length} bytes`);
 
-        // Генерируем уникальное имя для каждого файла
-        const uniqueId = `tongue_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-        console.log('Generated unique ID:', uniqueId);
-
         // Upload to Cloudinary
         const result = await new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream(
                 {
                     resource_type: 'image',
                     folder: 'health-analyzer',
-                    public_id: uniqueId,
-                    unique_filename: true,
-                    overwrite: false,
-                    invalidate: true,
                     transformation: [
                         { width: 1000, height: 1000, crop: 'limit' },
                         { quality: 'auto' }
@@ -152,20 +141,13 @@ exports.handler = async (event, context) => {
             ).end(file.data);
         });
 
-        // Добавляем timestamp к URL для предотвращения кэширования
-        const versionedUrl = `${result.secure_url}?v=${Date.now()}`;
-        console.log('Original URL:', result.secure_url);
-        console.log('Versioned URL:', versionedUrl);
-
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify({ 
                 success: true,
-                url: versionedUrl,
-                originalUrl: result.secure_url,
-                publicId: result.public_id,
-                uniqueId: uniqueId
+                url: result.secure_url,
+                publicId: result.public_id 
             })
         };
 
