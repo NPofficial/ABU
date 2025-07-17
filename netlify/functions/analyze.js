@@ -183,7 +183,7 @@ exports.handler = async (event, context) => {
             console.log('Fetching image from URL:', urlForAnalysis);
             imageResponse = await axios.get(urlForAnalysis, { 
                 responseType: 'arraybuffer',
-                timeout: 30000,
+                timeout: 120000,
                 maxContentLength: 10 * 1024 * 1024, // 10MB limit
                 headers: {
                     'User-Agent': 'Health-Analyzer-Pro/1.0'
@@ -276,7 +276,7 @@ exports.handler = async (event, context) => {
                     }]
                 }),
                 new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Claude 4.0 timeout after 25 seconds')), 25000)
+                    setTimeout(() => reject(new Error('Claude 4.0 timeout after 100 seconds')), 100000)
                 )
             ]);
 
@@ -313,7 +313,7 @@ exports.handler = async (event, context) => {
                         }]
                     }),
                     new Promise((_, reject) => 
-                        setTimeout(() => reject(new Error('Claude 3.5 timeout after 15 seconds')), 15000)
+                        setTimeout(() => reject(new Error('Claude 3.5 timeout after 100 seconds')), 100000)
                     )
                 ]);
 
