@@ -253,7 +253,7 @@ exports.handler = async (event, context) => {
             const response = await Promise.race([
                 anthropic.messages.create({
                     model: MODELS.PRIMARY, // Claude 4.0 Sonnet
-                    max_tokens: 4000,
+                    max_tokens: 6000,
                     temperature: temperature,
                     top_p: topP,
                     system: selectedPrompt,
