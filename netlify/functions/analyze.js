@@ -68,7 +68,7 @@ exports.handler = async (event, context) => {
             };
         }
 
-        const { imageUrl, analysisId, timestamp } = requestBody;
+        const { imageUrl, analysisUrl, analysisId, timestamp } = requestBody;
         
         if (!imageUrl) {
             return {
@@ -78,7 +78,9 @@ exports.handler = async (event, context) => {
             };
         }
 
-        console.log('Analyzing image:', imageUrl, 'Analysis ID:', analysisId, 'Timestamp:', timestamp);
+        // Используем улучшенное изображение для анализа если доступно
+        const urlForAnalysis = analysisUrl || imageUrl;
+        console.log('Analyzing image:', urlForAnalysis, 'Original URL:', imageUrl, 'Analysis ID:', analysisId, 'Timestamp:', timestamp);
 
         // Initialize Anthropic client
         const anthropic = new Anthropic({
@@ -177,7 +179,7 @@ exports.handler = async (event, context) => {
         // Convert image URL to base64 for Anthropic
         let imageResponse;
         try {
-            imageResponse = await axios.get(imageUrl, { 
+            imageResponse = await axios.get(urlForAnalysis, { 
                 responseType: 'arraybuffer',
                 timeout: 30000,
                 maxContentLength: 10 * 1024 * 1024 // 10MB limit
@@ -200,242 +202,159 @@ exports.handler = async (event, context) => {
             if (contentType.includes('png')) mediaType = 'image/png';
             else if (contentType.includes('webp')) mediaType = 'image/webp';
         } else {
-            if (imageUrl.includes('.png')) mediaType = 'image/png';
-            else if (imageUrl.includes('.webp')) mediaType = 'image/webp';
+            if (urlForAnalysis.includes('.png')) mediaType = 'image/png';
+            else if (urlForAnalysis.includes('.webp')) mediaType = 'image/webp';
         }
 
         console.log(`Image fetched: ${mediaType}, size: ${base64Image.length} chars`);
 
         // Try Claude 4.0 first, fallback to Claude 3.5 if needed
-        let message;
+        let analysisResult;
         let modelUsed = MODELS.PRIMARY;
 
         try {
             console.log('Attempting analysis with Claude 4.0 Sonnet...');
-            message = await anthropic.messages.create({
-                model: MODELS.PRIMARY,
+            
+            // Anti-caching request parameters
+            const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+            const temperature = 0.2 + Math.random() * 0.4; // Random temperature 0.2-0.6
+            
+            console.log('Request ID:', requestId, 'Temperature:', temperature.toFixed(3));
+
+            const response = await anthropic.messages.create({
+                model: MODELS.PRIMARY, // Claude 4.0 Sonnet
                 max_tokens: 2000,
-                system: SYSTEM_PROMPT,
-                messages: [
-                    {
-                        role: 'user',
+                temperature: temperature,
+                messages: [{
+                    role: "user",
+                    content: [
+                        {
+                            type: "text",
+                            text: `${SYSTEM_PROMPT}\n\nRequest ID: ${requestId}\nAnalysis timestamp: ${new Date().toISOString()}`
+                        },
+                        {
+                            type: "image",
+                            source: {
+                                type: "base64",
+                                media_type: mediaType,
+                                data: base64Image
+                            }
+                        }
+                    ]
+                }]
+            });
+
+            console.log('Claude 4.0 response received, length:', response.content[0].text.length);
+            analysisResult = response.content[0].text;
+
+        } catch (claude4Error) {
+            console.error('Claude 4.0 failed, trying Claude 3.5:', claude4Error.message);
+            modelUsed = MODELS.FALLBACK;
+
+            try {
+                const response = await anthropic.messages.create({
+                    model: MODELS.FALLBACK, // Claude 3.5 Sonnet
+                    max_tokens: 2000,
+                    temperature: 0.3,
+                    messages: [{
+                        role: "user",
                         content: [
                             {
-                                type: 'image',
+                                type: "text",
+                                text: SYSTEM_PROMPT
+                            },
+                            {
+                                type: "image",
                                 source: {
-                                    type: 'base64',
+                                    type: "base64",
                                     media_type: mediaType,
                                     data: base64Image
                                 }
-                            },
-                            {
-                                type: 'text',
-                                text: `Проанализируй ИМЕННО ЭТО конкретное изображение языка (ID: ${analysisId}) как эксперт wellness-диагност.
-
-КРИТИЧЕСКИ ВАЖНО: Верни ТОЛЬКО валидный JSON без дополнительных комментариев!
-
-Анализируй конкретно ЭТО изображение:
-- Точный цвет языка на этом фото
-- Видимые особенности текстуры
-- Наличие налета и его расположение
-- Форму и размер языка
-- Состояние краев и сосочков
-
-СТРОГО JSON формат:
-{
-  "detailed_analysis": "Конкретное описание ЭТОГО языка",
-  "zone_analysis": {
-    "anterior": "Передняя зона - описание, оценка/100",
-    "middle": "Средняя зона - описание, оценка/100", 
-    "posterior": "Задняя зона - описание, оценка/100",
-    "lateral": "Боковые края - описание, оценка/100"
-  },
-  "health_interpretation": "Wellness интерпретация на основе визуальных данных",
-  "wellness_recommendations": [
-    {"product": "ABU продукт", "reason": "Обоснование", "expected_effect": "Эффект"}
-  ],
-  "lifestyle_advice": "Персональные советы",
-  "monitoring": "Что отслеживать",
-  "overall_health_score": "X/100 баллов с обоснованием",
-  "disclaimer": "Wellness анализ, не медицинская диагностика"
-}`
                             }
                         ]
-                    }
-                ]
-            });
-            console.log('Claude 4.0 analysis successful');
-        } catch (primaryError) {
-            console.log('Claude 4.0 failed, trying Claude 3.5 fallback:', primaryError.message);
-            modelUsed = MODELS.FALLBACK;
-            
-            try {
-                message = await anthropic.messages.create({
-                    model: MODELS.FALLBACK,
-                    max_tokens: 2000,
-                    system: SYSTEM_PROMPT,
-                    messages: [
-                        {
-                            role: 'user',
-                            content: [
-                                {
-                                    type: 'image',
-                                    source: {
-                                        type: 'base64',
-                                        media_type: mediaType,
-                                        data: base64Image
-                                    }
-                                },
-                                {
-                                    type: 'text',
-                                    text: `Проанализируй ИМЕННО ЭТО конкретное изображение языка (ID: ${analysisId}) как эксперт wellness-диагност.
-
-КРИТИЧЕСКИ ВАЖНО: Верни ТОЛЬКО валидный JSON без дополнительных комментариев или объяснений!
-
-Опиши КОНКРЕТНО то, что видишь на ЭТОМ изображении:
-- Точный цвет и оттенок языка
-- Реальную текстуру поверхности  
-- Видимый налет (если есть)
-- Состояние сосочков
-- Форму и края языка
-- Зональные особенности
-
-ТРЕБУЕТСЯ ВАЛИДНЫЙ JSON:
-{
-  "detailed_analysis": "Конкретное описание этого языка",
-  "zone_analysis": {
-    "anterior": "Передняя зона - цвет, текстура, оценка/100",
-    "middle": "Средняя зона - налет, сосочки, оценка/100",
-    "posterior": "Задняя зона - особенности, оценка/100", 
-    "lateral": "Боковые края - симметрия, отпечатки, оценка/100"
-  },
-  "health_interpretation": "Wellness выводы на основе визуальных данных",
-  "wellness_recommendations": [
-    {"product": "ABU продукт", "reason": "Причина", "expected_effect": "Эффект"}
-  ],
-  "lifestyle_advice": "Персональные рекомендации",
-  "monitoring": "Что отслеживать",
-  "overall_health_score": "X/100 баллов - обоснование",
-  "disclaimer": "Wellness анализ, не медицинская диагностика"
-}
-
-НЕ добавляй ничего кроме JSON!`
-                                }
-                            ]
-                        }
-                    ]
+                    }]
                 });
-                console.log('Claude 3.5 fallback analysis successful');
-            } catch (fallbackError) {
-                console.error('Both models failed:', fallbackError.message);
+
+                console.log('Claude 3.5 response received, length:', response.content[0].text.length);
+                analysisResult = response.content[0].text;
+
+            } catch (claude3Error) {
+                console.error('Both Claude models failed:', claude3Error.message);
                 return {
                     statusCode: 500,
                     headers,
                     body: JSON.stringify({ 
-                        error: 'AI analysis failed with both models',
-                        details: fallbackError.message
+                        error: 'AI analysis failed', 
+                        details: `Claude 4.0: ${claude4Error.message}, Claude 3.5: ${claude3Error.message}` 
                     })
                 };
             }
         }
 
-        // Extract and parse the analysis result
-        let analysisResult;
+        // Enhanced JSON parsing with aggressive response cleaning
+        let parsedAnalysis;
         try {
-            const responseText = message.content[0].text;
-            console.log('Raw AI response:', responseText.substring(0, 500));
+            console.log('Raw response preview:', analysisResult.substring(0, 200));
             
-            // Clean the response text
-            let cleanedText = responseText.trim();
+            // Aggressive cleaning - remove markdown formatting and extra text
+            let cleanedResponse = analysisResult
+                .replace(/```json\s*/gi, '')
+                .replace(/```\s*/g, '')
+                .replace(/^[^{]*/, '')  // Remove text before first {
+                .replace(/[^}]*$/, '') // Remove text after last }
+                .trim();
+
+            // Find JSON object boundaries
+            const firstBrace = cleanedResponse.indexOf('{');
+            const lastBrace = cleanedResponse.lastIndexOf('}');
             
-            // Remove any markdown code blocks if present
-            cleanedText = cleanedText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
-            
-            // Remove any text before the first {
-            const startIndex = cleanedText.indexOf('{');
-            if (startIndex !== -1) {
-                cleanedText = cleanedText.substring(startIndex);
+            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+                cleanedResponse = cleanedResponse.substring(firstBrace, lastBrace + 1);
             }
-            
-            // Remove any text after the last }
-            const endIndex = cleanedText.lastIndexOf('}');
-            if (endIndex !== -1) {
-                cleanedText = cleanedText.substring(0, endIndex + 1);
-            }
-            
-            // Try to find JSON in the response
-            const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) {
-                console.error('No JSON found in response');
-                return {
-                    statusCode: 500,
-                    headers,
-                    body: JSON.stringify({ 
-                        error: 'Invalid AI response format - no JSON found',
-                        model_used: modelUsed,
-                        raw_response: responseText.substring(0, 200)
-                    })
-                };
-            }
-            
-            const jsonText = jsonMatch[0];
-            console.log('Extracted JSON:', jsonText.substring(0, 200));
-            
-            analysisResult = JSON.parse(jsonText);
-            
-            // Add model info to result
-            analysisResult.model_used = modelUsed;
-            
+
+            console.log('Cleaned response preview:', cleanedResponse.substring(0, 200));
+            console.log('Cleaned response length:', cleanedResponse.length);
+
+            parsedAnalysis = JSON.parse(cleanedResponse);
+            console.log('JSON parsed successfully');
+
         } catch (parseError) {
-            console.error(`Failed to parse ${modelUsed} response:`, parseError);
+            console.error('JSON parse error:', parseError.message);
+            console.error('Response that failed to parse:', analysisResult);
+            
+            // Return a structured error response
             return {
                 statusCode: 500,
                 headers,
                 body: JSON.stringify({ 
-                    error: 'Failed to parse AI analysis result',
+                    error: 'Failed to parse AI response as JSON',
                     details: parseError.message,
+                    rawResponse: analysisResult.substring(0, 500) + '...',
                     model_used: modelUsed
                 })
             };
         }
 
-        console.log('Analysis completed successfully with', modelUsed);
-
+        // Return successful analysis
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify({
                 success: true,
-                analysis: analysisResult,
+                analysis: parsedAnalysis,
                 model_used: modelUsed,
-                analysisId: analysisId,
+                analysis_id: analysisId,
                 timestamp: new Date().toISOString()
             })
         };
 
     } catch (error) {
         console.error('Analysis function error:', error);
-        
-        // Handle specific Anthropic API errors
-        if (error.status === 401) {
-            return {
-                statusCode: 500,
-                headers,
-                body: JSON.stringify({ error: 'API authentication failed' })
-            };
-        } else if (error.status === 429) {
-            return {
-                statusCode: 429,
-                headers,
-                body: JSON.stringify({ error: 'API rate limit exceeded. Please try again later.' })
-            };
-        }
-        
         return {
             statusCode: 500,
             headers,
             body: JSON.stringify({ 
-                error: 'Analysis failed',
+                error: 'Analysis failed', 
                 details: error.message 
             })
         };
