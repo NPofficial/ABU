@@ -5,7 +5,7 @@ exports.handler = async (event, context) => {
     // Add CORS headers to all responses with anti-cache settings
     const headers = {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, Cache-Control',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -31,13 +31,11 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        // Configure Cloudinary using CLOUDINARY_URL or individual variables
+        // Configure Cloudinary
         if (process.env.CLOUDINARY_URL) {
-            // Use CLOUDINARY_URL for simplified configuration
             cloudinary.config(process.env.CLOUDINARY_URL);
             console.log('Cloudinary configured with CLOUDINARY_URL');
         } else if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-            // Fallback to individual environment variables
             cloudinary.config({
                 cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
                 api_key: process.env.CLOUDINARY_API_KEY,
@@ -56,7 +54,6 @@ exports.handler = async (event, context) => {
         // Parse multipart data with enhanced error handling
         const contentType = event.headers['content-type'] || event.headers['Content-Type'] || '';
         console.log('Content-Type:', contentType);
-        console.log('Headers:', JSON.stringify(event.headers, null, 2));
         
         if (!contentType.includes('multipart/form-data')) {
             console.error('Invalid content type received:', contentType);
@@ -65,8 +62,7 @@ exports.handler = async (event, context) => {
                 headers,
                 body: JSON.stringify({ 
                     error: 'Invalid content type. Expected multipart/form-data',
-                    received: contentType,
-                    headers: event.headers
+                    received: contentType
                 })
             };
         }
@@ -89,7 +85,7 @@ exports.handler = async (event, context) => {
             };
         }
 
-        const boundary = boundaryMatch[1].trim().replace(/['"]/g, ''); // Remove quotes if present
+        const boundary = boundaryMatch[1].trim().replace(/['"]/g, '');
         console.log('Extracted boundary:', boundary);
         
         const buffer = event.isBase64Encoded ? Buffer.from(event.body, 'base64') : Buffer.from(event.body, 'utf8');
@@ -97,39 +93,22 @@ exports.handler = async (event, context) => {
         let parts;
         try {
             console.log('Buffer length:', buffer.length);
-            console.log('Buffer preview:', buffer.toString('utf8', 0, Math.min(200, buffer.length)));
-            
             parts = multipart.parse(buffer, boundary);
             console.log('Parsed parts count:', parts.length);
-            console.log('Parts info:', parts.map(p => ({ 
-                name: p.name, 
-                filename: p.filename,
-                type: p.type,
-                dataLength: p.data?.length 
-            })));
         } catch (parseError) {
             console.error('Multipart parse error:', parseError);
-            console.error('Parse error details:', parseError.message);
             return {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ 
                     error: 'Failed to parse uploaded file',
-                    details: parseError.message,
-                    boundary: boundary,
-                    bufferLength: buffer.length
+                    details: parseError.message
                 })
             };
         }
 
         const file = parts.find(part => part.name === 'image');
         if (!file || !file.data || file.data.length === 0) {
-            console.log('Available parts:', parts.map(p => ({ 
-                name: p.name, 
-                filename: p.filename,
-                type: p.type,
-                dataLength: p.data?.length 
-            })));
             return {
                 statusCode: 400,
                 headers,
@@ -166,7 +145,7 @@ exports.handler = async (event, context) => {
         const uniqueId = `tongue_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
         console.log('Generated unique ID:', uniqueId);
 
-        // Upload to Cloudinary with anti-caching settings
+        // Upload to Cloudinary with medical transformations
         const result = await new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream(
                 {
@@ -177,8 +156,26 @@ exports.handler = async (event, context) => {
                     overwrite: false,
                     invalidate: true,
                     transformation: [
-                        { width: 1000, height: 1000, crop: 'limit' },
-                        { quality: 'auto' }
+                        // Базовые настройки
+                        { width: 1200, height: 1200, crop: 'limit' },
+                        
+                        // Улучшение контраста и четкости
+                        { 
+                            effect: 'sharpen:300',           // Резкость для деталей
+                            quality: 'auto:best'            // Максимальное качество
+                        },
+                        
+                        // Улучшение контуров
+                        { 
+                            effect: 'unsharp_mask:500',     // Подчеркивание контуров
+                            color_space: 'srgb'             // Правильное цветовое пространство
+                        },
+                        
+                        // Усиление контраста для выделения патологий
+                        { 
+                            effect: 'contrast:30',          // Увеличение контраста
+                            effect: 'brightness:10'         // Небольшое осветление
+                        }
                     ]
                 },
                 (error, result) => {
@@ -193,17 +190,44 @@ exports.handler = async (event, context) => {
             ).end(file.data);
         });
 
+        // Создаем специальную версию для медицинского анализа
+        const medicalAnalysisUrl = cloudinary.url(result.public_id, {
+            transformation: [
+                { width: 1000, height: 1000, crop: 'limit' },
+                
+                // Медицинские улучшения
+                { effect: 'sharpen:400' },
+                { effect: 'contrast:40' },
+                { effect: 'saturation:20' },
+                
+                // Подчеркивание текстуры
+                { effect: 'unsharp_mask:800' },
+                
+                // Выделение воспалений (красных зон)
+                { effect: 'hue:10' },
+                { effect: 'vibrance:30' },
+                
+                // Финальная обработка
+                { quality: 'auto:best' },
+                { format: 'jpg' }
+            ]
+        });
+
         // Добавляем timestamp к URL для предотвращения кэширования
         const versionedUrl = `${result.secure_url}?v=${Date.now()}`;
+        const versionedAnalysisUrl = `${medicalAnalysisUrl}?v=${Date.now()}`;
+        
         console.log('Original URL:', result.secure_url);
         console.log('Versioned URL:', versionedUrl);
+        console.log('Medical Analysis URL:', versionedAnalysisUrl);
 
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify({ 
                 success: true,
-                url: versionedUrl,
+                url: versionedUrl,                    // Для показа пользователю
+                analysisUrl: versionedAnalysisUrl,    // Для отправки в Claude
                 originalUrl: result.secure_url,
                 publicId: result.public_id,
                 uniqueId: uniqueId
