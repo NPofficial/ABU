@@ -82,7 +82,17 @@ exports.handler = async (event, context) => {
             apiKey: process.env.ANTHROPIC_API_KEY,
         });
 
-        const SYSTEM_PROMPT = `Ты - эксперт wellness-диагност с 15-летним опытом анализа языка в традиционной и холистической медицине.
+        // Генерируем уникальный системный промпт для каждого запроса
+        const randomPromptVariation = Math.floor(Math.random() * 5);
+        const promptVariations = [
+            "Ты - опытный wellness-специалист с многолетним опытом диагностики по языку",
+            "Ты - эксперт в области традиционной медицины и анализа состояния языка", 
+            "Ты - wellness-диагност с 15-летним опытом изучения языка для оценки здоровья",
+            "Ты - специалист по холистической диагностике с фокусом на анализе языка",
+            "Ты - эксперт wellness-диагност с глубокими знаниями традиционных методов анализа языка"
+        ];
+        
+        const SYSTEM_PROMPT = `${promptVariations[randomPromptVariation]}.
 
 ПРИНЦИПЫ:
 - Анализируй ТОЛЬКО это конкретное изображение
@@ -258,11 +268,19 @@ Wellness интерпретация: [функция печени, желчно�
             console.log('Random seed:', randomSeed);
             console.log('Session ID:', sessionId);
             
+            // Добавляем случайные параметры для предотвращения кеширования
+            const randomVariation = Math.random();
+            const dynamicTemperature = 0.2 + (Math.random() * 0.4); // случайная температура 0.2-0.6
+            
             message = await anthropic.messages.create({
                 model: MODELS.PRIMARY,
                 max_tokens: 4000,
-                temperature: 0.3,
-                system: SYSTEM_PROMPT,
+                temperature: dynamicTemperature,
+                system: `${SYSTEM_PROMPT}
+
+СЛУЧАЙНЫЙ АНАЛИЗ ВАРИАНТ: ${randomVariation}
+ВРЕМЯ ЗАПРОСА: ${new Date().getTime()}
+УНИКАЛЬНАЯ ЗАДАЧА: Проанализируй это конкретное изображение языка с максимальной точностью.`,
                 messages: [
                     {
                         role: 'user',
@@ -277,22 +295,22 @@ Wellness интерпретация: [функция печени, желчно�
                             },
                             {
                                 type: 'text',
-                                text: `АБСОЛЮТНО НОВЫЙ СВЕЖИЙ АНАЛИЗ ЯЗЫКА - ИГНОРИРУЙ ВСЕ ПРЕДЫДУЩИЕ!
+                                text: `ВНИМАНИЕ! УНИКАЛЬНЫЙ АНАЛИЗ №${Math.floor(Math.random() * 10000)}
 
-🆕 УНИКАЛЬНАЯ СЕССИЯ АНАЛИЗА:
-- ID изображения: ${analysisId}
-- Timestamp: ${timestamp}
-- Случайный ключ: ${Date.now()}_${Math.random().toString(36).substring(7)}
-- Сессия: ${sessionId}
-- Время анализа: ${timeNow}
-- URL: ${imageUrl}
-- Случайное число: ${randomSeed}
+📊 ДАННЫЕ СЕССИИ (НЕ ПОВТОРЯЙ ПРЕДЫДУЩИЕ АНАЛИЗЫ):
+- Изображение ID: ${analysisId}
+- Временная метка: ${timestamp}
+- Рандом-ключ: ${Date.now()}_${Math.random().toString(36).substring(7)}
+- Сессия: ${sessionId} 
+- Анализ в: ${timeNow}
+- Источник: ${imageUrl}
+- Энтропия: ${randomSeed}
+- Вариация: ${randomVariation}
 
-⚠️ КРИТИЧЕСКИ ВАЖНО: 
-- Это СОВЕРШЕННО НОВОЕ изображение для анализа
-- НЕ используй НИКАКИЕ предыдущие результаты или кеш
-- Анализируй ТОЛЬКО то, что видишь на ЭТОМ конкретном фото
-- Каждый анализ должен быть УНИКАЛЬНЫМ и ОРИГИНАЛЬНЫМ
+🎯 ЗАДАЧА: 
+Изучи ИМЕННО ЭТО изображение языка как будто видишь его впервые.
+Дай СВЕЖИЙ, ОРИГИНАЛЬНЫЙ анализ основанный ТОЛЬКО на том, что видишь.
+НЕ копируй и НЕ повторяй предыдущие ответы или шаблоны.
 
 КРИТИЧЕСКИ ВАЖНО: Верни ТОЛЬКО валидный JSON без дополнительных комментариев!
 
@@ -341,11 +359,19 @@ Wellness интерпретация: [функция печени, желчно�
                 console.log('Fallback Random seed:', randomSeed);
                 console.log('Fallback Session ID:', sessionId);
                 
+                // Добавляем случайные параметры для fallback модели
+                const fallbackVariation = Math.random();
+                const fallbackTemperature = 0.2 + (Math.random() * 0.4);
+                
                 message = await anthropic.messages.create({
                     model: MODELS.FALLBACK,
                     max_tokens: 4000,
-                    temperature: 0.3,
-                    system: SYSTEM_PROMPT,
+                    temperature: fallbackTemperature,
+                    system: `${SYSTEM_PROMPT}
+
+FALLBACK АНАЛИЗ ВАРИАНТ: ${fallbackVariation}
+ВРЕМЯ FALLBACK ЗАПРОСА: ${new Date().getTime()}
+РЕЗЕРВНАЯ УНИКАЛЬНАЯ ЗАДАЧА: Выполни независимый анализ этого изображения языка.`,
                     messages: [
                         {
                             role: 'user',
@@ -360,23 +386,23 @@ Wellness интерпретация: [функция печени, желчно�
                                 },
                                 {
                                     type: 'text',
-                                    text: `🔄 FALLBACK МОДЕЛЬ - АБСОЛЮТНО НОВЫЙ АНАЛИЗ!
+                                    text: `🔄 РЕЗЕРВНЫЙ АНАЛИЗ №${Math.floor(Math.random() * 10000)} - ПОЛНОСТЬЮ НОВЫЙ!
 
-🆕 УНИКАЛЬНАЯ FALLBACK СЕССИЯ:
-- ID изображения: ${analysisId}
-- Timestamp: ${timestamp}
-- Случайный ключ: ${Date.now()}_${Math.random().toString(36).substring(7)}
-- Fallback сессия: ${sessionId}
-- Время анализа: ${timeNow}
+📋 FALLBACK СЕССИЯ (ИГНОРИРУЙ ПРЕДЫДУЩИЕ):
+- ID: ${analysisId}
+- Время: ${timestamp}  
+- Ключ: ${Date.now()}_${Math.random().toString(36).substring(7)}
+- Fallback ID: ${sessionId}
+- Момент: ${timeNow}
 - URL: ${imageUrl}
-- Случайное число: ${randomSeed}
+- Рандом: ${randomSeed}
+- Fallback вариация: ${fallbackVariation}
 
-🚨 СУПЕР ВАЖНО: 
-- Это СОВЕРШЕННО НОВОЕ изображение для анализа
-- НЕ используй НИКАКИЕ предыдущие результаты, кеш или память
-- Анализируй ТОЛЬКО то, что видишь на ЭТОМ конкретном фото
-- Каждый анализ должен быть УНИКАЛЬНЫМ и ОРИГИНАЛЬНЫМ
-- ИГНОРИРУЙ все предыдущие анализы языков
+⭐ ЦЕЛЬ:
+Проведи НЕЗАВИСИМЫЙ анализ этого языка.
+Используй ТОЛЬКО визуальные данные с изображения.
+НЕ опирайся на предыдущие анализы или память.
+Дай УНИКАЛЬНУЮ интерпретацию того, что видишь.
 
 КРИТИЧЕСКИ ВАЖНО: Верни ТОЛЬКО валидный JSON без дополнительных комментариев или объяснений!
 
@@ -431,58 +457,110 @@ Wellness интерпретация: [функция печени, желчно�
         let analysisResult;
         try {
             const responseText = message.content[0].text;
-            console.log('Raw AI response:', responseText.substring(0, 500));
+            console.log('Raw AI response length:', responseText.length);
+            console.log('Raw AI response preview:', responseText.substring(0, 300));
             
-            // Clean the response text
+            // Агрессивная очистка ответа
             let cleanedText = responseText.trim();
             
-            // Remove any markdown code blocks if present
+            // Удаляем все возможные markdown блоки
             cleanedText = cleanedText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+            cleanedText = cleanedText.replace(/```[\s\S]*?```/g, '');
             
-            // Remove any text before the first {
-            const startIndex = cleanedText.indexOf('{');
-            if (startIndex !== -1) {
-                cleanedText = cleanedText.substring(startIndex);
-            }
+            // Удаляем любые объяснения до JSON
+            cleanedText = cleanedText.replace(/^[^{]*/, '');
             
-            // Remove any text after the last }
-            const endIndex = cleanedText.lastIndexOf('}');
-            if (endIndex !== -1) {
-                cleanedText = cleanedText.substring(0, endIndex + 1);
-            }
+            // Удаляем любые объяснения после JSON
+            cleanedText = cleanedText.replace(/\}[^}]*$/, '}');
             
-            // Try to find JSON in the response
-            const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
-            if (!jsonMatch) {
-                console.error('No JSON found in response');
+            // Ищем первую открывающую скобку
+            let startIndex = cleanedText.indexOf('{');
+            if (startIndex === -1) {
+                console.error('No opening brace found in response');
                 return {
                     statusCode: 500,
                     headers,
                     body: JSON.stringify({ 
-                        error: 'Invalid AI response format - no JSON found',
+                        error: 'No JSON structure found in AI response',
                         model_used: modelUsed,
-                        raw_response: responseText.substring(0, 200)
+                        raw_response: responseText.substring(0, 300)
                     })
                 };
             }
             
-            const jsonText = jsonMatch[0];
-            console.log('Extracted JSON:', jsonText.substring(0, 200));
+            // Найдем соответствующую закрывающую скобку
+            let braceCount = 0;
+            let endIndex = -1;
             
-            analysisResult = JSON.parse(jsonText);
+            for (let i = startIndex; i < cleanedText.length; i++) {
+                if (cleanedText[i] === '{') {
+                    braceCount++;
+                } else if (cleanedText[i] === '}') {
+                    braceCount--;
+                    if (braceCount === 0) {
+                        endIndex = i;
+                        break;
+                    }
+                }
+            }
             
-            // Add model info to result
+            if (endIndex === -1) {
+                console.error('No matching closing brace found');
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({ 
+                        error: 'Incomplete JSON structure in AI response',
+                        model_used: modelUsed,
+                        raw_response: responseText.substring(0, 300)
+                    })
+                };
+            }
+            
+            const jsonText = cleanedText.substring(startIndex, endIndex + 1);
+            console.log('Extracted JSON length:', jsonText.length);
+            console.log('Extracted JSON preview:', jsonText.substring(0, 200));
+            
+            // Пытаемся парсить JSON с дополнительной обработкой ошибок
+            try {
+                analysisResult = JSON.parse(jsonText);
+            } catch (jsonError) {
+                console.error('JSON parse failed, trying with quotes fix...');
+                
+                // Пытаемся исправить распространенные проблемы с кавычками
+                let fixedJson = jsonText
+                    .replace(/'/g, '"')  // заменяем одинарные кавычки на двойные
+                    .replace(/(\w+):/g, '"$1":')  // добавляем кавычки к ключам
+                    .replace(/,\s*}/g, '}')  // удаляем висячие запятые
+                    .replace(/,\s*]/g, ']');  // удаляем висячие запятые в массивах
+                
+                try {
+                    analysisResult = JSON.parse(fixedJson);
+                    console.log('JSON fixed and parsed successfully');
+                } catch (fixError) {
+                    console.error('Even fixed JSON failed to parse:', fixError.message);
+                    throw jsonError; // возвращаем оригинальную ошибку
+                }
+            }
+            
+            // Добавляем информацию о модели
             analysisResult.model_used = modelUsed;
             
         } catch (parseError) {
-            console.error(`Failed to parse ${modelUsed} response:`, parseError);
+            console.error(`Failed to parse ${modelUsed} response:`, parseError.message);
+            console.error('Parse error details:', parseError);
+            
+            // Возвращаем детальную информацию об ошибке
             return {
                 statusCode: 500,
                 headers,
                 body: JSON.stringify({ 
                     error: 'Failed to parse AI analysis result',
                     details: parseError.message,
-                    model_used: modelUsed
+                    model_used: modelUsed,
+                    error_type: 'JSON_PARSE_ERROR',
+                    raw_response_preview: message.content[0].text.substring(0, 500),
+                    troubleshooting: 'AI response format is invalid or incomplete'
                 })
             };
         }
