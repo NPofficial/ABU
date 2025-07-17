@@ -52,7 +52,7 @@ exports.handler = async (event, context) => {
             return {
                 statusCode: 500,
                 headers,
-                body: JSON.stringify({ error: 'Server configuration error' })
+                body: JSON.stringify({ error: 'Server configuration error - missing API key' })
             };
         }
 
@@ -61,6 +61,7 @@ exports.handler = async (event, context) => {
         try {
             requestBody = JSON.parse(event.body);
         } catch (parseError) {
+            console.error('Invalid JSON in request body:', parseError.message);
             return {
                 statusCode: 400,
                 headers,
@@ -179,17 +180,27 @@ exports.handler = async (event, context) => {
         // Convert image URL to base64 for Anthropic
         let imageResponse;
         try {
+            console.log('Fetching image from URL:', urlForAnalysis);
             imageResponse = await axios.get(urlForAnalysis, { 
                 responseType: 'arraybuffer',
                 timeout: 30000,
-                maxContentLength: 10 * 1024 * 1024 // 10MB limit
+                maxContentLength: 10 * 1024 * 1024, // 10MB limit
+                headers: {
+                    'User-Agent': 'Health-Analyzer-Pro/1.0'
+                }
             });
+            console.log('Image fetch successful, size:', imageResponse.data.length, 'bytes');
         } catch (fetchError) {
             console.error('Failed to fetch image:', fetchError.message);
+            console.error('URL that failed:', urlForAnalysis);
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'Failed to fetch image from provided URL' })
+                body: JSON.stringify({ 
+                    error: 'Failed to fetch image from provided URL',
+                    details: fetchError.message,
+                    url: urlForAnalysis
+                })
             };
         }
 
@@ -206,7 +217,7 @@ exports.handler = async (event, context) => {
             else if (urlForAnalysis.includes('.webp')) mediaType = 'image/webp';
         }
 
-        console.log(`Image fetched: ${mediaType}, size: ${base64Image.length} chars`);
+        console.log(`Image processed: ${mediaType}, base64 length: ${base64Image.length} chars`);
 
         // Try Claude 4.0 first, fallback to Claude 3.5 if needed
         let analysisResult;
