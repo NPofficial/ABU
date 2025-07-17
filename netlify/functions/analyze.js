@@ -232,28 +232,33 @@ exports.handler = async (event, context) => {
             
             console.log('Request ID:', requestId, 'Temperature:', temperature.toFixed(3));
 
-            const response = await anthropic.messages.create({
-                model: MODELS.PRIMARY, // Claude 4.0 Sonnet
-                max_tokens: 6000,  // Безопасное увеличение, не максимум
-                temperature: temperature,
-                messages: [{
-                    role: "user",
-                    content: [
-                        {
-                            type: "text",
-                            text: `${SYSTEM_PROMPT}\n\nRequest ID: ${requestId}\nAnalysis timestamp: ${new Date().toISOString()}`
-                        },
-                        {
-                            type: "image",
-                            source: {
-                                type: "base64",
-                                media_type: mediaType,
-                                data: base64Image
+            const response = await Promise.race([
+                anthropic.messages.create({
+                    model: MODELS.PRIMARY, // Claude 4.0 Sonnet
+                    max_tokens: 6000,  // Безопасное увеличение, не максимум
+                    temperature: temperature,
+                    messages: [{
+                        role: "user",
+                        content: [
+                            {
+                                type: "text",
+                                text: `${SYSTEM_PROMPT}\n\nRequest ID: ${requestId}\nAnalysis timestamp: ${new Date().toISOString()}`
+                            },
+                            {
+                                type: "image",
+                                source: {
+                                    type: "base64",
+                                    media_type: mediaType,
+                                    data: base64Image
+                                }
                             }
-                        }
-                    ]
-                }]
-            });
+                        ]
+                    }]
+                }),
+                new Promise((_, reject) => 
+                    setTimeout(() => reject(new Error('Claude 4.0 timeout after 45 seconds')), 45000)
+                )
+            ]);
 
             console.log('Claude 4.0 response received, length:', response.content[0].text.length);
             analysisResult = response.content[0].text;
@@ -434,6 +439,26 @@ exports.handler = async (event, context) => {
                 };
             }
         }
+
+        // Убедимся что parsedAnalysis содержит все необходимые поля
+        if (!parsedAnalysis || typeof parsedAnalysis !== 'object') {
+            console.error('Invalid parsed analysis object');
+            return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({ 
+                    error: 'Invalid analysis result structure',
+                    model_used: modelUsed
+                })
+            };
+        }
+
+        // Добавим метаинформацию
+        parsedAnalysis.model_used = modelUsed;
+        parsedAnalysis.analysis_id = analysisId;
+        parsedAnalysis.processed_at = new Date().toISOString();
+
+        console.log('Analysis completed successfully with model:', modelUsed);
 
         // Return successful analysis
         return {
