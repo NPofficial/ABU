@@ -223,7 +223,7 @@ exports.handler = async (event, context) => {
 
             const response = await anthropic.messages.create({
                 model: MODELS.PRIMARY, // Claude 4.0 Sonnet
-                max_tokens: 2000,
+                max_tokens: 6000,  // Безопасное увеличение, не максимум
                 temperature: temperature,
                 messages: [{
                     role: "user",
@@ -254,7 +254,7 @@ exports.handler = async (event, context) => {
             try {
                 const response = await anthropic.messages.create({
                     model: MODELS.FALLBACK, // Claude 3.5 Sonnet
-                    max_tokens: 2000,
+                    max_tokens: 6000,  // Безопасное увеличение, не максимум
                     temperature: 0.3,
                     messages: [{
                         role: "user",
@@ -291,48 +291,137 @@ exports.handler = async (event, context) => {
             }
         }
 
-        // Enhanced JSON parsing with aggressive response cleaning
+        // Enhanced JSON parsing with aggressive response cleaning and retry
         let parsedAnalysis;
         try {
-            console.log('Raw response preview:', analysisResult.substring(0, 200));
+            const responseText = analysisResult;
+            console.log('Raw AI response length:', responseText.length);
+            console.log('Raw AI response preview:', responseText.substring(0, 300));
             
-            // Aggressive cleaning - remove markdown formatting and extra text
-            let cleanedResponse = analysisResult
-                .replace(/```json\s*/gi, '')
-                .replace(/```\s*/g, '')
-                .replace(/^[^{]*/, '')  // Remove text before first {
-                .replace(/[^}]*$/, '') // Remove text after last }
-                .trim();
-
-            // Find JSON object boundaries
-            const firstBrace = cleanedResponse.indexOf('{');
-            const lastBrace = cleanedResponse.lastIndexOf('}');
-            
-            if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
-                cleanedResponse = cleanedResponse.substring(firstBrace, lastBrace + 1);
+            // Проверить полноту ответа
+            if (!responseText || responseText.length < 50) {
+                throw new Error('Response too short or empty');
             }
-
-            console.log('Cleaned response preview:', cleanedResponse.substring(0, 200));
-            console.log('Cleaned response length:', cleanedResponse.length);
-
-            parsedAnalysis = JSON.parse(cleanedResponse);
-            console.log('JSON parsed successfully');
-
-        } catch (parseError) {
-            console.error('JSON parse error:', parseError.message);
-            console.error('Response that failed to parse:', analysisResult);
             
-            // Return a structured error response
-            return {
-                statusCode: 500,
-                headers,
-                body: JSON.stringify({ 
-                    error: 'Failed to parse AI response as JSON',
-                    details: parseError.message,
-                    rawResponse: analysisResult.substring(0, 500) + '...',
-                    model_used: modelUsed
-                })
-            };
+            // Агрессивная очистка ответа
+            let cleanedText = responseText.trim();
+            
+            // Удаляем все возможные markdown блоки
+            cleanedText = cleanedText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+            cleanedText = cleanedText.replace(/```[\s\S]*?```/g, '');
+            
+            // Находим JSON блок
+            const jsonStart = cleanedText.indexOf('{');
+            const jsonEnd = cleanedText.lastIndexOf('}');
+            
+            if (jsonStart === -1 || jsonEnd === -1 || jsonStart >= jsonEnd) {
+                console.error('No valid JSON boundaries found');
+                throw new Error('Invalid JSON structure in response');
+            }
+            
+            const jsonText = cleanedText.substring(jsonStart, jsonEnd + 1);
+            console.log('Extracted JSON length:', jsonText.length);
+            
+            // Проверить что JSON не обрезан
+            if (!jsonText.includes('"disclaimer"')) {
+                console.error('JSON appears to be truncated');
+                throw new Error('JSON response appears incomplete');
+            }
+            
+            // Парсинг с дополнительной проверкой
+            try {
+                parsedAnalysis = JSON.parse(jsonText);
+            } catch (parseError) {
+                console.error('JSON parse failed, trying to fix common issues...');
+                
+                // Попытка исправить распространенные проблемы
+                let fixedJson = jsonText
+                    .replace(/,\s*}/g, '}')          // Убрать висячие запятые
+                    .replace(/,\s*]/g, ']')          // Убрать висячие запятые в массивах
+                    .replace(/([{,]\s*)(\w+):/g, '$1"$2":'); // Добавить кавычки к ключам
+                
+                parsedAnalysis = JSON.parse(fixedJson);
+            }
+            
+            // Валидация результата
+            if (!parsedAnalysis.detailed_analysis || !parsedAnalysis.zone_analysis) {
+                throw new Error('Missing required fields in analysis result');
+            }
+            
+            parsedAnalysis.model_used = modelUsed;
+            
+        } catch (parseError) {
+            console.error(`Failed to parse ${modelUsed} response:`, parseError.message);
+            
+            // Fallback: попробовать повторно с другими параметрами
+            console.log('Attempting retry with different parameters...');
+            
+            try {
+                const retryMessage = await anthropic.messages.create({
+                    model: modelUsed,
+                    max_tokens: 5000,        // Меньше для retry
+                    temperature: 0.05,       // Более низкая температура
+                    messages: [
+                        {
+                            role: 'user',
+                            content: [
+                                {
+                                    type: 'image',
+                                    source: {
+                                        type: 'base64',
+                                        media_type: mediaType,
+                                        data: base64Image
+                                    }
+                                },
+                                {
+                                    type: 'text',
+                                    text: `Верни ТОЛЬКО валидный JSON без комментариев. Краткий анализ образца:
+                                    
+                                    {
+                                      "detailed_analysis": "Краткое описание",
+                                      "zone_analysis": {
+                                        "anterior": "Передняя зона, оценка/100",
+                                        "middle": "Средняя зона, оценка/100",
+                                        "posterior": "Задняя зона, оценка/100",
+                                        "lateral": "Боковые края, оценка/100"
+                                      },
+                                      "overall_health_score": "75/100",
+                                      "disclaimer": "Wellness анализ"
+                                    }`
+                                }
+                            ]
+                        }
+                    ]
+                });
+                
+                const retryText = retryMessage.content[0].text.trim();
+                const retryJsonStart = retryText.indexOf('{');
+                const retryJsonEnd = retryText.lastIndexOf('}');
+                
+                if (retryJsonStart !== -1 && retryJsonEnd !== -1) {
+                    const retryJsonText = retryText.substring(retryJsonStart, retryJsonEnd + 1);
+                    parsedAnalysis = JSON.parse(retryJsonText);
+                    parsedAnalysis.model_used = modelUsed;
+                    console.log('Retry successful');
+                } else {
+                    throw new Error('Retry also failed');
+                }
+                
+            } catch (retryError) {
+                console.error('Retry failed:', retryError.message);
+                
+                // Если и retry не сработал - возвращаем ошибку
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({ 
+                        error: 'Failed to parse AI analysis result after retry',
+                        details: retryError.message,
+                        model_used: modelUsed,
+                        error_type: 'JSON_PARSE_ERROR_RETRY_FAILED'
+                    })
+                };
+            }
         }
 
         // Return successful analysis
