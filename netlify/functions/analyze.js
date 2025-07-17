@@ -546,6 +546,17 @@ FALLBACK АНАЛИЗ ВАРИАНТ: ${fallbackVariation}
                 }
             }
             
+            // Проверяем полноту анализа
+            if (!analysisResult.detailed_analysis) {
+                console.warn('Missing detailed_analysis in response');
+                analysisResult.detailed_analysis = "Анализ временно недоступен. Повторите попытку.";
+            }
+            
+            if (!analysisResult.health_interpretation) {
+                console.warn('Missing health_interpretation in response');
+                analysisResult.health_interpretation = "Интерпретация временно недоступна.";
+            }
+            
             // Добавляем информацию о модели
             analysisResult.model_used = modelUsed;
             
@@ -569,17 +580,37 @@ FALLBACK АНАЛИЗ ВАРИАНТ: ${fallbackVariation}
         }
 
         console.log('Analysis completed successfully with', modelUsed);
+        console.log('Final analysis result keys:', Object.keys(analysisResult));
+
+        // Убедимся, что возвращаем валидный JSON
+        const responseData = {
+            success: true,
+            analysis: analysisResult,
+            model_used: modelUsed,
+            analysisId: analysisId,
+            timestamp: new Date().toISOString()
+        };
+
+        // Тестируем JSON перед отправкой
+        try {
+            JSON.stringify(responseData);
+            console.log('Response JSON validation passed');
+        } catch (validationError) {
+            console.error('Response JSON validation failed:', validationError);
+            return {
+                statusCode: 500,
+                headers,
+                body: JSON.stringify({ 
+                    error: 'Response validation failed',
+                    details: validationError.message 
+                })
+            };
+        }
 
         return {
             statusCode: 200,
             headers,
-            body: JSON.stringify({
-                success: true,
-                analysis: analysisResult,
-                model_used: modelUsed,
-                analysisId: analysisId,
-                timestamp: new Date().toISOString()
-            })
+            body: JSON.stringify(responseData)
         };
 
     } catch (error) {
