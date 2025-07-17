@@ -2,12 +2,15 @@ const cloudinary = require('cloudinary').v2;
 const multipart = require('parse-multipart-data');
 
 exports.handler = async (event, context) => {
-    // Add CORS headers to all responses
+    // Add CORS headers to all responses with anti-cache settings
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
     };
 
     // Handle CORS preflight
@@ -50,49 +53,90 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // Parse multipart data
+        // Parse multipart data with enhanced error handling
         const contentType = event.headers['content-type'] || event.headers['Content-Type'] || '';
         console.log('Content-Type:', contentType);
+        console.log('Headers:', JSON.stringify(event.headers, null, 2));
         
         if (!contentType.includes('multipart/form-data')) {
+            console.error('Invalid content type received:', contentType);
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'Invalid content type. Expected multipart/form-data' })
+                body: JSON.stringify({ 
+                    error: 'Invalid content type. Expected multipart/form-data',
+                    received: contentType,
+                    headers: event.headers
+                })
             };
         }
 
-        const boundaryMatch = contentType.match(/boundary=(.+)$/);
+        // More flexible boundary extraction
+        let boundaryMatch = contentType.match(/boundary=([^;]+)/);
         if (!boundaryMatch) {
+            boundaryMatch = contentType.match(/boundary=(.+)$/);
+        }
+        
+        if (!boundaryMatch) {
+            console.error('No boundary found in content-type:', contentType);
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'Missing boundary in content-type' })
+                body: JSON.stringify({ 
+                    error: 'Missing boundary in content-type',
+                    contentType: contentType
+                })
             };
         }
 
-        const boundary = boundaryMatch[1];
-        const buffer = event.isBase64Encoded ? Buffer.from(event.body, 'base64') : Buffer.from(event.body);
+        const boundary = boundaryMatch[1].trim().replace(/['"]/g, ''); // Remove quotes if present
+        console.log('Extracted boundary:', boundary);
+        
+        const buffer = event.isBase64Encoded ? Buffer.from(event.body, 'base64') : Buffer.from(event.body, 'utf8');
         
         let parts;
         try {
+            console.log('Buffer length:', buffer.length);
+            console.log('Buffer preview:', buffer.toString('utf8', 0, Math.min(200, buffer.length)));
+            
             parts = multipart.parse(buffer, boundary);
+            console.log('Parsed parts count:', parts.length);
+            console.log('Parts info:', parts.map(p => ({ 
+                name: p.name, 
+                filename: p.filename,
+                type: p.type,
+                dataLength: p.data?.length 
+            })));
         } catch (parseError) {
             console.error('Multipart parse error:', parseError);
+            console.error('Parse error details:', parseError.message);
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'Failed to parse uploaded file' })
+                body: JSON.stringify({ 
+                    error: 'Failed to parse uploaded file',
+                    details: parseError.message,
+                    boundary: boundary,
+                    bufferLength: buffer.length
+                })
             };
         }
 
         const file = parts.find(part => part.name === 'image');
         if (!file || !file.data || file.data.length === 0) {
-            console.log('Available parts:', parts.map(p => ({ name: p.name, dataLength: p.data?.length })));
+            console.log('Available parts:', parts.map(p => ({ 
+                name: p.name, 
+                filename: p.filename,
+                type: p.type,
+                dataLength: p.data?.length 
+            })));
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'No image file found in upload' })
+                body: JSON.stringify({ 
+                    error: 'No image file found in upload',
+                    availableParts: parts.map(p => ({ name: p.name, dataLength: p.data?.length }))
+                })
             };
         }
 
@@ -118,12 +162,20 @@ exports.handler = async (event, context) => {
 
         console.log(`Uploading file: ${fileType}, size: ${file.data.length} bytes`);
 
-        // Upload to Cloudinary
+        // Генерируем уникальное имя для каждого файла
+        const uniqueId = `tongue_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+        console.log('Generated unique ID:', uniqueId);
+
+        // Upload to Cloudinary with anti-caching settings
         const result = await new Promise((resolve, reject) => {
             cloudinary.uploader.upload_stream(
                 {
                     resource_type: 'image',
                     folder: 'health-analyzer',
+                    public_id: uniqueId,
+                    unique_filename: true,
+                    overwrite: false,
+                    invalidate: true,
                     transformation: [
                         { width: 1000, height: 1000, crop: 'limit' },
                         { quality: 'auto' }
@@ -141,13 +193,20 @@ exports.handler = async (event, context) => {
             ).end(file.data);
         });
 
+        // Добавляем timestamp к URL для предотвращения кэширования
+        const versionedUrl = `${result.secure_url}?v=${Date.now()}`;
+        console.log('Original URL:', result.secure_url);
+        console.log('Versioned URL:', versionedUrl);
+
         return {
             statusCode: 200,
             headers,
             body: JSON.stringify({ 
                 success: true,
-                url: result.secure_url,
-                publicId: result.public_id 
+                url: versionedUrl,
+                originalUrl: result.secure_url,
+                publicId: result.public_id,
+                uniqueId: uniqueId
             })
         };
 
