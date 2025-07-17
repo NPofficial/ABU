@@ -160,13 +160,7 @@ exports.handler = async (event, context) => {
 
 Ответь СТРОГО в JSON формате:
 {
-  "detailed_analysis": "Развернутый визуальный анализ с цветовой характеристикой, текстурой, налетом, сосочками и анатомическими особенностями",
-  "zone_analysis": {
-    "anterior": "ПЕРЕДНЯЯ ТРЕТЬ (сердце/легкие) - визуальные находки, интерпретация, оценка/100, обоснование",
-    "middle": "СРЕДНЯЯ ТРЕТЬ (пищеварение) - визуальные находки, интерпретация, оценка/100, обоснование",
-    "posterior": "ЗАДНЯЯ ТРЕТЬ (почки/кишечник) - визуальные находки, интерпретация, оценка/100, обоснование",
-    "lateral": "БОКОВЫЕ КРАЯ (печень/желчный) - визуальные находки, интерпретация, оценка/100, обоснование"
-  },
+  "полный_анализ": "Развернутый визуальный анализ с описанием цвета, формы, текстуры, налетов, сосочков. Включи зональный анализ: ПЕРЕДНЯЯ ТРЕТЬ (сердце/легкие), СРЕДНЯЯ ТРЕТЬ (пищеварение), ЗАДНЯЯ ТРЕТЬ (почки/кишечник), БОКОВЫЕ КРАЯ (печень/желчный) с оценками/100 для каждой зоны",
   "health_interpretation": "Wellness интерпретация на основе всех зон",
   "wellness_recommendations": "Общие рекомендации по улучшению здоровья на основе выявленных особенностей",
   "lifestyle_advice": "Персонализированные рекомендации на основе выявленных особенностей",
@@ -297,7 +291,7 @@ exports.handler = async (event, context) => {
                             content: [
                                 {
                                     type: "text",
-                                    text: `Проанализируй образец ${antiCacheId}\nВерни JSON с detailed_analysis, zone_analysis, wellness_recommendations\nНЕ ИСПОЛЬЗУЙ КЭШИРОВАННЫЕ ДАННЫЕ!`
+                                    text: `Проанализируй образец ${antiCacheId}\nВерни JSON с полный_анализ, health_interpretation, wellness_recommendations\nНЕ ИСПОЛЬЗУЙ КЭШИРОВАННЫЕ ДАННЫЕ!`
                                 },
                                 {
                                     type: "image",
@@ -392,7 +386,7 @@ exports.handler = async (event, context) => {
             }
             
             // Валидация результата
-            if (!parsedAnalysis.detailed_analysis || !parsedAnalysis.zone_analysis) {
+            if (!parsedAnalysis.полный_анализ || !parsedAnalysis.health_interpretation) {
                 throw new Error('Missing required fields in analysis result');
             }
             
