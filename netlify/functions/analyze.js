@@ -11,8 +11,8 @@ When copying code from this code snippet, ensure you also include this informati
 
 // <important_do_not_delete>
 const MODELS = {
-    PRIMARY: "claude-sonnet-4-20250514",      // Claude 4.0 Sonnet - новейшая модель
-    FALLBACK: "claude-3-5-sonnet-20241022"   // Claude 3.5 Sonnet - резервная модель
+    PRIMARY: "claude-3-5-sonnet-20241022",    // Claude 3.5 Sonnet - основная модель
+    FALLBACK: "claude-3-5-sonnet-20240620"   // Claude 3.5 Sonnet старая версия - резервная модель
 };
 // </important_do_not_delete>
 
@@ -260,7 +260,7 @@ exports.handler = async (event, context) => {
         let modelUsed = MODELS.PRIMARY;
 
         try {
-            console.log('Attempting analysis with Claude 4.0 Sonnet...');
+            console.log('Attempting analysis with Claude 3.5 Sonnet...');
             // Генерируем множественные уникальные ключи для предотвращения кеширования
             const uniqueKey = `${analysisId}_${timestamp}_${Date.now()}_${Math.random()}`;
             const randomSeed = Math.random().toString(36).substring(2, 15);
@@ -346,9 +346,9 @@ exports.handler = async (event, context) => {
                     }
                 ]
             });
-            console.log('Claude 4.0 analysis successful');
+            console.log('Claude 3.5 analysis successful');
         } catch (primaryError) {
-            console.log('Claude 4.0 failed, trying Claude 3.5 fallback:', primaryError.message);
+            console.log('Claude 3.5 failed, trying older Claude 3.5 fallback:', primaryError.message);
             modelUsed = MODELS.FALLBACK;
             
             try {
@@ -441,7 +441,7 @@ FALLBACK АНАЛИЗ ВАРИАНТ: ${fallbackVariation}
                         }
                     ]
                 });
-                console.log('Claude 3.5 fallback analysis successful');
+            console.log('Claude 3.5 fallback analysis successful');
             } catch (fallbackError) {
                 console.error('Both models failed:', fallbackError.message);
                 return {
