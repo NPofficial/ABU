@@ -6,6 +6,17 @@
 [build.environment]
   NODE_VERSION = "18"
 
+[functions]
+  timeout = 120
+  
+[[functions]]
+  path = "netlify/functions/analyze.js"
+  timeout = 120
+
+[[functions]]
+  path = "netlify/functions/upload.js"
+  timeout = 60
+
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/:splat"
