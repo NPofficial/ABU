@@ -219,6 +219,23 @@ exports.handler = async (event, context) => {
 
         console.log(`Image processed: ${mediaType}, base64 length: ${base64Image.length} chars`);
 
+        // Aggressive anti-caching system
+        const antiCacheId = `analysis_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
+        const sessionId = `session_${Math.random().toString(36).substring(2, 10)}`;
+        const processingTime = new Date().toISOString();
+        const uniqueMarker = `UNIQUE_${Math.random().toString(36).substring(2, 20)}`;
+        
+        // Random system prompt variation to prevent caching
+        const promptVariations = [
+            `${SYSTEM_PROMPT}\n\n🔬 УНИКАЛЬНЫЙ АНАЛИЗ ID: ${antiCacheId}`,
+            `${SYSTEM_PROMPT}\n\n📊 СЕССИЯ ДИАГНОСТИКИ: ${sessionId}`,
+            `${SYSTEM_PROMPT}\n\n⚕️ ВРЕМЕННАЯ МЕТКА: ${processingTime}`,
+            `${SYSTEM_PROMPT}\n\n🧬 ИДЕНТИФИКАТОР: ${uniqueMarker}`,
+            `${SYSTEM_PROMPT}\n\n💊 WELLNESS ID: ${antiCacheId}_${sessionId}`
+        ];
+        
+        const selectedPrompt = promptVariations[Math.floor(Math.random() * promptVariations.length)];
+
         // Try Claude 4.0 first, fallback to Claude 3.5 if needed
         let analysisResult;
         let modelUsed = MODELS.PRIMARY;
@@ -226,23 +243,26 @@ exports.handler = async (event, context) => {
         try {
             console.log('Attempting analysis with Claude 4.0 Sonnet...');
             
-            // Anti-caching request parameters
+            // Enhanced anti-caching request parameters
             const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-            const temperature = 0.2 + Math.random() * 0.4; // Random temperature 0.2-0.6
+            const temperature = 0.15 + Math.random() * 0.5; // Wider range 0.15-0.65
+            const topP = 0.8 + Math.random() * 0.2; // Random top_p 0.8-1.0
             
-            console.log('Request ID:', requestId, 'Temperature:', temperature.toFixed(3));
+            console.log('Request ID:', requestId, 'Temperature:', temperature.toFixed(3), 'TopP:', topP.toFixed(3));
 
             const response = await Promise.race([
                 anthropic.messages.create({
                     model: MODELS.PRIMARY, // Claude 4.0 Sonnet
-                    max_tokens: 6000,  // Безопасное увеличение, не максимум
+                    max_tokens: 4000,
                     temperature: temperature,
+                    top_p: topP,
+                    system: selectedPrompt,
                     messages: [{
                         role: "user",
                         content: [
                             {
                                 type: "text",
-                                text: `${SYSTEM_PROMPT}\n\nRequest ID: ${requestId}\nAnalysis timestamp: ${new Date().toISOString()}`
+                                text: `Проведи детальный морфологический анализ образца.\nREQUEST_ID: ${requestId}\nTIMESTAMP: ${processingTime}\nНЕ ИСПОЛЬЗУЙ КЭШИРОВАННЫЕ ДАННЫЕ!`
                             },
                             {
                                 type: "image",
@@ -256,7 +276,7 @@ exports.handler = async (event, context) => {
                     }]
                 }),
                 new Promise((_, reject) => 
-                    setTimeout(() => reject(new Error('Claude 4.0 timeout after 45 seconds')), 45000)
+                    setTimeout(() => reject(new Error('Claude 4.0 timeout after 25 seconds')), 25000)
                 )
             ]);
 
@@ -268,28 +288,34 @@ exports.handler = async (event, context) => {
             modelUsed = MODELS.FALLBACK;
 
             try {
-                const response = await anthropic.messages.create({
-                    model: MODELS.FALLBACK, // Claude 3.5 Sonnet
-                    max_tokens: 6000,  // Безопасное увеличение, не максимум
-                    temperature: 0.3,
-                    messages: [{
-                        role: "user",
-                        content: [
-                            {
-                                type: "text",
-                                text: SYSTEM_PROMPT
-                            },
-                            {
-                                type: "image",
-                                source: {
-                                    type: "base64",
-                                    media_type: mediaType,
-                                    data: base64Image
+                const response = await Promise.race([
+                    anthropic.messages.create({
+                        model: MODELS.FALLBACK, // Claude 3.5 Sonnet
+                        max_tokens: 3000,
+                        temperature: 0.3,
+                        system: `Ты - лабораторный аналитик. Анализируй биологические образцы. СЕССИЯ: ${sessionId}`,
+                        messages: [{
+                            role: "user",
+                            content: [
+                                {
+                                    type: "text",
+                                    text: `Проанализируй образец ${antiCacheId}\nВерни JSON с detailed_analysis, zone_analysis, wellness_recommendations\nНЕ ИСПОЛЬЗУЙ КЭШИРОВАННЫЕ ДАННЫЕ!`
+                                },
+                                {
+                                    type: "image",
+                                    source: {
+                                        type: "base64",
+                                        media_type: mediaType,
+                                        data: base64Image
+                                    }
                                 }
-                            }
-                        ]
-                    }]
-                });
+                            ]
+                        }]
+                    }),
+                    new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Claude 3.5 timeout after 15 seconds')), 15000)
+                    )
+                ]);
 
                 console.log('Claude 3.5 response received, length:', response.content[0].text.length);
                 analysisResult = response.content[0].text;
@@ -455,8 +481,8 @@ exports.handler = async (event, context) => {
 
         // Добавим метаинформацию
         parsedAnalysis.model_used = modelUsed;
-        parsedAnalysis.analysis_id = analysisId;
-        parsedAnalysis.processed_at = new Date().toISOString();
+        parsedAnalysis.analysis_id = antiCacheId;
+        parsedAnalysis.processed_at = processingTime;
 
         console.log('Analysis completed successfully with model:', modelUsed);
 
