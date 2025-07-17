@@ -370,14 +370,22 @@ exports.handler = async (event, context) => {
                 throw new Error('JSON response appears incomplete');
             }
             
+            // Улучшенная очистка JSON перед парсингом
+            let cleanedJson = jsonText
+                .replace(/\\"/g, '"')                    // Исправить экранирование
+                .replace(/"/g, '\\"')                    // Экранировать все кавычки
+                .replace(/\\\\"/g, '\\"')                // Исправить двойное экранирование  
+                .replace(/[\u0000-\u001F]+/g, '')        // Убрать control characters
+                .replace(/,(\s*[}\]])/g, '$1');          // Убрать висячие запятые
+
             // Парсинг с дополнительной проверкой
             try {
-                parsedAnalysis = JSON.parse(jsonText);
+                parsedAnalysis = JSON.parse(cleanedJson);
             } catch (parseError) {
                 console.error('JSON parse failed, trying to fix common issues...');
                 
                 // Попытка исправить распространенные проблемы
-                let fixedJson = jsonText
+                let fixedJson = cleanedJson
                     .replace(/,\s*}/g, '}')          // Убрать висячие запятые
                     .replace(/,\s*]/g, ']')          // Убрать висячие запятые в массивах
                     .replace(/([{,]\s*)(\w+):/g, '$1"$2":'); // Добавить кавычки к ключам
