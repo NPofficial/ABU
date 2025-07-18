@@ -14,76 +14,138 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 50%, #f0fdfa 100%);
             min-height: 100vh;
-            color: #333;
+            color: #1f2937;
+            margin: 0;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 448px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 16px;
         }
 
         .header {
-            text-align: center;
-            margin-bottom: 40px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
+            padding: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            margin-bottom: 24px;
+        }
+
+        .header-content {
+            max-width: 448px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
         }
 
         .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
         }
 
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
+        .status-indicator {
+            font-size: 24px;
         }
 
         .upload-section {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            margin-bottom: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+            border-radius: 12px;
+            padding: 0;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            border: 0;
+            overflow: hidden;
         }
 
         .upload-area {
-            border: 3px dashed #667eea;
-            border-radius: 15px;
-            padding: 60px 20px;
-            text-align: center;
+            height: 320px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             transition: all 0.3s ease;
             cursor: pointer;
-            background: linear-gradient(45deg, #f8f9ff 0%, #e8f2ff 100%);
+            background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+            position: relative;
         }
 
         .upload-area.dragover {
-            border-color: #764ba2;
-            background: linear-gradient(45deg, #fff8f8 0%, #ffe8f8 100%);
+            background: #d1fae5;
             transform: scale(1.02);
         }
 
+        .upload-area.has-file {
+            background: #ecfdf5;
+        }
+
         .upload-icon {
-            font-size: 4rem;
-            color: #667eea;
-            margin-bottom: 20px;
-            display: block;
+            width: 96px;
+            height: 96px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            font-size: 48px;
+            color: white;
         }
 
         .upload-text {
-            font-size: 1.3rem;
-            color: #666;
-            margin-bottom: 10px;
+            font-size: 20px;
+            font-weight: 600;
+            color: #065f46;
+            margin-bottom: 8px;
+            text-align: center;
         }
 
         .upload-hint {
-            color: #999;
-            font-size: 0.9rem;
+            color: #10b981;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .file-types {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .file-type-badge {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 500;
         }
 
         .file-input {
@@ -108,56 +170,107 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
 
-        /* Двойные кнопки анализа */
+        /* Рекомендація та кнопки */
+        .recommendation-banner {
+            background: #fef3c7;
+            border: 1px solid #fcd34d;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .recommendation-banner .icon {
+            color: #d97706;
+            font-size: 16px;
+        }
+
+        .recommendation-text {
+            color: #92400e;
+            font-size: 14px;
+        }
+
         .analysis-buttons {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .analysis-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+            height: 56px;
+            border-radius: 8px;
             border: none;
-            padding: 20px;
-            border-radius: 15px;
-            font-size: 1rem;
+            font-size: 16px;
+            font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-align: center;
+            transition: all 0.2s ease;
             display: flex;
-            flex-direction: column;
             align-items: center;
-            gap: 10px;
-            min-height: 120px;
+            justify-content: space-between;
+            padding: 0 16px;
+            position: relative;
         }
 
-        .analysis-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        .analysis-btn.primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .analysis-btn.primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: scale(1.02);
+        }
+
+        .analysis-btn.secondary {
+            background: white;
+            color: #065f46;
+            border: 2px solid #a7f3d0;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .analysis-btn.secondary:hover:not(:disabled) {
+            background: #ecfdf5;
+            border-color: #6ee7b7;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
 
         .analysis-btn:disabled {
-            opacity: 0.6;
+            background: #f3f4f6;
+            color: #9ca3af;
+            border-color: #e5e7eb;
             cursor: not-allowed;
+            transform: none;
         }
 
-        .btn-title {
-            font-size: 1.1rem;
-            font-weight: 600;
+        .btn-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
 
-        .btn-description {
-            font-size: 0.85rem;
-            opacity: 0.9;
-            text-align: center;
+        .btn-icon {
+            font-size: 20px;
         }
 
-        .btn-time {
-            font-size: 0.8rem;
-            opacity: 0.8;
-            font-style: italic;
+        .time-badge {
+            padding: 4px 8px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .time-badge.primary {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .time-badge.secondary {
+            background: #f3f4f6;
+            color: #6b7280;
         }
 
         .loading-spinner {
@@ -294,6 +407,15 @@
             to { 
                 opacity: 1; 
                 transform: translateY(0); 
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: .5;
             }
         }
 
@@ -694,26 +816,93 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <header class="header">
-            <h1>Health Analyzer Pro</h1>
-            <p>Аналіз здоров'я по язику за допомогою ШІ</p>
-        </header>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="header-title">
+                <div class="header-icon">⚡</div>
+                <h1>Wellness Analyzer</h1>
+            </div>
+            <div class="status-indicator" id="statusIndicator">⚪</div>
+        </div>
+    </div>
 
+    <div class="container">
+
+        <!-- Giant Upload Zone -->
         <section class="upload-section">
-            <div class="upload-options">
-                <div class="upload-area" id="uploadArea">
-                    <span class="upload-icon">📁</span>
-                    <div class="upload-text">Перетягніть зображення сюди або натисніть для вибору</div>
-                    <div class="upload-hint">Підтримуються формати: JPG, PNG, WebP (до 10 МБ)</div>
-                    <input type="file" id="fileInput" class="file-input" accept="image/*">
+            <div class="upload-area" id="uploadArea">
+                <div id="uploadContent">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">Перетягніть фото сюди</div>
+                    <div class="upload-hint">або натисніть для вибору файлу</div>
+                    <div class="file-types">
+                        <span class="file-type-badge">JPG</span>
+                        <span class="file-type-badge">PNG</span>
+                        <span class="file-type-badge">HEIC</span>
+                    </div>
                 </div>
-                <button class="camera-launch-btn" id="cameraBtn">
-                    <span class="camera-icon">📷</span>
-                    <span class="camera-text">Зробити фото</span>
-                </button>
+                <div id="fileUploadedContent" style="display: none;">
+                    <div class="upload-icon" style="background: #10b981;">✓</div>
+                    <div class="upload-text" id="fileName">Файл завантажено</div>
+                    <div class="upload-hint">Готово до аналізу</div>
+                    <div id="uploadProgress" style="display: none;">
+                        <div style="width: 100%; max-width: 240px; height: 8px; background: #e5e7eb; border-radius: 4px; overflow: hidden;">
+                            <div id="progressBar" style="height: 100%; background: #10b981; transition: width 0.3s ease; width: 0%;"></div>
+                        </div>
+                        <div style="font-size: 12px; color: #10b981; margin-top: 4px;">Завантаження... <span id="progressText">0%</span></div>
+                    </div>
+                </div>
+                <input type="file" id="fileInput" class="file-input" accept="image/*">
             </div>
         </section>
+
+        <!-- Smart Buttons -->
+        <div id="analysisSection" style="display: none;">
+            <div class="recommendation-banner">
+                <span class="icon">⚠️</span>
+                <span class="recommendation-text">Рекомендуємо: <strong>Спочатку детальний аналіз</strong></span>
+            </div>
+
+            <div class="analysis-buttons">
+                <button class="analysis-btn primary" id="detailedAnalysisBtn">
+                    <div class="btn-content">
+                        <span class="btn-icon">🔬</span>
+                        <span>Детальний аналіз</span>
+                    </div>
+                    <span class="time-badge primary">2-3 хв</span>
+                </button>
+
+                <button class="analysis-btn secondary" id="comprehensiveAnalysisBtn">
+                    <div class="btn-content">
+                        <span class="btn-icon">🎯</span>
+                        <span>Повний аналіз</span>
+                    </div>
+                    <span class="time-badge secondary">5-7 хв</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Analysis Progress -->
+        <div id="analysisProgress" style="display: none;">
+            <div style="background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%); border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <div style="text-align: center;">
+                    <div style="width: 64px; height: 64px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; animation: pulse 2s infinite;">
+                        <span style="font-size: 32px; color: white;">⏰</span>
+                    </div>
+                    <h3 style="font-weight: 600; color: #065f46; margin-bottom: 8px;" id="progressTitle">Аналіз...</h3>
+                    <div style="width: 100%; height: 12px; background: #e5e7eb; border-radius: 6px; overflow: hidden; margin-bottom: 8px;">
+                        <div id="analysisProgressBar" style="height: 100%; background: #10b981; transition: width 0.3s ease; width: 0%;"></div>
+                    </div>
+                    <p style="font-size: 14px; color: #10b981;" id="progressStatus">Обробка зображення...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Floating Camera Button -->
+        <button id="cameraBtn" style="position: fixed; bottom: 24px; right: 24px; width: 64px; height: 64px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border: none; border-radius: 50%; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); font-size: 24px; color: white; cursor: pointer; transition: all 0.2s ease; z-index: 1000;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+            📷
+        </button>
 
         <!-- Полноэкранная камера -->
         <div id="cameraInterface" class="camera-interface">
@@ -741,7 +930,7 @@
                 </div>
             </div>
             <div class="camera-controls">
-                <button id="cancelBtn" class="control-btn cancel-btn">Скасувати</button>
+                <button id="cancelBtn" class="control-btn cancel-btn">✕</button>
                 <button id="captureBtn" class="control-btn capture-btn">📷</button>
                 <button id="switchCameraBtn" class="control-btn switch-btn">🔄</button>
             </div>
@@ -800,12 +989,20 @@
         // DOM elements
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        const previewSection = document.getElementById('previewSection');
-        const previewImage = document.getElementById('previewImage');
+        const uploadContent = document.getElementById('uploadContent');
+        const fileUploadedContent = document.getElementById('fileUploadedContent');
+        const fileName = document.getElementById('fileName');
+        const uploadProgress = document.getElementById('uploadProgress');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const analysisSection = document.getElementById('analysisSection');
+        const analysisProgress = document.getElementById('analysisProgress');
+        const analysisProgressBar = document.getElementById('analysisProgressBar');
+        const progressTitle = document.getElementById('progressTitle');
+        const progressStatus = document.getElementById('progressStatus');
         const detailedAnalysisBtn = document.getElementById('detailedAnalysisBtn');
         const comprehensiveAnalysisBtn = document.getElementById('comprehensiveAnalysisBtn');
-        const errorMessage = document.getElementById('errorMessage');
-        const successMessage = document.getElementById('successMessage');
+        const statusIndicator = document.getElementById('statusIndicator');
         const resultsSection = document.getElementById('resultsSection');
         const analysisResults = document.getElementById('analysisResults');
 
@@ -861,6 +1058,17 @@
             analysisResults.innerHTML = '';
         }
 
+        // Update status indicator
+        function updateStatus(status) {
+            const indicators = {
+                idle: currentImageFile ? '🟢' : '⚪',
+                uploading: '🟡',
+                analyzing: '🟡',
+                complete: '🟢'
+            };
+            statusIndicator.textContent = indicators[status] || '⚪';
+        }
+
         // File handling
         function handleFileSelect(file) {
             if (!file) return;
@@ -868,27 +1076,40 @@
             // Validate file type
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
             if (!allowedTypes.includes(file.type.toLowerCase())) {
-                showError('Будь ласка, оберіть зображення у форматі JPG, PNG або WebP');
+                alert('Будь ласка, оберіть зображення у форматі JPG, PNG або WebP');
                 return;
             }
 
             // Validate file size
             if (file.size > 10 * 1024 * 1024) {
-                showError('Розмір файлу не повинен перевищувати 10 МБ');
+                alert('Розмір файлу не повинен перевищувати 10 МБ');
                 return;
             }
 
             currentImageFile = file;
             currentAnalysisId = generateAnalysisId();
             
-            // Show preview
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                previewSection.style.display = 'block';
-                clearResults();
-            };
-            reader.readAsDataURL(file);
+            // Show upload progress
+            updateStatus('uploading');
+            uploadContent.style.display = 'none';
+            fileUploadedContent.style.display = 'flex';
+            fileName.textContent = file.name;
+            uploadProgress.style.display = 'block';
+            
+            // Simulate upload progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                progressBar.style.width = progress + '%';
+                progressText.textContent = progress + '%';
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    uploadProgress.style.display = 'none';
+                    analysisSection.style.display = 'block';
+                    updateStatus('idle');
+                }
+            }, 100);
 
             console.log('File selected:', {
                 name: file.name,
@@ -899,9 +1120,9 @@
         }
 
         // Upload file to Cloudinary
-        async function uploadFile(file) {
+        async function uploadFile() {
             const formData = new FormData();
-            formData.append('image', file);
+            formData.append('image', currentImageFile);
 
             const response = await fetch('/.netlify/functions/upload', {
                 method: 'POST',
@@ -913,7 +1134,55 @@
                 throw new Error(error.error || 'Помилка завантаження файлу');
             }
 
-            return await response.json();
+            const result = await response.json();
+            uploadedImageUrl = result.imageUrl;
+            return result;
+        }
+
+        // Perform actual analysis after progress simulation
+        async function performActualAnalysis(type) {
+            try {
+                const endpoint = type === 'detailed' ? 'analyze-detailed' : 'analyze-comprehensive';
+                
+                const response = await fetch(`/.netlify/functions/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    },
+                    body: JSON.stringify({
+                        imageUrl: uploadedImageUrl,
+                        analysisId: currentAnalysisId,
+                        timestamp: Date.now()
+                    })
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Помилка аналізу');
+                }
+
+                const result = await response.json();
+                
+                // Hide progress and show results
+                analysisProgress.style.display = 'none';
+                updateStatus('complete');
+                
+                if (type === 'detailed') {
+                    displayDetailedResults(result);
+                } else {
+                    displayComprehensiveResults(result);
+                }
+                
+                resultsSection.style.display = 'block';
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                analysisProgress.style.display = 'none';
+                analysisSection.style.display = 'block';
+                updateStatus('idle');
+                alert('Помилка аналізу: ' + error.message);
+            }
         }
 
         // Detailed analysis
@@ -1391,81 +1660,14 @@
             }
         });
 
-        // Detailed analysis button
-        detailedAnalysisBtn.addEventListener('click', async () => {
-            if (!currentImageFile) {
-                showError('Будь ласка, оберіть зображення для аналізу');
-                return;
-            }
+        // Analysis button event listeners
+        detailedAnalysisBtn.addEventListener('click', () => performAnalysis('detailed'));
+        comprehensiveAnalysisBtn.addEventListener('click', () => performAnalysis('comprehensive'));
 
-            const analysisId = currentAnalysisId;
-            const btn = detailedAnalysisBtn;
-            const spinner = document.getElementById('detailedSpinner');
-            
-            btn.disabled = true;
-            spinner.style.display = 'inline-block';
-            clearResults();
-
-            try {
-                showSuccess('Завантажуємо зображення...');
-                const uploadResult = await uploadFile(currentImageFile);
-                uploadedImageUrl = uploadResult.url;
-
-                showSuccess('Проводимо детальний аналіз...');
-                const analysisResult = await analyzeImageDetailed(uploadedImageUrl, analysisId);
-
-                if (analysisId === currentAnalysisId) {
-                    displayDetailedResults(analysisResult);
-                    showSuccess('Детальний аналіз завершено!');
-                }
-
-            } catch (error) {
-                console.error('Detailed analysis error:', error);
-                showError(error.message || 'Помилка детального аналізу');
-            } finally {
-                btn.disabled = false;
-                spinner.style.display = 'none';
-            }
-        });
-
-        // Comprehensive analysis button
-        comprehensiveAnalysisBtn.addEventListener('click', async () => {
-            if (!currentImageFile) {
-                showError('Будь ласка, оберіть зображення для аналізу');
-                return;
-            }
-
-            const analysisId = currentAnalysisId;
-            const btn = comprehensiveAnalysisBtn;
-            const spinner = document.getElementById('comprehensiveSpinner');
-            
-            btn.disabled = true;
-            spinner.style.display = 'inline-block';
-            clearResults();
-
-            try {
-                showSuccess('Завантажуємо зображення...');
-                const uploadResult = await uploadFile(currentImageFile);
-                uploadedImageUrl = uploadResult.url;
-
-                showSuccess('Проводимо повний аналіз...');
-                const analysisResult = await analyzeImageComprehensive(uploadedImageUrl, analysisId);
-
-                if (analysisId === currentAnalysisId) {
-                    displayComprehensiveResults(analysisResult);
-                    showSuccess('Повний аналіз завершено!');
-                }
-
-            } catch (error) {
-                console.error('Comprehensive analysis error:', error);
-                showError(error.message || 'Помилка повного аналізу');
-            } finally {
-                btn.disabled = false;
-                spinner.style.display = 'none';
-            }
-        });
-
-        console.log('Health Analyzer Pro initialized with dual analysis system');
+        // Initialize status
+        updateStatus('idle');
+        
+        console.log('Wellness Analyzer initialized with modern design');
     </script>
 </body>
 </html>
