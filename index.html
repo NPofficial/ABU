@@ -575,6 +575,10 @@
                 // Форматируем морфологические особенности в список
                 let formattedFeatures = analysisData.morphological_features;
                 
+                // Убираем дублирующий заголовок из текста если он есть
+                formattedFeatures = formattedFeatures.replace(/^⚙️\s*Морфологические особенности:\s*/i, '');
+                formattedFeatures = formattedFeatures.replace(/^Морфологические особенности:\s*/i, '');
+                
                 // Если текст содержит " - " (дефис с пробелами), разбиваем на пункты
                 if (formattedFeatures.includes(' - ')) {
                     formattedFeatures = formattedFeatures
