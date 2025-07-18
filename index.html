@@ -475,9 +475,9 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 35vw;
-            max-width: 280px;
-            min-width: 180px;
+            width: 105vw;
+            max-width: 840px;
+            min-width: 540px;
             aspect-ratio: 280/400;
             z-index: 10000;
             pointer-events: none;
@@ -636,8 +636,8 @@
             }
 
             .tongue-guide {
-                width: 45vw;
-                max-width: 240px;
+                width: 135vw;
+                max-width: 720px;
             }
 
             .camera-controls {
@@ -725,11 +725,11 @@
                 <canvas id="cameraCanvas" style="display: none;"></canvas>
                 <div class="tongue-guide">
                     <svg viewBox="0 0 280 400" class="tongue-outline">
-                        <!-- Основной анатомический контур языка -->
-                        <path d="M70,190 Q65,140 110,110 Q140,85 170,110 Q215,140 210,190 Q205,300 140,370 Q75,300 70,190 Z" 
+                        <!-- Основной анатомический контур языка с более выраженным сужением -->
+                        <path d="M70,190 Q65,140 110,110 Q140,85 170,110 Q215,140 210,190 Q205,280 180,340 Q155,365 140,370 Q125,365 100,340 Q75,280 70,190 Z" 
                               fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="6" stroke-dasharray="15,8"/>
                         <!-- Тень для контраста -->
-                        <path d="M70,190 Q65,140 110,110 Q140,85 170,110 Q215,140 210,190 Q205,300 140,370 Q75,300 70,190 Z" 
+                        <path d="M70,190 Q65,140 110,110 Q140,85 170,110 Q215,140 210,190 Q205,280 180,340 Q155,365 140,370 Q125,365 100,340 Q75,280 70,190 Z" 
                               fill="none" stroke="rgba(0,0,0,0.7)" stroke-width="3" stroke-dasharray="15,8"/>
                         <!-- Центральная линия для симметрии -->
                         <path d="M140,120 Q145,230 140,355" 
