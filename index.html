@@ -475,7 +475,7 @@
         .tongue-outline {
             width: 100%;
             height: auto;
-            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.6)) drop-shadow(0 0 4px rgba(0, 0, 0, 0.8));
         }
 
         .camera-controls {
@@ -714,8 +714,14 @@
                 <canvas id="cameraCanvas" style="display: none;"></canvas>
                 <div class="tongue-guide">
                     <svg viewBox="0 0 200 120" class="tongue-outline">
+                        <!-- Основной контур языка -->
                         <path d="M100 10 C130 10, 150 30, 150 60 C150 85, 140 100, 120 110 L80 110 C60 100, 50 85, 50 60 C50 30, 70 10, 100 10 Z" 
-                              fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-dasharray="8,4"/>
+                              fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="4" stroke-dasharray="10,5"/>
+                        <!-- Внутренняя тень для лучшей видимости -->
+                        <path d="M100 10 C130 10, 150 30, 150 60 C150 85, 140 100, 120 110 L80 110 C60 100, 50 85, 50 60 C50 30, 70 10, 100 10 Z" 
+                              fill="none" stroke="rgba(0,0,0,0.6)" stroke-width="2" stroke-dasharray="10,5"/>
+                        <!-- Центральная линия для ориентации -->
+                        <line x1="100" y1="15" x2="100" y2="105" stroke="rgba(255,255,255,0.5)" stroke-width="1" stroke-dasharray="5,3"/>
                     </svg>
                 </div>
             </div>
@@ -1117,36 +1123,78 @@
         // Camera functionality
         async function startCamera(facingMode = 'user') {
             try {
+                console.log('Starting camera with facingMode:', facingMode);
+                
                 // Stop existing stream
                 if (currentStream) {
                     currentStream.getTracks().forEach(track => track.stop());
                 }
 
-                const constraints = {
-                    video: {
-                        facingMode: facingMode,
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
-                    }
+                // Check if camera is available
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    throw new Error('Camera API not supported');
+                }
+
+                // Try simpler constraints first
+                let constraints = {
+                    video: true
                 };
 
+                // If we have preference for camera, try to use it
+                if (facingMode) {
+                    constraints = {
+                        video: {
+                            facingMode: facingMode
+                        }
+                    };
+                }
+
+                console.log('Requesting camera with constraints:', constraints);
                 currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                
                 const videoElement = document.getElementById('cameraVideo');
+                console.log('Video element found:', videoElement);
+                
                 videoElement.srcObject = currentStream;
                 currentFacingMode = facingMode;
 
-                console.log('Camera started successfully:', facingMode);
-                return true;
+                // Wait for video to load
+                return new Promise((resolve, reject) => {
+                    videoElement.onloadedmetadata = () => {
+                        console.log('Video metadata loaded, playing...');
+                        videoElement.play().then(() => {
+                            console.log('Camera started successfully:', facingMode);
+                            resolve(true);
+                        }).catch(error => {
+                            console.error('Error playing video:', error);
+                            reject(error);
+                        });
+                    };
+                    
+                    videoElement.onerror = (error) => {
+                        console.error('Video element error:', error);
+                        reject(error);
+                    };
+                    
+                    // Timeout fallback
+                    setTimeout(() => {
+                        if (videoElement.readyState === 0) {
+                            reject(new Error('Video load timeout'));
+                        }
+                    }, 10000);
+                });
+
             } catch (error) {
                 console.error('Error starting camera:', error);
                 
                 // Fallback: try different camera
                 if (facingMode === 'user') {
                     try {
+                        console.log('Trying fallback to environment camera');
                         return await startCamera('environment');
                     } catch (fallbackError) {
                         console.error('Fallback camera also failed:', fallbackError);
-                        showError('Не удается получить доступ к камере. Проверьте разрешения.');
+                        showError('Не удается получить доступ к камере. Разрешите доступ в настройках браузера.');
                         return false;
                     }
                 } else {
@@ -1223,12 +1271,26 @@
 
         // Camera event listeners
         document.getElementById('cameraBtn').addEventListener('click', async () => {
+            console.log('Camera button clicked');
             const cameraInterface = document.getElementById('cameraInterface');
-            cameraInterface.style.display = 'flex';
             
-            const success = await startCamera('user'); // Start with front camera
-            if (!success) {
+            // Show loading state
+            cameraInterface.style.display = 'flex';
+            const hintElement = document.querySelector('.camera-hint');
+            const originalHint = hintElement.textContent;
+            hintElement.textContent = 'Запуск камеры...';
+            
+            try {
+                const success = await startCamera('user'); // Start with front camera
+                if (success) {
+                    hintElement.textContent = originalHint;
+                } else {
+                    cameraInterface.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Failed to start camera:', error);
                 cameraInterface.style.display = 'none';
+                hintElement.textContent = originalHint;
             }
         });
 
