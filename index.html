@@ -572,10 +572,29 @@
 
             // Морфологические особенности
             if (analysisData.morphological_features) {
+                // Форматируем морфологические особенности в список
+                let formattedFeatures = analysisData.morphological_features;
+                
+                // Если текст содержит " - " (дефис с пробелами), разбиваем на пункты
+                if (formattedFeatures.includes(' - ')) {
+                    formattedFeatures = formattedFeatures
+                        .split(' - ')
+                        .map((item, index) => {
+                            if (index === 0) {
+                                // Первый элемент может содержать заголовок
+                                return item.trim();
+                            } else {
+                                // Остальные элементы форматируем как пункты списка
+                                return `- ${item.trim()}`;
+                            }
+                        })
+                        .join('\n\n');
+                }
+                
                 resultsHTML += `
                     <div class="analysis-subsection">
                         <h4>⚙️ Морфологические особенности:</h4>
-                        <p style="white-space: pre-line;">${analysisData.morphological_features}</p>
+                        <p style="white-space: pre-line;">${formattedFeatures}</p>
                     </div>
                 `;
             }
