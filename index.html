@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="uk">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Health Analyzer Pro - Анализ здоровья по языку</title>
+    <title>Health Analyzer Pro - Аналіз здоров'я по язику</title>
     <style>
         * {
             margin: 0;
@@ -697,20 +697,20 @@
     <div class="container">
         <header class="header">
             <h1>Health Analyzer Pro</h1>
-            <p>Анализ здоровья по языку с помощью ИИ</p>
+            <p>Аналіз здоров'я по язику за допомогою ШІ</p>
         </header>
 
         <section class="upload-section">
             <div class="upload-options">
                 <div class="upload-area" id="uploadArea">
                     <span class="upload-icon">📁</span>
-                    <div class="upload-text">Перетащите изображение сюда или нажмите для выбора</div>
-                    <div class="upload-hint">Поддерживаются форматы: JPG, PNG, WebP (до 10 МБ)</div>
+                    <div class="upload-text">Перетягніть зображення сюди або натисніть для вибору</div>
+                    <div class="upload-hint">Підтримуються формати: JPG, PNG, WebP (до 10 МБ)</div>
                     <input type="file" id="fileInput" class="file-input" accept="image/*">
                 </div>
                 <button class="camera-launch-btn" id="cameraBtn">
                     <span class="camera-icon">📷</span>
-                    <span class="camera-text">Сделать фото</span>
+                    <span class="camera-text">Зробити фото</span>
                 </button>
             </div>
         </section>
@@ -718,7 +718,7 @@
         <!-- Полноэкранная камера -->
         <div id="cameraInterface" class="camera-interface">
             <div class="camera-header">
-                <span class="camera-hint">Поместите язык в направляющую рамку</span>
+                <span class="camera-hint">Розмістіть язик у направляючу рамку</span>
             </div>
             <div class="camera-container">
                 <video id="cameraVideo" autoplay playsinline muted></video>
@@ -741,7 +741,7 @@
                 </div>
             </div>
             <div class="camera-controls">
-                <button id="cancelBtn" class="control-btn cancel-btn">Отмена</button>
+                <button id="cancelBtn" class="control-btn cancel-btn">Скасувати</button>
                 <button id="captureBtn" class="control-btn capture-btn">📷</button>
                 <button id="switchCameraBtn" class="control-btn switch-btn">🔄</button>
             </div>
@@ -750,32 +750,32 @@
         <!-- Превью сделанного фото -->
         <div id="photoPreview" class="photo-preview">
             <div class="preview-header">
-                <span class="preview-title">Предварительный просмотр</span>
+                <span class="preview-title">Попередній перегляд</span>
             </div>
             <div class="preview-container">
-                <img id="previewImg" class="preview-img" alt="Сделанное фото">
+                <img id="previewImg" class="preview-img" alt="Зроблене фото">
             </div>
             <div class="preview-controls">
-                <button id="retakeBtn" class="preview-btn retake-btn">Переснять</button>
-                <button id="usePhotoBtn" class="preview-btn use-btn">Использовать</button>
+                <button id="retakeBtn" class="preview-btn retake-btn">Перезняти</button>
+                <button id="usePhotoBtn" class="preview-btn use-btn">Використати</button>
             </div>
         </div>
 
         <section class="preview-section" id="previewSection">
-            <img id="previewImage" class="preview-image" alt="Предварительный просмотр">
+            <img id="previewImage" class="preview-image" alt="Попередній перегляд">
             
             <div class="analysis-buttons">
                 <button class="analysis-btn" id="detailedAnalysisBtn">
                     <div class="loading-spinner" id="detailedSpinner"></div>
-                    <div class="btn-title">🔬 Детальный анализ</div>
-                    <div class="btn-description">Морфологическое описание поверхности, цвета, текстуры, налетов</div>
+                    <div class="btn-title">🔬 Детальний аналіз</div>
+                    <div class="btn-description">Морфологічний опис поверхні, кольору, текстури, нальотів</div>
                     <div class="btn-time">~15 секунд</div>
                 </button>
                 
                 <button class="analysis-btn" id="comprehensiveAnalysisBtn">
                     <div class="loading-spinner" id="comprehensiveSpinner"></div>
-                    <div class="btn-title">🎯 Полный анализ</div>
-                    <div class="btn-description">Зональная диагностика + wellness рекомендации</div>
+                    <div class="btn-title">🎯 Повний аналіз</div>
+                    <div class="btn-description">Зональна діагностика + wellness рекомендації</div>
                     <div class="btn-time">~15 секунд</div>
                 </button>
             </div>
@@ -786,12 +786,12 @@
 
         <section class="results-section" id="resultsSection">
             <div class="results-header">
-                <h2>Результаты анализа</h2>
+                <h2>Результати аналізу</h2>
             </div>
             <div id="analysisResults"></div>
             
             <div class="disclaimer">
-                <p>⚠️ Это wellness анализ с использованием ИИ, не заменяет медицинскую консультацию. При серьезных симптомах обратитесь к врачу.</p>
+                <p>⚠️ Це wellness аналіз з використанням ШІ, не замінює медичну консультацію. При серйозних симптомах зверніться до лікаря.</p>
             </div>
         </section>
     </div>
@@ -819,21 +819,21 @@
         let currentFacingMode = 'user'; // 'user' for front camera, 'environment' for back
         let capturedImageBlob = null;
 
-        // Функция для добавления цветовых акцентов и эмодзи
+        // Функція для додавання кольорових акцентів та емодзі
         function enhanceTextWithAccents(text) {
             return text
-                // Добавляем зеленые акценты для положительных характеристик
-                .replace(/(нормальн|здоров|правильн|естественн|хорош)/gi, '<span class="highlight-green">🟢 $1</span>')
-                // Добавляем желтые акценты для внимания
-                .replace(/(повышенн|увеличенн|выраженн|заметн)/gi, '<span class="highlight-yellow">🟡 $1</span>')
-                // Добавляем красные акценты для отклонений
-                .replace(/(патологическ|воспалительн|аномальн|нарушен)/gi, '<span class="highlight-red">🔴 $1</span>')
-                // Добавляем синие акценты для технических терминов
-                .replace(/(морфологическ|структурн|анатомическ|топографическ)/gi, '<span class="highlight-blue">$1</span>')
-                // Добавляем эмодзи для ключевых элементов
-                .replace(/цвет|пигмент/gi, '🎨 $&')
-                .replace(/поверхность|текстура/gi, '🔬 $&')
-                .replace(/сосочки|борозды/gi, '📐 $&');
+                // Додаємо зелені акценти для позитивних характеристик
+                .replace(/(нормальн|здоров|правильн|природн|добр)/gi, '<span class="highlight-green">🟢 $1</span>')
+                // Додаємо жовті акценти для уваги
+                .replace(/(підвищен|збільшен|виражен|помітн)/gi, '<span class="highlight-yellow">🟡 $1</span>')
+                // Додаємо червоні акценти для відхилень
+                .replace(/(патологічн|запальн|аномальн|порушен)/gi, '<span class="highlight-red">🔴 $1</span>')
+                // Додаємо сині акценти для технічних термінів
+                .replace(/(морфологічн|структурн|анатомічн|топографічн)/gi, '<span class="highlight-blue">$1</span>')
+                // Додаємо емодзі для ключових елементів
+                .replace(/колір|пігмент/gi, '🎨 $&')
+                .replace(/поверхня|текстура/gi, '🔬 $&')
+                .replace(/сосочки|борозни/gi, '📐 $&');
         }
 
         // Generate unique analysis ID
@@ -868,13 +868,13 @@
             // Validate file type
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
             if (!allowedTypes.includes(file.type.toLowerCase())) {
-                showError('Пожалуйста, выберите изображение в формате JPG, PNG или WebP');
+                showError('Будь ласка, оберіть зображення у форматі JPG, PNG або WebP');
                 return;
             }
 
             // Validate file size
             if (file.size > 10 * 1024 * 1024) {
-                showError('Размер файла не должен превышать 10 МБ');
+                showError('Розмір файлу не повинен перевищувати 10 МБ');
                 return;
             }
 
@@ -910,7 +910,7 @@
 
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.error || 'Ошибка загрузки файла');
+                throw new Error(error.error || 'Помилка завантаження файлу');
             }
 
             return await response.json();
@@ -933,7 +933,7 @@
 
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.error || 'Ошибка детального анализа');
+                throw new Error(error.error || 'Помилка детального аналізу');
             }
 
             return await response.json();
@@ -957,7 +957,7 @@
 
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.error || 'Ошибка полного анализа');
+                throw new Error(error.error || 'Помилка повного аналізу');
             }
 
             return await response.json();
@@ -967,10 +967,10 @@
         function displayDetailedResults(analysisData) {
             let resultsHTML = `
                 <div class="analysis-card fade-in">
-                    <h3>🔬 Комплексный визуальный анализ</h3>
+                    <h3>🔬 Комплексний візуальний аналіз</h3>
             `;
 
-            // Общая характеристика с разделением на строки
+            // Загальна характеристика з розділенням на рядки
             if (analysisData.detailed_analysis) {
                 let formattedAnalysis = analysisData.detailed_analysis;
                 
@@ -983,7 +983,7 @@
 
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">📋</span>Общая характеристика:</h4>
+                        <h4><span class="section-icon">📋</span>Загальна характеристика:</h4>
                         <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedAnalysis)}</p>
                     </div>
                 `;
@@ -1002,7 +1002,7 @@
 
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">🔍</span>Ключевые находки:</h4>
+                        <h4><span class="section-icon">🔍</span>Ключові знахідки:</h4>
                         <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedFindings)}</p>
                     </div>
                 `;
@@ -1013,20 +1013,20 @@
                 // Форматируем морфологические особенности в список
                 let formattedFeatures = analysisData.morphological_features;
                 
-                // Убираем дублирующий заголовок из текста если он есть
-                formattedFeatures = formattedFeatures.replace(/^⚙️\s*Морфологические особенности:\s*/i, '');
-                formattedFeatures = formattedFeatures.replace(/^Морфологические особенности:\s*/i, '');
+                // Прибираємо дублюючий заголовок з тексту якщо він є
+                formattedFeatures = formattedFeatures.replace(/^⚙️\s*Морфологічні особливості:\s*/i, '');
+                formattedFeatures = formattedFeatures.replace(/^Морфологічні особливості:\s*/i, '');
                 
-                // Если текст содержит " - " (дефис с пробелами), разбиваем на пункты
+                // Якщо текст містить " - " (дефіс з пробілами), розбиваємо на пункти
                 if (formattedFeatures.includes(' - ')) {
                     formattedFeatures = formattedFeatures
                         .split(' - ')
                         .map((item, index) => {
                             if (index === 0) {
-                                // Первый элемент может содержать заголовок
+                                // Перший елемент може містити заголовок
                                 return item.trim();
                             } else {
-                                // Остальные элементы форматируем как пункты списка
+                                // Решту елементів форматуємо як пункти списку
                                 return `- ${item.trim()}`;
                             }
                         })
@@ -1035,7 +1035,7 @@
                 
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">⚙️</span>Морфологические особенности:</h4>
+                        <h4><span class="section-icon">⚙️</span>Морфологічні особливості:</h4>
                         <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedFeatures)}</p>
                     </div>
                 `;
@@ -1058,23 +1058,23 @@
             if (analysisData.zone_analysis) {
                 resultsHTML += `
                     <div class="analysis-card fade-in">
-                        <h3>🗺️ Зональный анализ</h3>
+                        <h3>🗺️ Зональний аналіз</h3>
                         <div class="zone-grid">
                             <div class="zone-card">
-                                <h4>Передняя зона (Сердце/Легкие)</h4>
-                                <p>${analysisData.zone_analysis.anterior || 'Не указано'}</p>
+                                <h4>Передня зона (Серце/Легені)</h4>
+                                <p>${analysisData.zone_analysis.anterior || 'Не вказано'}</p>
                             </div>
                             <div class="zone-card">
-                                <h4>Средняя зона (Пищеварение)</h4>
-                                <p>${analysisData.zone_analysis.middle || 'Не указано'}</p>
+                                <h4>Середня зона (Травлення)</h4>
+                                <p>${analysisData.zone_analysis.middle || 'Не вказано'}</p>
                             </div>
                             <div class="zone-card">
-                                <h4>Задняя зона (Почки)</h4>
-                                <p>${analysisData.zone_analysis.posterior || 'Не указано'}</p>
+                                <h4>Задня зона (Нирки)</h4>
+                                <p>${analysisData.zone_analysis.posterior || 'Не вказано'}</p>
                             </div>
                             <div class="zone-card">
-                                <h4>Боковые зоны (Печень)</h4>
-                                <p>${analysisData.zone_analysis.lateral || 'Не указано'}</p>
+                                <h4>Бічні зони (Печінка)</h4>
+                                <p>${analysisData.zone_analysis.lateral || 'Не вказано'}</p>
                             </div>
                         </div>
                     </div>
@@ -1085,7 +1085,7 @@
             if (analysisData.health_interpretation || analysisData.overall_health_score) {
                 resultsHTML += `
                     <div class="analysis-card fade-in">
-                        <h3>🏥 Wellness Оценка</h3>
+                        <h3>🏥 Wellness Оцінка</h3>
                 `;
                 
                 if (analysisData.health_interpretation) {
@@ -1093,7 +1093,7 @@
                 }
                 
                 if (analysisData.overall_health_score) {
-                    resultsHTML += `<p><strong>Общая оценка:</strong> ${analysisData.overall_health_score}</p>`;
+                    resultsHTML += `<p><strong>Загальна оцінка:</strong> ${analysisData.overall_health_score}</p>`;
                 }
                 
                 resultsHTML += `</div>`;
@@ -1103,13 +1103,13 @@
             if (analysisData.wellness_recommendations || analysisData.lifestyle_advice) {
                 resultsHTML += `
                     <div class="analysis-card fade-in">
-                        <h3>🌱 Персональные рекомендации</h3>
+                        <h3>🌱 Персональні рекомендації</h3>
                 `;
                 
                 if (analysisData.wellness_recommendations) {
                     resultsHTML += `
                         <div class="recommendation-section">
-                            <h4>Рекомендуемые продукты</h4>
+                            <h4>Рекомендовані продукти</h4>
                             <p>${analysisData.wellness_recommendations}</p>
                         </div>
                     `;
@@ -1118,7 +1118,7 @@
                 if (analysisData.lifestyle_advice) {
                     resultsHTML += `
                         <div class="recommendation-section">
-                            <h4>Образ жизни</h4>
+                            <h4>Спосіб життя</h4>
                             <p>${analysisData.lifestyle_advice}</p>
                         </div>
                     `;
@@ -1218,11 +1218,11 @@
                         return await startCamera('environment');
                     } catch (fallbackError) {
                         console.error('Fallback camera also failed:', fallbackError);
-                        showError('Не удается получить доступ к камере. Разрешите доступ в настройках браузера.');
+                        showError('Не вдається отримати доступ до камери. Дозвольте доступ у налаштуваннях браузера.');
                         return false;
                     }
                 } else {
-                    showError('Камера недоступна. Используйте загрузку файла.');
+                    showError('Камера недоступна. Використовуйте завантаження файлу.');
                     return false;
                 }
             }
@@ -1270,7 +1270,7 @@
                     document.getElementById('cameraInterface').style.display = 'none';
                     document.getElementById('photoPreview').style.display = 'flex';
                 } else {
-                    showError('Ошибка при создании фото');
+                    showError('Помилка при створенні фото');
                 }
             }, 'image/jpeg', 0.9);
         }
@@ -1281,7 +1281,7 @@
             // Показываем индикатор переключения
             const hintElement = document.querySelector('.camera-hint');
             const originalHint = hintElement.textContent;
-            hintElement.textContent = 'Переключение камеры...';
+            hintElement.textContent = 'Перемикання камери...';
             
             try {
                 await startCamera(newFacingMode);
@@ -1290,7 +1290,7 @@
             } catch (error) {
                 console.error('Failed to switch camera:', error);
                 hintElement.textContent = originalHint;
-                showError('Не удалось переключить камеру');
+                showError('Не вдалося перемкнути камеру');
             }
         }
 
@@ -1325,7 +1325,7 @@
             cameraInterface.style.display = 'flex';
             const hintElement = document.querySelector('.camera-hint');
             const originalHint = hintElement.textContent;
-            hintElement.textContent = 'Запуск камеры...';
+            hintElement.textContent = 'Запуск камери...';
             
             try {
                 const success = await startCamera('user'); // Start with front camera
@@ -1394,7 +1394,7 @@
         // Detailed analysis button
         detailedAnalysisBtn.addEventListener('click', async () => {
             if (!currentImageFile) {
-                showError('Пожалуйста, выберите изображение для анализа');
+                showError('Будь ласка, оберіть зображення для аналізу');
                 return;
             }
 
@@ -1407,21 +1407,21 @@
             clearResults();
 
             try {
-                showSuccess('Загружаем изображение...');
+                showSuccess('Завантажуємо зображення...');
                 const uploadResult = await uploadFile(currentImageFile);
                 uploadedImageUrl = uploadResult.url;
 
-                showSuccess('Проводим детальный анализ...');
+                showSuccess('Проводимо детальний аналіз...');
                 const analysisResult = await analyzeImageDetailed(uploadedImageUrl, analysisId);
 
                 if (analysisId === currentAnalysisId) {
                     displayDetailedResults(analysisResult);
-                    showSuccess('Детальный анализ завершен!');
+                    showSuccess('Детальний аналіз завершено!');
                 }
 
             } catch (error) {
                 console.error('Detailed analysis error:', error);
-                showError(error.message || 'Ошибка детального анализа');
+                showError(error.message || 'Помилка детального аналізу');
             } finally {
                 btn.disabled = false;
                 spinner.style.display = 'none';
@@ -1431,7 +1431,7 @@
         // Comprehensive analysis button
         comprehensiveAnalysisBtn.addEventListener('click', async () => {
             if (!currentImageFile) {
-                showError('Пожалуйста, выберите изображение для анализа');
+                showError('Будь ласка, оберіть зображення для аналізу');
                 return;
             }
 
@@ -1444,21 +1444,21 @@
             clearResults();
 
             try {
-                showSuccess('Загружаем изображение...');
+                showSuccess('Завантажуємо зображення...');
                 const uploadResult = await uploadFile(currentImageFile);
                 uploadedImageUrl = uploadResult.url;
 
-                showSuccess('Проводим полный анализ...');
+                showSuccess('Проводимо повний аналіз...');
                 const analysisResult = await analyzeImageComprehensive(uploadedImageUrl, analysisId);
 
                 if (analysisId === currentAnalysisId) {
                     displayComprehensiveResults(analysisResult);
-                    showSuccess('Полный анализ завершен!');
+                    showSuccess('Повний аналіз завершено!');
                 }
 
             } catch (error) {
                 console.error('Comprehensive analysis error:', error);
-                showError(error.message || 'Ошибка полного анализа');
+                showError(error.message || 'Помилка повного аналізу');
             } finally {
                 btn.disabled = false;
                 spinner.style.display = 'none';
