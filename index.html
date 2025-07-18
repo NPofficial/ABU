@@ -297,29 +297,20 @@
             }
         }
 
-        .analysis-meta {
-            background: #f8f9ff;
-            border-radius: 10px;
-            padding: 15px;
+        .recommendation-section {
             margin-bottom: 20px;
-            text-align: center;
-            border: 1px solid #e8f2ff;
         }
 
-        .analysis-meta p {
-            margin: 5px 0;
-            font-size: 0.9rem;
-            color: #666;
+        .recommendation-section:last-child {
+            margin-bottom: 0;
         }
 
-        .model-badge {
-            display: inline-block;
-            background: #667eea;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
+        .recommendation-section h4 {
+            color: #4a90e2;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #e8f2ff;
+            padding-bottom: 5px;
         }
 
         @media (max-width: 768px) {
@@ -533,16 +524,7 @@
 
         // Display detailed results
         function displayDetailedResults(analysisData) {
-            const modelUsed = analysisData.model_used || 'Claude AI';
-            const timestamp = new Date().toLocaleString('ru-RU');
-            
             let resultsHTML = `
-                <div class="analysis-meta">
-                    <p><strong>Тип анализа:</strong> Детальный морфологический</p>
-                    <p><strong>Время:</strong> ${timestamp}</p>
-                    <p><strong>Модель:</strong> <span class="model-badge">${modelUsed}</span></p>
-                </div>
-
                 <div class="analysis-card fade-in">
                     <h3>🔬 Детальный анализ</h3>
                     <p>${analysisData.detailed_analysis || 'Анализ не доступен'}</p>
@@ -577,16 +559,7 @@
 
         // Display comprehensive results
         function displayComprehensiveResults(analysisData) {
-            const modelUsed = analysisData.model_used || 'Claude AI';
-            const timestamp = new Date().toLocaleString('ru-RU');
-            
-            let resultsHTML = `
-                <div class="analysis-meta">
-                    <p><strong>Тип анализа:</strong> Полный зональный + wellness</p>
-                    <p><strong>Время:</strong> ${timestamp}</p>
-                    <p><strong>Модель:</strong> <span class="model-badge">${modelUsed}</span></p>
-                </div>
-            `;
+            let resultsHTML = '';
 
             if (analysisData.zone_analysis) {
                 resultsHTML += `
@@ -614,40 +587,50 @@
                 `;
             }
 
-            if (analysisData.health_interpretation) {
+            // Объединенный блок wellness оценки (ЗАДАЧА 2)
+            if (analysisData.health_interpretation || analysisData.overall_health_score) {
                 resultsHTML += `
                     <div class="analysis-card fade-in">
-                        <h3>💡 Wellness интерпретация</h3>
-                        <p>${analysisData.health_interpretation}</p>
-                    </div>
+                        <h3>🏥 Wellness Оценка</h3>
                 `;
+                
+                if (analysisData.health_interpretation) {
+                    resultsHTML += `<p>${analysisData.health_interpretation}</p>`;
+                }
+                
+                if (analysisData.overall_health_score) {
+                    resultsHTML += `<p><strong>Общая оценка:</strong> ${analysisData.overall_health_score}</p>`;
+                }
+                
+                resultsHTML += `</div>`;
             }
 
-            if (analysisData.wellness_recommendations) {
+            // Объединенный блок рекомендаций (ЗАДАЧА 3)
+            if (analysisData.wellness_recommendations || analysisData.lifestyle_advice) {
                 resultsHTML += `
                     <div class="analysis-card fade-in">
-                        <h3>🌱 Wellness рекомендации</h3>
-                        <p>${analysisData.wellness_recommendations}</p>
-                    </div>
+                        <h3>🌱 Персональные рекомендации</h3>
                 `;
-            }
-
-            if (analysisData.lifestyle_advice) {
-                resultsHTML += `
-                    <div class="analysis-card fade-in">
-                        <h3>🎯 Рекомендации по образу жизни</h3>
-                        <p>${analysisData.lifestyle_advice}</p>
-                    </div>
-                `;
-            }
-
-            if (analysisData.overall_health_score) {
-                resultsHTML += `
-                    <div class="analysis-card fade-in">
-                        <h3>🏆 Общая оценка здоровья</h3>
-                        <p><strong>Оценка:</strong> ${analysisData.overall_health_score}</p>
-                    </div>
-                `;
+                
+                if (analysisData.wellness_recommendations) {
+                    resultsHTML += `
+                        <div class="recommendation-section">
+                            <h4>Рекомендуемые продукты</h4>
+                            <p>${analysisData.wellness_recommendations}</p>
+                        </div>
+                    `;
+                }
+                
+                if (analysisData.lifestyle_advice) {
+                    resultsHTML += `
+                        <div class="recommendation-section">
+                            <h4>Образ жизни</h4>
+                            <p>${analysisData.lifestyle_advice}</p>
+                        </div>
+                    `;
+                }
+                
+                resultsHTML += `</div>`;
             }
 
             analysisResults.innerHTML = resultsHTML;
