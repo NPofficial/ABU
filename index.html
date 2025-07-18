@@ -1054,6 +1054,60 @@
             });
         }
 
+        // Main analysis function
+        async function performAnalysis(type) {
+            if (!currentImageFile) {
+                alert('Спочатку завантажте зображення');
+                return;
+            }
+
+            console.log(`Starting ${type} analysis...`);
+            
+            try {
+                // Show analysis progress
+                analysisSection.style.display = 'none';
+                analysisProgress.style.display = 'block';
+                updateStatus('analyzing');
+                
+                // Update progress text
+                progressTitle.textContent = type === 'detailed' ? 'Детальний аналіз...' : 'Повний аналіз...';
+                progressStatus.textContent = 'Завантаження зображення...';
+                
+                // Upload file first
+                console.log('Uploading file...');
+                progressStatus.textContent = 'Завантаження на сервер...';
+                await uploadFile();
+                
+                // Start analysis
+                console.log('Starting analysis...');
+                progressStatus.textContent = 'Аналіз зображення...';
+                
+                // Simulate progress
+                let progress = 0;
+                const progressInterval = setInterval(() => {
+                    progress += 5;
+                    analysisProgressBar.style.width = progress + '%';
+                    if (progress >= 90) {
+                        clearInterval(progressInterval);
+                    }
+                }, 500);
+                
+                // Perform actual analysis
+                await performActualAnalysis(type);
+                
+                // Complete progress
+                clearInterval(progressInterval);
+                analysisProgressBar.style.width = '100%';
+                
+            } catch (error) {
+                console.error('Analysis error:', error);
+                analysisProgress.style.display = 'none';
+                analysisSection.style.display = 'block';
+                updateStatus('idle');
+                alert('Помилка аналізу: ' + error.message);
+            }
+        }
+
         // Upload file to Cloudinary
         async function uploadFile() {
             const formData = new FormData();
@@ -1654,6 +1708,19 @@
         }
         
         console.log('Wellness Analyzer initialized with modern design');
+        
+        // Add test function to window for debugging
+        window.testAnalysis = function(type) {
+            console.log(`Testing ${type} analysis...`);
+            performAnalysis(type || 'detailed');
+        };
+        
+        // Also expose button references for debugging
+        window.debugButtons = {
+            detailed: detailedAnalysisBtn,
+            comprehensive: comprehensiveAnalysisBtn,
+            section: analysisSection
+        };
     </script>
 </body>
 </html>
