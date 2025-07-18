@@ -152,23 +152,7 @@
             display: none;
         }
 
-        .preview-section {
-            display: none;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        }
 
-        .preview-image {
-            max-width: 100%;
-            max-height: 400px;
-            border-radius: 15px;
-            display: block;
-            margin: 0 auto 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
 
         /* Рекомендація та кнопки */
         .recommendation-banner {
@@ -273,40 +257,9 @@
             color: #6b7280;
         }
 
-        .loading-spinner {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 2px solid transparent;
-            border-top: 2px solid #ffffff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        .message {
-            display: none;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 10px;
-            text-align: center;
-            font-weight: 500;
-        }
-
-        .error-message {
-            background: #ffe6e6;
-            color: #d63031;
-            border: 1px solid #fab1a0;
-        }
-
-        .success-message {
-            background: #e6ffe6;
-            color: #00b894;
-            border: 1px solid #81ecec;
         }
 
         .results-section {
@@ -950,28 +903,7 @@
             </div>
         </div>
 
-        <section class="preview-section" id="previewSection">
-            <img id="previewImage" class="preview-image" alt="Попередній перегляд">
-            
-            <div class="analysis-buttons">
-                <button class="analysis-btn" id="detailedAnalysisBtn">
-                    <div class="loading-spinner" id="detailedSpinner"></div>
-                    <div class="btn-title">🔬 Детальний аналіз</div>
-                    <div class="btn-description">Морфологічний опис поверхні, кольору, текстури, нальотів</div>
-                    <div class="btn-time">~15 секунд</div>
-                </button>
-                
-                <button class="analysis-btn" id="comprehensiveAnalysisBtn">
-                    <div class="loading-spinner" id="comprehensiveSpinner"></div>
-                    <div class="btn-title">🎯 Повний аналіз</div>
-                    <div class="btn-description">Зональна діагностика + wellness рекомендації</div>
-                    <div class="btn-time">~15 секунд</div>
-                </button>
-            </div>
-        </section>
 
-        <div class="message" id="errorMessage"></div>
-        <div class="message" id="successMessage"></div>
 
         <section class="results-section" id="resultsSection">
             <div class="results-header">
@@ -1038,24 +970,26 @@
             return `analysis_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
         }
 
-        // Show/hide messages
-        function showError(message) {
-            errorMessage.textContent = message;
-            errorMessage.style.display = 'block';
-            successMessage.style.display = 'none';
-            setTimeout(() => { errorMessage.style.display = 'none'; }, 5000);
-        }
 
-        function showSuccess(message) {
-            successMessage.textContent = message;
-            successMessage.style.display = 'block';
-            errorMessage.style.display = 'none';
-            setTimeout(() => { successMessage.style.display = 'none'; }, 3000);
-        }
 
         function clearResults() {
-            resultsSection.style.display = 'none';
-            analysisResults.innerHTML = '';
+            if (resultsSection) {
+                resultsSection.style.display = 'none';
+            }
+            if (analysisResults) {
+                analysisResults.innerHTML = '';
+            }
+        }
+
+        // Show error alert
+        function showError(message) {
+            alert('Помилка: ' + message);
+            console.error('Error:', message);
+        }
+
+        // Show success alert  
+        function showSuccess(message) {
+            console.log('Success:', message);
         }
 
         // Update status indicator
@@ -1108,6 +1042,7 @@
                     uploadProgress.style.display = 'none';
                     analysisSection.style.display = 'block';
                     updateStatus('idle');
+                    console.log('File upload completed, analysis buttons should be visible');
                 }
             }, 100);
 
@@ -1174,7 +1109,9 @@
                     displayComprehensiveResults(result);
                 }
                 
-                resultsSection.style.display = 'block';
+                if (resultsSection) {
+                    resultsSection.style.display = 'block';
+                }
                 
             } catch (error) {
                 console.error('Analysis error:', error);
@@ -1661,11 +1598,26 @@
         });
 
         // Analysis button event listeners
-        detailedAnalysisBtn.addEventListener('click', () => performAnalysis('detailed'));
-        comprehensiveAnalysisBtn.addEventListener('click', () => performAnalysis('comprehensive'));
+        detailedAnalysisBtn.addEventListener('click', () => {
+            console.log('Detailed analysis button clicked');
+            performAnalysis('detailed');
+        });
+        
+        comprehensiveAnalysisBtn.addEventListener('click', () => {
+            console.log('Comprehensive analysis button clicked');
+            performAnalysis('comprehensive');
+        });
 
         // Initialize status
         updateStatus('idle');
+        
+        // Debug: Check if elements exist
+        console.log('Elements check:', {
+            detailedAnalysisBtn: !!detailedAnalysisBtn,
+            comprehensiveAnalysisBtn: !!comprehensiveAnalysisBtn,
+            analysisSection: !!analysisSection,
+            uploadArea: !!uploadArea
+        });
         
         console.log('Wellness Analyzer initialized with modern design');
     </script>
