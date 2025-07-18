@@ -1110,30 +1110,49 @@
 
         // Upload file to Cloudinary
         async function uploadFile() {
+            if (!currentImageFile) {
+                throw new Error('Файл не обраний');
+            }
+
             const formData = new FormData();
             formData.append('image', currentImageFile);
 
-            const response = await fetch('/.netlify/functions/upload', {
+            console.log('Uploading file to server...', currentImageFile.name);
+
+            const response = await fetch('/upload', {
                 method: 'POST',
                 body: formData
             });
 
             if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Помилка завантаження файлу');
+                const errorText = await response.text();
+                console.error('Upload error:', errorText);
+                throw new Error(`Помилка завантаження файлу: ${response.status} ${response.statusText}`);
             }
 
             const result = await response.json();
+            console.log('Upload result:', result);
+            
+            if (!result.imageUrl) {
+                throw new Error('Не отримано URL зображення від сервера');
+            }
+
             uploadedImageUrl = result.imageUrl;
+            console.log('Image uploaded successfully:', uploadedImageUrl);
             return result;
         }
 
         // Perform actual analysis after progress simulation
         async function performActualAnalysis(type) {
             try {
+                if (!uploadedImageUrl) {
+                    throw new Error('Image URL not available. Upload may have failed.');
+                }
+
                 const endpoint = type === 'detailed' ? 'analyze-detailed' : 'analyze-comprehensive';
+                console.log(`Calling ${endpoint} with imageUrl:`, uploadedImageUrl);
                 
-                const response = await fetch(`/.netlify/functions/${endpoint}`, {
+                const response = await fetch(`/${endpoint}`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1147,11 +1166,13 @@
                 });
 
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Помилка аналізу');
+                    const errorText = await response.text();
+                    console.error('Analysis error response:', errorText);
+                    throw new Error(`Помилка аналізу: ${response.status} ${response.statusText}`);
                 }
 
                 const result = await response.json();
+                console.log('Analysis result:', result);
                 
                 // Hide progress and show results
                 analysisProgress.style.display = 'none';
