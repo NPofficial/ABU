@@ -1597,27 +1597,61 @@
             }
         });
 
-        // Analysis button event listeners
-        detailedAnalysisBtn.addEventListener('click', () => {
-            console.log('Detailed analysis button clicked');
-            performAnalysis('detailed');
-        });
+        // Analysis button event listeners with better error handling
+        if (detailedAnalysisBtn) {
+            detailedAnalysisBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Detailed analysis button clicked');
+                performAnalysis('detailed');
+            });
+        } else {
+            console.error('detailedAnalysisBtn not found!');
+        }
         
-        comprehensiveAnalysisBtn.addEventListener('click', () => {
-            console.log('Comprehensive analysis button clicked');
-            performAnalysis('comprehensive');
-        });
+        if (comprehensiveAnalysisBtn) {
+            comprehensiveAnalysisBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log('Comprehensive analysis button clicked');
+                performAnalysis('comprehensive');
+            });
+        } else {
+            console.error('comprehensiveAnalysisBtn not found!');
+        }
 
         // Initialize status
         updateStatus('idle');
         
-        // Debug: Check if elements exist
+        // Debug: Check if elements exist and add fallback event listeners
         console.log('Elements check:', {
             detailedAnalysisBtn: !!detailedAnalysisBtn,
             comprehensiveAnalysisBtn: !!comprehensiveAnalysisBtn,
             analysisSection: !!analysisSection,
             uploadArea: !!uploadArea
         });
+
+        // Fallback: try to find buttons by class if ID doesn't work
+        if (!detailedAnalysisBtn || !comprehensiveAnalysisBtn) {
+            console.log('Trying to find buttons by class...');
+            const allButtons = document.querySelectorAll('.analysis-btn');
+            console.log('Found buttons:', allButtons.length);
+            
+            allButtons.forEach((btn, index) => {
+                console.log(`Button ${index}:`, btn.id, btn.textContent);
+                if (btn.textContent.includes('Детальний')) {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        console.log('Detailed analysis button clicked (fallback)');
+                        performAnalysis('detailed');
+                    });
+                } else if (btn.textContent.includes('Повний')) {
+                    btn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        console.log('Comprehensive analysis button clicked (fallback)');
+                        performAnalysis('comprehensive');
+                    });
+                }
+            });
+        }
         
         console.log('Wellness Analyzer initialized with modern design');
     </script>
