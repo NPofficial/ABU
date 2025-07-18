@@ -458,6 +458,16 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        /* Зеркалирование для фронтальной камеры */
+        #cameraVideo.front-camera {
+            transform: scaleX(-1);
+        }
+
+        #cameraVideo.back-camera {
+            transform: scaleX(1);
         }
 
         .tongue-guide {
@@ -1158,6 +1168,15 @@
                 videoElement.srcObject = currentStream;
                 currentFacingMode = facingMode;
 
+                // Применяем правильное зеркалирование в зависимости от камеры
+                if (facingMode === 'user') {
+                    videoElement.className = 'front-camera';
+                    console.log('Applied front camera mirroring');
+                } else {
+                    videoElement.className = 'back-camera';
+                    console.log('Applied back camera normal view');
+                }
+
                 // Wait for video to load
                 return new Promise((resolve, reject) => {
                     videoElement.onloadedmetadata = () => {
@@ -1220,8 +1239,17 @@
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
 
-            // Draw video frame to canvas
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Для фронтальной камеры нужно отразить изображение обратно при сохранении
+            if (currentFacingMode === 'user') {
+                // Отражаем изображение горизонтально для правильного сохранения
+                context.scale(-1, 1);
+                context.drawImage(video, -canvas.width, 0, canvas.width, canvas.height);
+                console.log('Captured front camera photo with correction');
+            } else {
+                // Для задней камеры сохраняем как есть
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                console.log('Captured back camera photo normally');
+            }
 
             // Convert to blob
             canvas.toBlob((blob) => {
@@ -1244,7 +1272,21 @@
 
         async function switchCamera() {
             const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
-            await startCamera(newFacingMode);
+            
+            // Показываем индикатор переключения
+            const hintElement = document.querySelector('.camera-hint');
+            const originalHint = hintElement.textContent;
+            hintElement.textContent = 'Переключение камеры...';
+            
+            try {
+                await startCamera(newFacingMode);
+                hintElement.textContent = originalHint;
+                console.log('Camera switched to:', newFacingMode);
+            } catch (error) {
+                console.error('Failed to switch camera:', error);
+                hintElement.textContent = originalHint;
+                showError('Не удалось переключить камеру');
+            }
         }
 
         function usePhoto() {
