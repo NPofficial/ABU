@@ -612,44 +612,40 @@
                     <h3>🔬 Комплексный визуальный анализ</h3>
             `;
 
-            // Общая характеристика с улучшенным форматированием
+            // Общая характеристика с разделением на строки
             if (analysisData.detailed_analysis) {
-                // Разбиваем длинный текст на короткие абзацы
-                let formattedAnalysis = analysisData.detailed_analysis
+                let formattedAnalysis = analysisData.detailed_analysis;
+                
+                // Разбиваем текст на предложения и форматируем как список
+                formattedAnalysis = formattedAnalysis
                     .split('. ')
-                    .reduce((acc, sentence, index) => {
-                        if (index % 2 === 0 && index > 0) {
-                            acc += '</p><p>';
-                        }
-                        acc += sentence + (index < analysisData.detailed_analysis.split('. ').length - 1 ? '. ' : '');
-                        return acc;
-                    }, '<p>') + '</p>';
+                    .filter(sentence => sentence.trim().length > 10)
+                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                    .join('\n\n');
 
                 resultsHTML += `
                     <div class="mini-card">
                         <h4><span class="section-icon">📋</span>Общая характеристика:</h4>
-                        ${enhanceTextWithAccents(formattedAnalysis)}
+                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedAnalysis)}</p>
                     </div>
                 `;
             }
 
-            // Визуальные находки с улучшенным форматированием
+            // Визуальные находки с разделением на строки
             if (analysisData.visual_findings) {
-                // Разбиваем на короткие абзацы
-                let formattedFindings = analysisData.visual_findings
+                let formattedFindings = analysisData.visual_findings;
+                
+                // Разбиваем текст на предложения и форматируем как список
+                formattedFindings = formattedFindings
                     .split('. ')
-                    .reduce((acc, sentence, index) => {
-                        if (index % 2 === 0 && index > 0) {
-                            acc += '</p><p>';
-                        }
-                        acc += sentence + (index < analysisData.visual_findings.split('. ').length - 1 ? '. ' : '');
-                        return acc;
-                    }, '<p>') + '</p>';
+                    .filter(sentence => sentence.trim().length > 10)
+                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                    .join('\n\n');
 
                 resultsHTML += `
                     <div class="mini-card">
                         <h4><span class="section-icon">🔍</span>Ключевые находки:</h4>
-                        ${enhanceTextWithAccents(formattedFindings)}
+                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedFindings)}</p>
                     </div>
                 `;
             }
