@@ -26,7 +26,7 @@ exports.handler = async (event, context) => {
         return {
             statusCode: 405,
             headers,
-            body: JSON.stringify({ error: 'Method not allowed' })
+            body: JSON.stringify({ error: 'Метод не дозволений' })
         };
     }
 
@@ -47,7 +47,7 @@ exports.handler = async (event, context) => {
             return {
                 statusCode: 500,
                 headers,
-                body: JSON.stringify({ error: 'Server configuration error' })
+                body: JSON.stringify({ error: 'Помилка конфігурації сервера' })
             };
         }
 
@@ -61,7 +61,7 @@ exports.handler = async (event, context) => {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ 
-                    error: 'Invalid content type. Expected multipart/form-data',
+                    error: 'Невірний тип контенту. Очікується multipart/form-data',
                     received: contentType
                 })
             };
@@ -79,7 +79,7 @@ exports.handler = async (event, context) => {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ 
-                    error: 'Missing boundary in content-type',
+                    error: 'Відсутня границя в типі контенту',
                     contentType: contentType
                 })
             };
@@ -101,7 +101,7 @@ exports.handler = async (event, context) => {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ 
-                    error: 'Failed to parse uploaded file',
+                    error: 'Не вдалося обробити завантажений файл',
                     details: parseError.message
                 })
             };
@@ -113,7 +113,7 @@ exports.handler = async (event, context) => {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ 
-                    error: 'No image file found in upload',
+                    error: 'Файл зображення не знайдено у завантаженні',
                     availableParts: parts.map(p => ({ name: p.name, dataLength: p.data?.length }))
                 })
             };
@@ -127,7 +127,7 @@ exports.handler = async (event, context) => {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: `Invalid file type: ${fileType}. Only JPG, PNG, WebP allowed` })
+                body: JSON.stringify({ error: `Невірний тип файлу: ${fileType}. Дозволені лише JPG, PNG, WebP` })
             };
         }
 
@@ -135,7 +135,7 @@ exports.handler = async (event, context) => {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: `File too large: ${Math.round(file.data.length / 1024 / 1024)}MB. Max 10MB allowed` })
+                body: JSON.stringify({ error: `Файл занадто великий: ${Math.round(file.data.length / 1024 / 1024)}МБ. Максимум 10МБ` })
             };
         }
 
@@ -240,7 +240,7 @@ exports.handler = async (event, context) => {
             statusCode: 500,
             headers,
             body: JSON.stringify({ 
-                error: 'Upload failed', 
+                error: 'Завантаження не вдалося', 
                 details: error.message 
             })
         };
