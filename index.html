@@ -379,6 +379,231 @@
             margin-right: 8px;
         }
 
+        /* Стили для камеры */
+        .upload-options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .camera-launch-btn {
+            background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(39, 174, 96, 0.3);
+        }
+
+        .camera-launch-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(39, 174, 96, 0.4);
+        }
+
+        .camera-icon {
+            font-size: 1.5rem;
+        }
+
+        /* Полноэкранная камера */
+        .camera-interface {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+        }
+
+        .camera-header {
+            position: absolute;
+            top: env(safe-area-inset-top, 20px);
+            left: 0;
+            right: 0;
+            z-index: 10001;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .camera-hint {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            font-weight: 500;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 12px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .camera-container {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        #cameraVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .tongue-guide {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40vw;
+            max-width: 300px;
+            min-width: 200px;
+            z-index: 10000;
+            pointer-events: none;
+        }
+
+        .tongue-outline {
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.3));
+        }
+
+        .camera-controls {
+            position: absolute;
+            bottom: env(safe-area-inset-bottom, 40px);
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            padding: 0 40px;
+            z-index: 10001;
+        }
+
+        .control-btn {
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .capture-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 2rem;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .capture-btn:active {
+            transform: scale(0.95);
+        }
+
+        .cancel-btn, .switch-btn {
+            width: 60px;
+            height: 60px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 1rem;
+        }
+
+        .cancel-btn:hover, .switch-btn:hover {
+            background: rgba(0, 0, 0, 0.8);
+            transform: scale(1.05);
+        }
+
+        /* Превью фото */
+        .photo-preview {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            padding: env(safe-area-inset-top, 20px) 20px 20px 20px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .preview-title {
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .preview-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .preview-img {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .preview-controls {
+            padding: 20px 20px calc(env(safe-area-inset-bottom, 20px) + 20px) 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .preview-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .retake-btn {
+            background: rgba(231, 76, 60, 0.9);
+            color: white;
+        }
+
+        .use-btn {
+            background: rgba(46, 204, 113, 0.9);
+            color: white;
+        }
+
+        .preview-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Адаптивные стили */
         @media (max-width: 768px) {
             .analysis-buttons {
                 grid-template-columns: 1fr;
@@ -388,6 +613,71 @@
             .analysis-btn {
                 min-height: 100px;
                 padding: 15px;
+            }
+
+            .upload-options {
+                gap: 15px;
+            }
+
+            .camera-launch-btn {
+                padding: 18px;
+                font-size: 1rem;
+            }
+
+            .tongue-guide {
+                width: 50vw;
+                max-width: 250px;
+            }
+
+            .camera-controls {
+                gap: 30px;
+                bottom: env(safe-area-inset-bottom, 30px);
+            }
+
+            .capture-btn {
+                width: 70px;
+                height: 70px;
+                font-size: 1.8rem;
+            }
+
+            .cancel-btn, .switch-btn {
+                width: 50px;
+                height: 50px;
+            }
+        }
+
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .tongue-guide {
+                width: 350px;
+            }
+
+            .camera-controls {
+                gap: 50px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .camera-container {
+                max-width: 600px;
+                max-height: 80vh;
+                margin: 0 auto;
+                border-radius: 20px;
+                overflow: hidden;
+            }
+
+            #cameraVideo {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .tongue-guide {
+                width: 300px;
+            }
+
+            .camera-controls {
+                position: fixed;
+                bottom: 60px;
             }
         }
     </style>
@@ -400,13 +690,55 @@
         </header>
 
         <section class="upload-section">
-            <div class="upload-area" id="uploadArea">
-                <span class="upload-icon">📁</span>
-                <div class="upload-text">Перетащите изображение сюда или нажмите для выбора</div>
-                <div class="upload-hint">Поддерживаются форматы: JPG, PNG, WebP (до 10 МБ)</div>
-                <input type="file" id="fileInput" class="file-input" accept="image/*">
+            <div class="upload-options">
+                <div class="upload-area" id="uploadArea">
+                    <span class="upload-icon">📁</span>
+                    <div class="upload-text">Перетащите изображение сюда или нажмите для выбора</div>
+                    <div class="upload-hint">Поддерживаются форматы: JPG, PNG, WebP (до 10 МБ)</div>
+                    <input type="file" id="fileInput" class="file-input" accept="image/*">
+                </div>
+                <button class="camera-launch-btn" id="cameraBtn">
+                    <span class="camera-icon">📷</span>
+                    <span class="camera-text">Сделать фото</span>
+                </button>
             </div>
         </section>
+
+        <!-- Полноэкранная камера -->
+        <div id="cameraInterface" class="camera-interface">
+            <div class="camera-header">
+                <span class="camera-hint">Поместите язык в направляющую рамку</span>
+            </div>
+            <div class="camera-container">
+                <video id="cameraVideo" autoplay playsinline muted></video>
+                <canvas id="cameraCanvas" style="display: none;"></canvas>
+                <div class="tongue-guide">
+                    <svg viewBox="0 0 200 120" class="tongue-outline">
+                        <path d="M100 10 C130 10, 150 30, 150 60 C150 85, 140 100, 120 110 L80 110 C60 100, 50 85, 50 60 C50 30, 70 10, 100 10 Z" 
+                              fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="3" stroke-dasharray="8,4"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="camera-controls">
+                <button id="cancelBtn" class="control-btn cancel-btn">Отмена</button>
+                <button id="captureBtn" class="control-btn capture-btn">📷</button>
+                <button id="switchCameraBtn" class="control-btn switch-btn">🔄</button>
+            </div>
+        </div>
+
+        <!-- Превью сделанного фото -->
+        <div id="photoPreview" class="photo-preview">
+            <div class="preview-header">
+                <span class="preview-title">Предварительный просмотр</span>
+            </div>
+            <div class="preview-container">
+                <img id="previewImg" class="preview-img" alt="Сделанное фото">
+            </div>
+            <div class="preview-controls">
+                <button id="retakeBtn" class="preview-btn retake-btn">Переснять</button>
+                <button id="usePhotoBtn" class="preview-btn use-btn">Использовать</button>
+            </div>
+        </div>
 
         <section class="preview-section" id="previewSection">
             <img id="previewImage" class="preview-image" alt="Предварительный просмотр">
@@ -460,6 +792,11 @@
         let currentImageFile = null;
         let uploadedImageUrl = null;
         let currentAnalysisId = null;
+
+        // Camera variables
+        let currentStream = null;
+        let currentFacingMode = 'user'; // 'user' for front camera, 'environment' for back
+        let capturedImageBlob = null;
 
         // Функция для добавления цветовых акцентов и эмодзи
         function enhanceTextWithAccents(text) {
@@ -776,6 +1113,146 @@
                 resultsSection.scrollIntoView({ behavior: 'smooth' });
             }, 50);
         }
+
+        // Camera functionality
+        async function startCamera(facingMode = 'user') {
+            try {
+                // Stop existing stream
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+
+                const constraints = {
+                    video: {
+                        facingMode: facingMode,
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoElement = document.getElementById('cameraVideo');
+                videoElement.srcObject = currentStream;
+                currentFacingMode = facingMode;
+
+                console.log('Camera started successfully:', facingMode);
+                return true;
+            } catch (error) {
+                console.error('Error starting camera:', error);
+                
+                // Fallback: try different camera
+                if (facingMode === 'user') {
+                    try {
+                        return await startCamera('environment');
+                    } catch (fallbackError) {
+                        console.error('Fallback camera also failed:', fallbackError);
+                        showError('Не удается получить доступ к камере. Проверьте разрешения.');
+                        return false;
+                    }
+                } else {
+                    showError('Камера недоступна. Используйте загрузку файла.');
+                    return false;
+                }
+            }
+        }
+
+        function stopCamera() {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+        }
+
+        function capturePhoto() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.getElementById('cameraCanvas');
+            const context = canvas.getContext('2d');
+
+            // Set canvas dimensions to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+
+            // Draw video frame to canvas
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert to blob
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    capturedImageBlob = blob;
+                    
+                    // Show preview
+                    const previewImg = document.getElementById('previewImg');
+                    const objectURL = URL.createObjectURL(blob);
+                    previewImg.src = objectURL;
+                    
+                    // Hide camera, show preview
+                    document.getElementById('cameraInterface').style.display = 'none';
+                    document.getElementById('photoPreview').style.display = 'flex';
+                } else {
+                    showError('Ошибка при создании фото');
+                }
+            }, 'image/jpeg', 0.9);
+        }
+
+        async function switchCamera() {
+            const newFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+            await startCamera(newFacingMode);
+        }
+
+        function usePhoto() {
+            if (capturedImageBlob) {
+                // Create file from blob
+                const file = new File([capturedImageBlob], 'camera_photo.jpg', {
+                    type: 'image/jpeg',
+                    lastModified: Date.now()
+                });
+
+                handleFileSelect(file);
+                
+                // Hide preview
+                document.getElementById('photoPreview').style.display = 'none';
+                stopCamera();
+            }
+        }
+
+        function retakePhoto() {
+            // Hide preview, show camera
+            document.getElementById('photoPreview').style.display = 'none';
+            document.getElementById('cameraInterface').style.display = 'flex';
+        }
+
+        // Camera event listeners
+        document.getElementById('cameraBtn').addEventListener('click', async () => {
+            const cameraInterface = document.getElementById('cameraInterface');
+            cameraInterface.style.display = 'flex';
+            
+            const success = await startCamera('user'); // Start with front camera
+            if (!success) {
+                cameraInterface.style.display = 'none';
+            }
+        });
+
+        document.getElementById('cancelBtn').addEventListener('click', () => {
+            document.getElementById('cameraInterface').style.display = 'none';
+            stopCamera();
+        });
+
+        document.getElementById('captureBtn').addEventListener('click', capturePhoto);
+        document.getElementById('switchCameraBtn').addEventListener('click', switchCamera);
+        document.getElementById('usePhotoBtn').addEventListener('click', usePhoto);
+        document.getElementById('retakeBtn').addEventListener('click', retakePhoto);
+
+        // Touch events for mobile
+        document.getElementById('cameraVideo').addEventListener('click', () => {
+            // Auto-focus on touch (if supported)
+            if (currentStream) {
+                const videoTrack = currentStream.getVideoTracks()[0];
+                if (videoTrack && videoTrack.getSettings) {
+                    // Focus functionality for supported devices
+                    console.log('Video tap detected');
+                }
+            }
+        });
 
         // Event listeners
         uploadArea.addEventListener('click', () => fileInput.click());
