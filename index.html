@@ -313,6 +313,22 @@
             padding-bottom: 5px;
         }
 
+        .analysis-subsection {
+            margin-bottom: 20px;
+        }
+
+        .analysis-subsection:last-child {
+            margin-bottom: 0;
+        }
+
+        .analysis-subsection h4 {
+            color: #4a90e2;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            border-bottom: 2px solid #e8f2ff;
+            padding-bottom: 5px;
+        }
+
         @media (max-width: 768px) {
             .analysis-buttons {
                 grid-template-columns: 1fr;
@@ -526,28 +542,40 @@
         function displayDetailedResults(analysisData) {
             let resultsHTML = `
                 <div class="analysis-card fade-in">
-                    <h3>🔬 Детальный анализ</h3>
-                    <p>${analysisData.detailed_analysis || 'Анализ не доступен'}</p>
-                </div>
+                    <h3>🔬 Комплексный визуальный анализ</h3>
             `;
 
+            // Общая характеристика
+            if (analysisData.detailed_analysis) {
+                resultsHTML += `
+                    <div class="analysis-subsection">
+                        <h4>📋 Общая характеристика:</h4>
+                        <p>${analysisData.detailed_analysis}</p>
+                    </div>
+                `;
+            }
+
+            // Визуальные находки
             if (analysisData.visual_findings) {
                 resultsHTML += `
-                    <div class="analysis-card fade-in">
-                        <h3>👁️ Визуальные находки</h3>
+                    <div class="analysis-subsection">
+                        <h4>🔍 Визуальные находки:</h4>
                         <p>${analysisData.visual_findings}</p>
                     </div>
                 `;
             }
 
+            // Морфологические особенности
             if (analysisData.morphological_features) {
                 resultsHTML += `
-                    <div class="analysis-card fade-in">
-                        <h3>🧬 Морфологические характеристики</h3>
+                    <div class="analysis-subsection">
+                        <h4>⚙️ Морфологические особенности:</h4>
                         <p>${analysisData.morphological_features}</p>
                     </div>
                 `;
             }
+
+            resultsHTML += `</div>`;
 
             analysisResults.innerHTML = resultsHTML;
             resultsSection.style.display = 'block';
