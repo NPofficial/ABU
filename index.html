@@ -1255,12 +1255,17 @@
             if (analysisData.detailed_analysis) {
                 let formattedAnalysis = analysisData.detailed_analysis;
                 
-                // Разбиваем текст на предложения и форматируем как список
-                formattedAnalysis = formattedAnalysis
-                    .split('. ')
-                    .filter(sentence => sentence.trim().length > 10)
-                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
-                    .join('\n\n');
+                // Проверяем что formattedAnalysis это строка
+                if (typeof formattedAnalysis === 'string' && formattedAnalysis.length > 0) {
+                    // Разбиваем текст на предложения и форматируем как список
+                    formattedAnalysis = formattedAnalysis
+                        .split('. ')
+                        .filter(sentence => sentence.trim().length > 10)
+                        .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                        .join('\n\n');
+                } else {
+                    formattedAnalysis = 'Аналіз недоступний';
+                }
 
                 resultsHTML += `
                     <div class="mini-card">
@@ -1274,12 +1279,17 @@
             if (analysisData.visual_findings) {
                 let formattedFindings = analysisData.visual_findings;
                 
-                // Разбиваем текст на предложения и форматируем как список
-                formattedFindings = formattedFindings
-                    .split('. ')
-                    .filter(sentence => sentence.trim().length > 10)
-                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
-                    .join('\n\n');
+                // Проверяем что formattedFindings это строка
+                if (typeof formattedFindings === 'string' && formattedFindings.length > 0) {
+                    // Разбиваем текст на предложения и форматируем как список
+                    formattedFindings = formattedFindings
+                        .split('. ')
+                        .filter(sentence => sentence.trim().length > 10)
+                        .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                        .join('\n\n');
+                } else {
+                    formattedFindings = 'Знахідки недоступні';
+                }
 
                 resultsHTML += `
                     <div class="mini-card">
@@ -1294,24 +1304,29 @@
                 // Форматируем морфологические особенности в список
                 let formattedFeatures = analysisData.morphological_features;
                 
-                // Прибираємо дублюючий заголовок з тексту якщо він є
-                formattedFeatures = formattedFeatures.replace(/^⚙️\s*Морфологічні особливості:\s*/i, '');
-                formattedFeatures = formattedFeatures.replace(/^Морфологічні особливості:\s*/i, '');
-                
-                // Якщо текст містить " - " (дефіс з пробілами), розбиваємо на пункти
-                if (formattedFeatures.includes(' - ')) {
-                    formattedFeatures = formattedFeatures
-                        .split(' - ')
-                        .map((item, index) => {
-                            if (index === 0) {
-                                // Перший елемент може містити заголовок
-                                return item.trim();
-                            } else {
-                                // Решту елементів форматуємо як пункти списку
-                                return `- ${item.trim()}`;
-                            }
-                        })
-                        .join('\n\n');
+                // Перевіряємо що formattedFeatures це строка перед обробкою
+                if (typeof formattedFeatures === 'string' && formattedFeatures.length > 0) {
+                    // Прибираємо дублюючий заголовок з тексту якщо він є
+                    formattedFeatures = formattedFeatures.replace(/^⚙️\s*Морфологічні особливості:\s*/i, '');
+                    formattedFeatures = formattedFeatures.replace(/^Морфологічні особливості:\s*/i, '');
+                    
+                    // Якщо текст містить " - " (дефіс з пробілами), розбиваємо на пункти
+                    if (formattedFeatures.includes(' - ')) {
+                        formattedFeatures = formattedFeatures
+                            .split(' - ')
+                            .map((item, index) => {
+                                if (index === 0) {
+                                    // Перший елемент може містити заголовок
+                                    return item.trim();
+                                } else {
+                                    // Решту елементів форматуємо як пункти списку
+                                    return `- ${item.trim()}`;
+                                }
+                            })
+                            .join('\n\n');
+                    }
+                } else {
+                    formattedFeatures = 'Морфологічні особливості недоступні';
                 }
                 
                 resultsHTML += `
