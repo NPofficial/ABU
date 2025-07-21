@@ -48,6 +48,7 @@ exports.handler = async (event, context) => {
             };
         }
 
+
         let requestBody;
         try {
             requestBody = JSON.parse(event.body);
@@ -70,61 +71,62 @@ exports.handler = async (event, context) => {
         }
 
         const fetchStartTime = Date.now();
-        console.log('🔄 ПОЛНЫЙ АНАЛИЗ - STEP 1: Fetching image from URL:', imageUrl);
+        console.log('�� ПОЛНЫЙ АНАЛИЗ - STEP 1: Fetching image from URL:', imageUrl);
 
         const anthropic = new Anthropic({
             apiKey: process.env.ANTHROPIC_API_KEY,
         });
 
         // Comprehensive system prompt for zonal analysis and wellness interpretation
-        const COMPREHENSIVE_SYSTEM_PROMPT = `Ти - експерт wellness-діагност з 15-річним досвідом традиційної китайської медицини та сучасних методів діагностики.
+        const COMPREHENSIVE_SYSTEM_PROMPT = `Ты - эксперт wellness-диагност с 15-летним опытом традиционной китайской медицины и современных методов диагностики.
 
-ЗАВДАННЯ: Провести ЗОНАЛЬНИЙ АНАЛІЗ та WELLNESS ІНТЕРПРЕТАЦІЮ на основі детального морфологічного опису.
+ЗАДАЧА: Провести ЗОНАЛЬНЫЙ АНАЛИЗ и WELLNESS ИНТЕРПРЕТАЦИЮ на основе детального морфологического описания.
 
-🎯 ЗОНАЛЬНЕ КАРТУВАННЯ ЗА ТКМ:
-1. ПЕРЕДНЯ ТРЕТИНА (кінчик) → Серце та легені
-   - Cardiovascular система: кровообіг, серцевий ритм
-   - Respiratory система: дихання, оксигенація
+�� ЗОНАЛЬНОЕ КАРТИРОВАНИЕ ПО ТКМ:
+1. ПЕРЕДНЯЯ ТРЕТЬ (кончик) → Сердце и легкие
+   - Cardiovascular система: кровообращение, сердечный ритм
+   - Respiratory система: дыхание, оксигенация
 
-2. СЕРЕДНЯ ТРЕТИНА (центр) → Травна система  
-   - Шлунок, селезінка, підшлункова залоза
-   - Метаболізм, засвоєння поживних речовин
+2. СРЕДНЯЯ ТРЕТЬ (центр) → Пищеварительная система  
+   - Желудок, селезенка, поджелудочная железа
+   - Метаболизм, усвоение питательных веществ
 
-3. ЗАДНЯ ТРЕТИНА (корінь) → Нирки та кишковий тракт
-   - Сечовидільна система, детоксикація
-   - Товстий кишковий тракт, виведення токсинів
+3. ЗАДНЯЯ ТРЕТЬ (корень) → Почки и кишечник
+   - Мочевыделительная система, детоксикация
+   - Толстый кишечник, выведение токсинов
 
-4. БІЧНІ КРАЇ → Печінка та жовчний міхур
-   - Печінкова детоксикація, жовчовиділення
-   - Емоційний баланс, стрес
+4. БОКОВЫЕ КРАЯ → Печень и желчный пузырь
+   - Печеночная детоксикация, желчевыделение
+   - Эмоциональный баланс, стресс
 
-🔬 WELLNESS ІНТЕРПРЕТАЦІЯ:
-- Енергетичний профіль (ці, енергетичні блоки)
-- Метаболічний статус (вогонь травлення)
-- Детоксикаційна функція (елімінація токсинів)
-- Запальний профіль (приховані запалення)
-- Нейровегетативний баланс (симпатика/парасимпатика)
-- Циркуляторний статус (мікроциркуляція, застої)
+�� WELLNESS ИНТЕРПРЕТАЦИЯ:
+- Энергетический профиль (ци, энергетические блоки)
 
-📊 СИСТЕМА ОЦІНКИ:
-- Кожна зона: 0-100 балів
-- Критерії: колір, текстура, нальоти, деформації
-- Обґрунтування: конкретні візуальні знахідки
+- Метаболический статус (огонь пищеварения)
+- Детоксикационная функция (элиминация токсинов)
+- Воспалительный профиль (скрытые воспаления)
+- Нейровегетативный баланс (симпатика/парасимпатика)
+- Циркуляторный статус (микроциркуляция, застои)
 
-ВІДПОВІДЬ СТРОГО у JSON форматі:
+�� СИСТЕМА ОЦЕНКИ:
+- Каждая зона: 0-100 баллов
+- Критерии: цвет, текстура, налеты, деформации
+- Обоснование: конкретные визуальные находки
+
+ОТВЕТЬ СТРОГО в JSON формате:
 {
   "zone_analysis": {
-    "anterior": "ПЕРЕДНЯ ТРЕТИНА (серце/легені) - візуальні знахідки, інтерпретація, оцінка/100, обґрунтування",
-    "middle": "СЕРЕДНЯ ТРЕТИНА (травлення) - візуальні знахідки, інтерпретація, оцінка/100, обґрунтування", 
-    "posterior": "ЗАДНЯ ТРЕТИНА (нирки/кишковий тракт) - візуальні знахідки, інтерпретація, оцінка/100, обґрунтування",
-    "lateral": "БІЧНІ КРАЇ (печінка/жовчний) - візуальні знахідки, інтерпретація, оцінка/100, обґрунтування"
+    "anterior": "ПЕРЕДНЯЯ ТРЕТЬ (сердце/легкие) - визуальные находки, интерпретация, оценка/100, обоснование",
+    "middle": "СРЕДНЯЯ ТРЕТЬ (пищеварение) - визуальные находки, интерпретация, оценка/100, обоснование", 
+    "posterior": "ЗАДНЯЯ ТРЕТЬ (почки/кишечник) - визуальные находки, интерпретация, оценка/100, обоснование",
+    "lateral": "БОКОВЫЕ КРАЯ (печень/желчный) - визуальные находки, интерпретация, оценка/100, обоснование"
   },
-  "health_interpretation": "Wellness інтерпретація на основі всіх зон: енергетичний профіль, метаболізм, детоксикація, запалення, нейробаланс",
-  "wellness_recommendations": "Загальні рекомендації з покращення здоров'я на основі виявлених особливостей",
-  "lifestyle_advice": "Персоналізовані рекомендації: харчування, режим, вправи, стрес-менеджмент",
-  "monitoring": "Конкретні параметри для відстеження динаміки та покращень",
-  "overall_health_score": "X/100 балів з детальним обґрунтуванням на основі всіх зональних оцінок",
-  "disclaimer": "Це wellness аналіз з використанням традиційних методів діагностики, не замінює медичну консультацію. При серйозних симптомах зверніться до лікаря."
+  "health_interpretation": "Wellness интерпретация на основе всех зон: энергетический профиль, метаболизм, детоксикация, воспаления, нейробаланс",
+  "monitoring": "Конкретные параметры для отслеживания динамики и улучшений",
+"wellness_recommendations": "Общие рекомендации по улучшению здоровья на основе выявленных особенностей",
+  "lifestyle_advice": "Персонализированные рекомендации: питание, режим, упражнения, стресс-менеджмент",
+  "overall_health_score": "X/100 баллов с детальным обоснованием на основе всех зональных оценок",
+  "disclaimer": "Это wellness анализ с использованием традиционных методов диагностики, не заменяет медицинскую консультацию. При серьезных симптомах обратитесь к врачу."
 }`;
 
         // Convert image URL to base64
@@ -144,11 +146,12 @@ exports.handler = async (event, context) => {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ error: 'Failed to fetch image from provided URL' })
+
             };
         }
 
         const conversionStartTime = Date.now();
-        console.log('🔄 STEP 2: Converting to base64...');
+        console.log('�� STEP 2: Converting to base64...');
         const base64Image = Buffer.from(imageResponse.data).toString('base64');
         const conversionTime = Date.now() - conversionStartTime;
         console.log(`✅ Base64 conversion completed in ${conversionTime}ms, length: ${base64Image.length} chars`);
@@ -173,7 +176,7 @@ exports.handler = async (event, context) => {
 
         try {
             const analysisStartTime = Date.now();
-            console.log('🔄 STEP 3: Starting Claude 4.0 comprehensive analysis...');
+            console.log('�� STEP 3: Starting Claude 4.0 comprehensive analysis...');
             
             const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
             const temperature = 0.2 + Math.random() * 0.4;
@@ -191,6 +194,7 @@ exports.handler = async (event, context) => {
             const response = await Promise.race([
                 anthropic.messages.create({
                     model: MODELS.PRIMARY,
+
                     max_tokens: 3500,
                     temperature: temperature,
                     top_p: topP,
@@ -219,16 +223,8 @@ exports.handler = async (event, context) => {
             ]);
 
             const analysisTime = Date.now() - analysisStartTime;
-            console.log(`✅ Claude 4.0 comprehensive analysis completed in ${analysisTime}ms`);
-            console.log('Response structure:', typeof response, response?.content?.length || 'no content');
-            
-            if (response && response.content && response.content[0] && response.content[0].text) {
-                analysisResult = response.content[0].text;
-                console.log('Analysis result length:', analysisResult.length, 'chars');
-            } else {
-                console.error('Invalid response structure:', JSON.stringify(response, null, 2));
-                throw new Error('Invalid response structure from Claude');
-            }
+            console.log(`✅ Claude 4.0 comprehensive analysis completed in ${analysisTime}ms, length: ${response.content[0].text.length} chars`);
+            analysisResult = response.content[0].text;
 
         } catch (claude4Error) {
             console.error('Claude 4.0 failed, trying Claude 3.5:', claude4Error.message);
@@ -246,6 +242,7 @@ exports.handler = async (event, context) => {
                         model: MODELS.FALLBACK,
                         max_tokens: 3500,
                         temperature: 0.3,
+
                         system: `Ты - эксперт wellness-диагност. Проводи зональный анализ. СЕССИЯ: ${sessionId}`,
                         messages: [{
                             role: "user",
@@ -270,16 +267,8 @@ exports.handler = async (event, context) => {
                     )
                 ]);
 
-                console.log('Claude 3.5 comprehensive analysis completed');
-                console.log('Response structure:', typeof response, response?.content?.length || 'no content');
-                
-                if (response && response.content && response.content[0] && response.content[0].text) {
-                    analysisResult = response.content[0].text;
-                    console.log('Analysis result length:', analysisResult.length, 'chars');
-                } else {
-                    console.error('Invalid response structure:', JSON.stringify(response, null, 2));
-                    throw new Error('Invalid response structure from Claude');
-                }
+                console.log('Claude 3.5 comprehensive analysis completed, length:', response.content[0].text.length);
+                analysisResult = response.content[0].text;
 
             } catch (claude3Error) {
                 console.error('Both Claude models failed:', claude3Error.message);
@@ -297,30 +286,19 @@ exports.handler = async (event, context) => {
         // Enhanced JSON parsing
         let parsedAnalysis;
         const parseStartTime = Date.now();
-        console.log('🔄 STEP 4: Parsing comprehensive analysis JSON...');
+        console.log('�� STEP 4: Parsing comprehensive analysis JSON...');
         
         try {
             const responseText = analysisResult;
             console.log('Raw response length:', responseText.length, 'chars');
-            console.log('First 300 chars of raw response:', responseText.substring(0, 300));
 
             // Aggressive response cleaning
             let cleanedText = responseText.trim();
-            
-            // Remove HTML tags and entities
-            cleanedText = cleanedText.replace(/<[^>]*>/g, '');
-            cleanedText = cleanedText.replace(/&[^;]+;/g, '');
-            
-            // Remove code blocks and markdown
+
             cleanedText = cleanedText.replace(/```json\s*/g, '').replace(/```\s*/g, '');
             cleanedText = cleanedText.replace(/```[\s\S]*?```/g, '');
-            
-            // Find JSON boundaries more aggressively
-            const jsonStart = cleanedText.indexOf('{');
-            const jsonEnd = cleanedText.lastIndexOf('}');
-            if (jsonStart >= 0 && jsonEnd > jsonStart) {
-                cleanedText = cleanedText.substring(jsonStart, jsonEnd + 1);
-            }
+            cleanedText = cleanedText.replace(/^\s*[^{]*/g, '');
+            cleanedText = cleanedText.replace(/[^}]*$/g, '');
             
             // Control character cleanup
             cleanedText = cleanedText.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
@@ -354,7 +332,7 @@ exports.handler = async (event, context) => {
             const parseTime = Date.now() - parseStartTime;
             const totalTime = Date.now() - fetchStartTime;
             console.log(`✅ JSON parsing completed in ${parseTime}ms`);
-            console.log(`🎯 TOTAL COMPREHENSIVE ANALYSIS TIME: ${totalTime}ms (${(totalTime/1000).toFixed(1)}s) with model: ${modelUsed}`);
+            console.log(`�� TOTAL COMPREHENSIVE ANALYSIS TIME: ${totalTime}ms (${(totalTime/1000).toFixed(1)}s) with model: ${modelUsed}`);
             
             // Add metadata
             parsedAnalysis.model_used = modelUsed;
@@ -367,6 +345,7 @@ exports.handler = async (event, context) => {
                 headers,
                 body: JSON.stringify(parsedAnalysis)
             };
+
 
         } catch (parseError) {
             console.error('JSON parsing failed:', parseError.message);
@@ -395,3 +374,4 @@ exports.handler = async (event, context) => {
         };
     }
 };
+
