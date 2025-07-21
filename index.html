@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Health Analyzer Pro - Аналіз здоров'я по язику</title>
+    <title>Health Analyzer Pro - Анализ здоровья по языку</title>
     <style>
         * {
             margin: 0;
@@ -1248,7 +1248,7 @@
         function displayDetailedResults(analysisData) {
             let resultsHTML = `
                 <div class="analysis-card fade-in">
-                    <h3>🔬 Комплексний візуальний аналіз</h3>
+                    <h3>🔬 Комплексный визуальный анализ</h3>
             `;
 
             // Первичная визуальная оценка
@@ -1260,12 +1260,12 @@
                     formattedAssessment = formattedAssessment.replace(/^🔍\s*ПЕРВИЧНАЯ ВИЗУАЛЬНАЯ ОЦЕНКА:\s*/i, '');
                     formattedAssessment = formattedAssessment.replace(/^ПЕРВИЧНАЯ ВИЗУАЛЬНАЯ ОЦЕНКА:\s*/i, '');
                 } else {
-                    formattedAssessment = 'Первинна оцінка недоступна';
+                    formattedAssessment = 'Первичная оценка недоступна';
                 }
 
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">🔍</span>Первинна візуальна оцінка:</h4>
+                        <h4><span class="section-icon">🔍</span>Первичная визуальная оценка:</h4>
                         <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedAssessment)}</p>
                     </div>
                 `;
@@ -1280,12 +1280,12 @@
                     formattedLandscape = formattedLandscape.replace(/^🗺️\s*АНАТОМИЧЕСКИЙ ЛАНДШАФТ:\s*/i, '');
                     formattedLandscape = formattedLandscape.replace(/^АНАТОМИЧЕСКИЙ ЛАНДШАФТ:\s*/i, '');
                 } else {
-                    formattedLandscape = 'Анатомічний ландшафт недоступний';
+                    formattedLandscape = 'Анатомический ландшафт недоступен';
                 }
 
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">🗺️</span>Анатомічний ландшафт:</h4>
+                        <h4><span class="section-icon">🗺️</span>Анатомический ландшафт:</h4>
                         <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedLandscape)}</p>
                     </div>
                 `;
@@ -1300,12 +1300,12 @@
                     formattedFeatures = formattedFeatures.replace(/^✨\s*КАТАЛОГ ОСОБЕННОСТЕЙ:\s*/i, '');
                     formattedFeatures = formattedFeatures.replace(/^КАТАЛОГ ОСОБЕННОСТЕЙ:\s*/i, '');
                 } else {
-                    formattedFeatures = 'Каталог особливостей недоступний';
+                    formattedFeatures = 'Каталог особенностей недоступен';
                 }
 
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">✨</span>Каталог особливостей:</h4>
+                        <h4><span class="section-icon">✨</span>Каталог особенностей:</h4>
                         <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedFeatures)}</p>
                     </div>
                 `;
@@ -1324,13 +1324,69 @@
                             .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
                             .join('\n\n');
                     } else {
-                        formattedAnalysis = 'Аналіз недоступний';
+                        formattedAnalysis = 'Анализ недоступен';
                     }
 
                     resultsHTML += `
                         <div class="mini-card">
-                            <h4><span class="section-icon">📋</span>Детальний аналіз:</h4>
+                            <h4><span class="section-icon">📋</span>Детальный анализ:</h4>
                             <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedAnalysis)}</p>
+                        </div>
+                    `;
+                }
+
+                if (analysisData.visual_findings) {
+                    let formattedFindings = analysisData.visual_findings;
+                    
+                    if (typeof formattedFindings === 'string' && formattedFindings.length > 0) {
+                        formattedFindings = formattedFindings
+                            .split('. ')
+                            .filter(sentence => sentence.trim().length > 10)
+                            .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                            .join('\n\n');
+                    } else {
+                        formattedFindings = 'Находки недоступны';
+                    }
+
+                    resultsHTML += `
+                        <div class="mini-card">
+                            <h4><span class="section-icon">🔍</span>Ключевые находки:</h4>
+                            <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedFindings)}</p>
+                        </div>
+                    `;
+                }
+
+                if (analysisData.morphological_features) {
+                    let formattedFeatures = analysisData.morphological_features;
+                    
+                    if (typeof formattedFeatures === 'string' && formattedFeatures.length > 0) {
+                        // Убираем дублирующий заголовок из текста если он есть
+                        formattedFeatures = formattedFeatures.replace(/^⚙️\s*Морфологические особенности:\s*/i, '');
+                        formattedFeatures = formattedFeatures.replace(/^Морфологические особенности:\s*/i, '');
+                        
+                        // Если текст содержит " - " (дефис с пробелами), разбиваем на пункты
+                        if (formattedFeatures.includes(' - ')) {
+                            formattedFeatures = formattedFeatures
+                                .split(' - ')
+                                .map((item, index) => {
+                                    if (index === 0) {
+                                        // Первый элемент может содержать заголовок
+                                        return item.trim();
+                                    } else {
+                                        // Остальные элементы форматируем как пункты списка
+                                        return `- ${item.trim()}`;
+                                    }
+                                })
+                                .join('\n\n');
+                        }
+                    } else {
+                        formattedFeatures = 'Морфологические особенности недоступны';
+                    }
+                    
+                    resultsHTML += `
+                        <div class="mini-card">
+                            <h4><span class="section-icon">⚙️</span>Морфологические особенности:</h4>
+                            <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedFeatures)}</p>
                         </div>
                     `;
                 }
