@@ -226,8 +226,8 @@ exports.handler = async (event, context) => {
             headers,
             body: JSON.stringify({ 
                 success: true,
-                url: versionedUrl,                    // Для показа пользователю
-                analysisUrl: versionedAnalysisUrl,    // Для отправки в Claude
+                imageUrl: versionedAnalysisUrl,    // Для отправки в Claude
+                url: versionedUrl,                 // Для показа пользователю
                 originalUrl: result.secure_url,
                 publicId: result.public_id,
                 uniqueId: uniqueId
