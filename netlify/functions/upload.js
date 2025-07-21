@@ -26,7 +26,7 @@ exports.handler = async (event, context) => {
         return {
             statusCode: 405,
             headers,
-            body: JSON.stringify({ error: 'Метод не дозволений' })
+            body: JSON.stringify({ error: 'Method not allowed' })
         };
     }
 
@@ -47,11 +47,12 @@ exports.handler = async (event, context) => {
             return {
                 statusCode: 500,
                 headers,
-                body: JSON.stringify({ error: 'Помилка конфігурації сервера' })
+                body: JSON.stringify({ error: 'Server configuration error' })
             };
         }
 
         // Parse multipart data with enhanced error handling
+
         const contentType = event.headers['content-type'] || event.headers['Content-Type'] || '';
         console.log('Content-Type:', contentType);
         
@@ -61,7 +62,7 @@ exports.handler = async (event, context) => {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ 
-                    error: 'Невірний тип контенту. Очікується multipart/form-data',
+                    error: 'Invalid content type. Expected multipart/form-data',
                     received: contentType
                 })
             };
@@ -79,7 +80,7 @@ exports.handler = async (event, context) => {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ 
-                    error: 'Відсутня границя в типі контенту',
+                    error: 'Missing boundary in content-type',
                     contentType: contentType
                 })
             };
@@ -101,10 +102,11 @@ exports.handler = async (event, context) => {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ 
-                    error: 'Не вдалося обробити завантажений файл',
+                    error: 'Failed to parse uploaded file',
                     details: parseError.message
                 })
             };
+
         }
 
         const file = parts.find(part => part.name === 'image');
@@ -113,7 +115,7 @@ exports.handler = async (event, context) => {
                 statusCode: 400,
                 headers,
                 body: JSON.stringify({ 
-                    error: 'Файл зображення не знайдено у завантаженні',
+                    error: 'No image file found in upload',
                     availableParts: parts.map(p => ({ name: p.name, dataLength: p.data?.length }))
                 })
             };
@@ -127,7 +129,7 @@ exports.handler = async (event, context) => {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: `Невірний тип файлу: ${fileType}. Дозволені лише JPG, PNG, WebP` })
+                body: JSON.stringify({ error: `Invalid file type: ${fileType}. Only JPG, PNG, WebP allowed` })
             };
         }
 
@@ -135,7 +137,7 @@ exports.handler = async (event, context) => {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: `Файл занадто великий: ${Math.round(file.data.length / 1024 / 1024)}МБ. Максимум 10МБ` })
+                body: JSON.stringify({ error: `File too large: ${Math.round(file.data.length / 1024 / 1024)}MB. Max 10MB allowed` })
             };
         }
 
@@ -156,6 +158,7 @@ exports.handler = async (event, context) => {
                     overwrite: false,
                     invalidate: true,
                     transformation: [
+
                         // Базовые настройки
                         { width: 1200, height: 1200, crop: 'limit' },
                         
@@ -210,6 +213,7 @@ exports.handler = async (event, context) => {
                 // Финальная обработка
                 { quality: 'auto:best' },
                 { format: 'jpg' }
+
             ]
         });
 
@@ -226,8 +230,8 @@ exports.handler = async (event, context) => {
             headers,
             body: JSON.stringify({ 
                 success: true,
-                imageUrl: versionedAnalysisUrl,    // Для отправки в Claude
-                url: versionedUrl,                 // Для показа пользователю
+                url: versionedUrl,                    // Для показа пользователю
+                analysisUrl: versionedAnalysisUrl,    // Для отправки в Claude
                 originalUrl: result.secure_url,
                 publicId: result.public_id,
                 uniqueId: uniqueId
@@ -240,7 +244,7 @@ exports.handler = async (event, context) => {
             statusCode: 500,
             headers,
             body: JSON.stringify({ 
-                error: 'Завантаження не вдалося', 
+                error: 'Upload failed', 
                 details: error.message 
             })
         };
