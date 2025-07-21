@@ -48,6 +48,7 @@ exports.handler = async (event, context) => {
             };
         }
 
+
         let requestBody;
         try {
             requestBody = JSON.parse(event.body);
@@ -70,31 +71,32 @@ exports.handler = async (event, context) => {
         }
 
         const fetchStartTime = Date.now();
-        console.log('🔄 ДЕТАЛЬНЫЙ АНАЛИЗ - STEP 1: Fetching image from URL:', imageUrl);
+        console.log('�� ДЕТАЛЬНЫЙ АНАЛИЗ - STEP 1: Fetching image from URL:', imageUrl);
 
         const anthropic = new Anthropic({
             apiKey: process.env.ANTHROPIC_API_KEY,
         });
 
         // Simplified system prompt for detailed visual analysis only
-        const DETAILED_SYSTEM_PROMPT = `Ти - старший лабораторний аналітик з 20-річним досвідом мікроскопічного аналізу біологічних зразків.
+        const DETAILED_SYSTEM_PROMPT = `Ты - старший лабораторный аналитик с 20-летним опытом микроскопического анализа биологических образцов.
 
-ЗАВДАННЯ: Провести ТІЛЬКИ ДЕТАЛЬНИЙ МОРФОЛОГІЧНИЙ АНАЛІЗ зразка для наукового каталогу.
+ЗАДАЧА: Провести ТОЛЬКО ДЕТАЛЬНЫЙ МОРФОЛОГИЧЕСКИЙ АНАЛИЗ образца для научного каталога.
 
-🔬 АНАЛІЗ ПОВИНЕН ВКЛЮЧАТИ:
-- Точний колірний аналіз: основний пігмент, зональні варіації, патологічні вогнища, запальна еритема
-- Контурний аналіз: форма периметра, відбитки зовнішніх об'єктів, деформації країв, травматичні зміни
-- Поверхнева топографія: рельєф, мікротекстура, вологість, блиск поверхні
-- Патологічні утворення: нальоти, нарости, виразки та ерозії, пухлиноподібні утворення, запальні вогнища, крововиливи
-- Структурні елементи: сосочки, борозни, складки, анатомічні орієнтири
+�� АНАЛИЗ ДОЛЖЕН ВКЛЮЧАТЬ:
+- Точный цветовой анализ: основной пигмент, зональные вариации, патологические очаги, воспалительная эритема
+- Контурный анализ: форма периметра, отпечатки внешних объектов, деформации краев, травматические изменения
+- Поверхностная топография: рельеф, микротекстура, влажность, блеск поверхности
+- Патологические образования: налеты, наросты, язвы и эрозии, опухолевидные образования, воспалительные очаги, кровоизлияния
+- Структурные элементы: сосочки, борозды, складки, анатомические ориентиры
 
-ФОРМАТ ТЕКСТУ: Пиши короткими абзацами 2-3 речення максимум. Розділяй різні характеристики абзацами. Створи читаємий текст для мобільних пристроїв.
+ВАЖНО: Пиши связным текстом БЕЗ ТЕХНИЧЕСКИХ ЗАГОЛОВКОВ типа "Цветовая картография:", "Контурный анализ", "Поверхностная топография". Создай плавный нарратив, где все характеристики описываются в едином потоке без подразделов.
 
-ВІДПОВІДЬ СТРОГО у JSON форматі:
+ОТВЕТЬ СТРОГО в JSON формате:
 {
-  "detailed_analysis": "Зв'язний опис усіх морфологічних характеристик без підзаголовків: колір, форма, контури, поверхня, текстура, нальоти, сосочки, борозни, патологічні зміни з точною локалізацією кожної знахідки",
-  "visual_findings": "Список усіх виявлених візуальних особливостей та відхилень у вигляді зв'язного тексту",
-  "morphological_features": "⚙️ Морфологічні особливості:\n\n- Сосочки: [детальний опис стану сосочків]\n- Борозни: [детальний опис борозен та поглиблень]\n- Складки: [опис складок та крайових структур]\n- Текстура: [характеристика поверхневої текстури]\n- Наліт: [опис нальоту або його відсутність]\n\nКожен пункт повинен починатися з нового рядка з дефісом!"
+  "detailed_analysis": "Связное описание всех морфологических характеристик без подзаголовков: цвет, форма, контуры, поверхность, текстура, налеты, сосочки, борозды, патологические изменения с точной локализацией каждой находки",
+
+  "visual_findings": "Список всех обнаруженных визуальных особенностей и отклонений в виде связного текста",
+  "morphological_features": "⚙️ Морфологические особенности:\n\n- Сосочки: [подробное описание состояния сосочков]\n- Борозды: [подробное описание борозд и углублений]\n- Складки: [описание складок и краевых структур]\n- Текстура: [характеристика поверхностной текстуры]\n- Налет: [описание налета или его отсутствие]\n\nКаждый пункт должен начинаться с новой строки с дефисом!"
 }`;
 
         // Convert image URL to base64
@@ -118,7 +120,7 @@ exports.handler = async (event, context) => {
         }
 
         const conversionStartTime = Date.now();
-        console.log('🔄 STEP 2: Converting to base64...');
+        console.log('�� STEP 2: Converting to base64...');
         const base64Image = Buffer.from(imageResponse.data).toString('base64');
         const conversionTime = Date.now() - conversionStartTime;
         console.log(`✅ Base64 conversion completed in ${conversionTime}ms, length: ${base64Image.length} chars`);
@@ -138,12 +140,13 @@ exports.handler = async (event, context) => {
         const antiCacheId = `detail_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
         const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
 
+
         let analysisResult;
         let modelUsed = MODELS.PRIMARY;
 
         try {
             const analysisStartTime = Date.now();
-            console.log('🔄 STEP 3: Starting Claude 4.0 detailed analysis...');
+            console.log('�� STEP 3: Starting Claude 4.0 detailed analysis...');
             
             const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
             const temperature = 0.15 + Math.random() * 0.4;
@@ -163,7 +166,7 @@ exports.handler = async (event, context) => {
                         content: [
                             {
                                 type: "text",
-                                text: `Проаналізуй детально зразок ${antiCacheId}\nПоверни JSON з detailed_analysis, visual_findings, morphological_features\nТІЛЬКИ ВІЗУАЛЬНИЙ АНАЛІЗ!`
+                                text: `Проанализируй детально образец ${antiCacheId}\nВерни JSON с detailed_analysis, visual_findings, morphological_features\nТОЛЬКО ВИЗУАЛЬНЫЙ АНАЛИЗ!`
                             },
                             {
                                 type: "image",
@@ -185,6 +188,7 @@ exports.handler = async (event, context) => {
             console.log(`✅ Claude 4.0 detailed analysis completed in ${analysisTime}ms`);
             console.log('Response structure:', typeof response, response?.content?.length || 'no content');
             
+
             if (response && response.content && response.content[0] && response.content[0].text) {
                 analysisResult = response.content[0].text;
                 console.log('Analysis result length:', analysisResult.length, 'chars');
@@ -203,13 +207,13 @@ exports.handler = async (event, context) => {
                         model: MODELS.FALLBACK,
                         max_tokens: 2500,
                         temperature: 0.3,
-                        system: `Ти - лабораторний аналітик. Аналізуй біологічні зразки. СЕСІЯ: ${sessionId}`,
+                        system: `Ты - лабораторный аналитик. Анализируй биологические образцы. СЕССИЯ: ${sessionId}`,
                         messages: [{
                             role: "user",
                             content: [
                                 {
                                     type: "text",
-                                    text: `Проаналізуй детально зразок ${antiCacheId}\nПоверни JSON з detailed_analysis, visual_findings, morphological_features\nТІЛЬКИ ВІЗУАЛЬНИЙ АНАЛІЗ!`
+                                    text: `Проанализируй детально образец ${antiCacheId}\nВерни JSON с detailed_analysis, visual_findings, morphological_features\nТОЛЬКО ВИЗУАЛЬНЫЙ АНАЛИЗ!`
                                 },
                                 {
                                     type: "image",
@@ -231,6 +235,7 @@ exports.handler = async (event, context) => {
                 console.log('Response structure:', typeof response, response?.content?.length || 'no content');
                 
                 if (response && response.content && response.content[0] && response.content[0].text) {
+
                     analysisResult = response.content[0].text;
                     console.log('Analysis result length:', analysisResult.length, 'chars');
                 } else {
@@ -254,7 +259,7 @@ exports.handler = async (event, context) => {
         // Enhanced JSON parsing
         let parsedAnalysis;
         const parseStartTime = Date.now();
-        console.log('🔄 STEP 4: Parsing detailed analysis JSON...');
+        console.log('�� STEP 4: Parsing detailed analysis JSON...');
         
         try {
             const responseText = analysisResult;
@@ -281,6 +286,7 @@ exports.handler = async (event, context) => {
             
             // Control character cleanup
             cleanedText = cleanedText.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
+
             cleanedText = cleanedText.replace(/\\n/g, ' ').replace(/\\r/g, ' ').replace(/\\t/g, ' ');
             cleanedText = cleanedText.replace(/\s+/g, ' ');
 
@@ -311,7 +317,7 @@ exports.handler = async (event, context) => {
             const parseTime = Date.now() - parseStartTime;
             const totalTime = Date.now() - fetchStartTime;
             console.log(`✅ JSON parsing completed in ${parseTime}ms`);
-            console.log(`🎯 TOTAL DETAILED ANALYSIS TIME: ${totalTime}ms (${(totalTime/1000).toFixed(1)}s) with model: ${modelUsed}`);
+            console.log(`�� TOTAL DETAILED ANALYSIS TIME: ${totalTime}ms (${(totalTime/1000).toFixed(1)}s) with model: ${modelUsed}`);
             
             // Add metadata
             parsedAnalysis.model_used = modelUsed;
@@ -332,6 +338,7 @@ exports.handler = async (event, context) => {
             return {
                 statusCode: 500,
                 headers,
+
                 body: JSON.stringify({ 
                     error: 'Failed to parse AI response', 
                     details: parseError.message,
@@ -352,3 +359,4 @@ exports.handler = async (event, context) => {
         };
     }
 };
+
