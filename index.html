@@ -796,6 +796,20 @@
         </section>
     </div>
 
+    <div id="globalProgress" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0.7);z-index:9999;align-items:center;justify-content:center;flex-direction:column;">
+        <div class="spinner" style="margin-bottom:20px;width:60px;height:60px;border:8px solid #eee;border-top:8px solid #667eea;border-radius:50%;animation:spin 1s linear infinite;"></div>
+        <div id="progressText" style="font-size:1.2rem;color:#333;margin-bottom:10px;"></div>
+        <div id="progressBarContainer" style="width:240px;height:12px;background:#eee;border-radius:8px;overflow:hidden;display:none;">
+            <div id="progressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#667eea,#764ba2);"></div>
+        </div>
+    </div>
+    <style>
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    </style>
+
     <script>
         // DOM elements
         const uploadArea = document.getElementById('uploadArea');
@@ -818,6 +832,27 @@
         let currentStream = null;
         let currentFacingMode = 'user'; // 'user' for front camera, 'environment' for back
         let capturedImageBlob = null;
+
+        // --- PROGRESS INDICATOR UTILS ---
+        function showGlobalProgress(text, percent = null) {
+            const el = document.getElementById('globalProgress');
+            const txt = document.getElementById('progressText');
+            const bar = document.getElementById('progressBar');
+            const barCont = document.getElementById('progressBarContainer');
+            el.style.display = 'flex';
+            txt.textContent = text || '';
+            if (percent !== null) {
+                barCont.style.display = 'block';
+                bar.style.width = Math.max(0, Math.min(100, percent)) + '%';
+            } else {
+                barCont.style.display = 'none';
+                bar.style.width = '0%';
+            }
+        }
+        function hideGlobalProgress() {
+            document.getElementById('globalProgress').style.display = 'none';
+        }
+        // --- END PROGRESS UTILS ---
 
         // Функция для добавления цветовых акцентов и эмодзи
         function enhanceTextWithAccents(text) {
@@ -898,22 +933,42 @@
             });
         }
 
-        // Upload file to Cloudinary
+        // Upload file to Cloudinary (with progress)
         async function uploadFile(file) {
-            const formData = new FormData();
-            formData.append('image', file);
-
-            const response = await fetch('/.netlify/functions/upload', {
-                method: 'POST',
-                body: formData
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                const formData = new FormData();
+                formData.append('image', file);
+                xhr.open('POST', '/.netlify/functions/upload');
+                xhr.upload.onprogress = function(e) {
+                    if (e.lengthComputable) {
+                        const percent = Math.round((e.loaded / e.total) * 100);
+                        showGlobalProgress('Загрузка изображения...', percent);
+                    }
+                };
+                xhr.onload = function() {
+                    hideGlobalProgress();
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try {
+                            resolve(JSON.parse(xhr.responseText));
+                        } catch (err) {
+                            reject(new Error('Ошибка разбора ответа сервера'));
+                        }
+                    } else {
+                        let errMsg = 'Ошибка загрузки файла';
+                        try {
+                            errMsg = JSON.parse(xhr.responseText).error || errMsg;
+                        } catch {}
+                        reject(new Error(errMsg));
+                    }
+                };
+                xhr.onerror = function() {
+                    hideGlobalProgress();
+                    reject(new Error('Ошибка сети при загрузке файла'));
+                };
+                showGlobalProgress('Загрузка изображения...', 0);
+                xhr.send(formData);
             });
-
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'Ошибка загрузки файла');
-            }
-
-            return await response.json();
         }
 
         // Detailed analysis
@@ -1411,8 +1466,10 @@
                 const uploadResult = await uploadFile(currentImageFile);
                 uploadedImageUrl = uploadResult.url;
 
+                showGlobalProgress('Анализ изображения...', null);
                 showSuccess('Проводим детальный анализ...');
                 const analysisResult = await analyzeImageDetailed(uploadedImageUrl, analysisId);
+                hideGlobalProgress();
 
                 if (analysisId === currentAnalysisId) {
                     displayDetailedResults(analysisResult);
@@ -1420,6 +1477,7 @@
                 }
 
             } catch (error) {
+                hideGlobalProgress();
                 console.error('Detailed analysis error:', error);
                 showError(error.message || 'Ошибка детального анализа');
             } finally {
@@ -1448,8 +1506,10 @@
                 const uploadResult = await uploadFile(currentImageFile);
                 uploadedImageUrl = uploadResult.url;
 
+                showGlobalProgress('Анализ изображения...', null);
                 showSuccess('Проводим полный анализ...');
                 const analysisResult = await analyzeImageComprehensive(uploadedImageUrl, analysisId);
+                hideGlobalProgress();
 
                 if (analysisId === currentAnalysisId) {
                     displayComprehensiveResults(analysisResult);
@@ -1457,6 +1517,7 @@
                 }
 
             } catch (error) {
+                hideGlobalProgress();
                 console.error('Comprehensive analysis error:', error);
                 showError(error.message || 'Ошибка полного анализа');
             } finally {
