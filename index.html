@@ -85,6 +85,41 @@
         html { scroll-behavior: smooth; }
         *:focus { outline: 2px solid #3B82F6; outline-offset: 2px; }
         .btn:focus { outline-offset: 4px; }
+    /* Preview Section */
+    .preview-section { background: #fff; border-radius: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); max-width: 520px; margin: 40px auto 0; padding: 32px 24px; text-align: center; }
+    .preview-image { max-width: 100%; max-height: 320px; border-radius: 16px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(59,130,246,0.08); }
+    .analysis-buttons { display: flex; gap: 16px; justify-content: center; margin-top: 16px; }
+    .analysis-btn { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); color: #fff; border: none; border-radius: 10px; padding: 16px 24px; font-size: 16px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px; position: relative; min-width: 180px; transition: box-shadow 0.2s, transform 0.2s; }
+    .analysis-btn:hover:not(:disabled) { box-shadow: 0 4px 16px rgba(59,130,246,0.18); transform: translateY(-2px); }
+    .analysis-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .loading-spinner { display: none; width: 20px; height: 20px; border: 2px solid #fff; border-top: 2px solid #3B82F6; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    /* Camera Interface */
+    .camera-interface { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    #cameraVideo { width: 100vw; height: 100vh; object-fit: cover; background: #000; }
+    .camera-controls { position: absolute; bottom: 40px; left: 0; right: 0; display: flex; justify-content: center; gap: 32px; }
+    .control-btn { border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 1.2rem; font-weight: 600; cursor: pointer; background: #fff; color: #2563EB; box-shadow: 0 2px 8px rgba(59,130,246,0.08); transition: background 0.2s; }
+    .control-btn:active { background: #e0e7ff; }
+    .capture-btn { background: #3B82F6; color: #fff; font-size: 1.5rem; }
+    .cancel-btn { background: #f87171; color: #fff; }
+    .switch-btn { background: #fbbf24; color: #fff; }
+    /* Photo Preview */
+    .photo-preview { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .preview-img { max-width: 90vw; max-height: 60vh; border-radius: 16px; margin-bottom: 24px; }
+    .preview-controls { display: flex; gap: 24px; justify-content: center; }
+    .preview-btn { padding: 14px 32px; border-radius: 10px; font-size: 16px; font-weight: 600; border: none; cursor: pointer; transition: background 0.2s; }
+    .retake-btn { background: #f87171; color: #fff; }
+    .use-btn { background: #10B981; color: #fff; }
+    /* Messages */
+    .message { display: none; padding: 14px 24px; border-radius: 8px; margin: 20px auto; max-width: 400px; text-align: center; font-weight: 500; font-size: 16px; }
+    .error-message { background: #fee2e2; color: #b91c1c; border: 1px solid #fca5a5; }
+    .success-message { background: #d1fae5; color: #047857; border: 1px solid #6ee7b7; }
+    /* Results Section */
+    .results-section { background: #fff; border-radius: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.04); max-width: 700px; margin: 40px auto 0; padding: 32px 24px; }
+    .results-header { text-align: center; margin-bottom: 24px; }
+    .results-header h2 { color: #2563EB; font-size: 2rem; margin-bottom: 10px; }
+    .analysis-card { background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%); border-radius: 15px; padding: 20px; margin-bottom: 15px; border-left: 4px solid #667eea; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    /* ... остальные стили из макета ... */
     </style>
 </head>
 <body>
@@ -153,18 +188,46 @@
         </div>
     </section>
 
-    <!-- Camera Interface (скрыто, id сохраняем) -->
-    <div id="cameraInterface" class="camera-interface" style="display:none;">
-        <!-- ... (оставьте вашу камеру с id, canvas, controls) ... -->
-    </div>
-    <div id="photoPreview" class="photo-preview" style="display:none;">
-        <!-- ... (оставьте вашу превью-фото с id) ... -->
-    </div>
+    <!-- Preview Section (после upload) -->
     <section class="preview-section" id="previewSection" style="display:none;">
-        <!-- ... (оставьте вашу превью-секцию с id) ... -->
+        <img id="previewImage" class="preview-image" alt="Preview">
+        <div class="analysis-buttons">
+            <button class="analysis-btn" id="detailedAnalysisBtn">
+                <div class="loading-spinner" id="detailedSpinner"></div>
+                <span id="detailedBtnTitle">🔬 Детальний аналіз</span>
+            </button>
+            <button class="analysis-btn" id="comprehensiveAnalysisBtn">
+                <div class="loading-spinner" id="comprehensiveSpinner"></div>
+                <span id="comprehensiveBtnTitle">🎯 Повний аналіз</span>
+            </button>
+        </div>
     </section>
-    <div class="message" id="errorMessage"></div>
-    <div class="message" id="successMessage"></div>
+
+    <!-- Camera Interface -->
+    <div id="cameraInterface" class="camera-interface" style="display:none;">
+        <video id="cameraVideo" autoplay playsinline muted></video>
+        <canvas id="cameraCanvas" style="display:none;"></canvas>
+        <div class="camera-controls">
+            <button id="cancelBtn" class="control-btn cancel-btn">Відміна</button>
+            <button id="captureBtn" class="control-btn capture-btn">📷</button>
+            <button id="switchCameraBtn" class="control-btn switch-btn">🔄</button>
+        </div>
+    </div>
+
+    <!-- Photo Preview -->
+    <div id="photoPreview" class="photo-preview" style="display:none;">
+        <img id="previewImg" class="preview-img" alt="Фото">
+        <div class="preview-controls">
+            <button id="retakeBtn" class="preview-btn retake-btn">Перезняти</button>
+            <button id="usePhotoBtn" class="preview-btn use-btn">Використати</button>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    <div class="message error-message" id="errorMessage"></div>
+    <div class="message success-message" id="successMessage"></div>
+
+    <!-- Results Section -->
     <section class="results-section" id="resultsSection" style="display:none;">
         <div class="results-header">
             <h2 id="resultsHeader">Результати аналізу</h2>
