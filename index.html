@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>Health Analyzer Pro - Анализ здоровья по языку</title>
+    <title id="metaTitle">Health Analyzer Pro - Анализ здоровья по языку</title>
+    <meta name="description" id="metaDescription" content="">
     <style>
         * {
             margin: 0;
@@ -696,21 +697,30 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>Health Analyzer Pro</h1>
-            <p>Анализ здоровья по языку с помощью ИИ</p>
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <h1 id="headerTitle">Health Analyzer Pro</h1>
+                    <p id="headerSubtitle">AI-Powered Tongue Analysis</p>
+                </div>
+                <div id="langSwitcher" style="display:flex;gap:8px;align-items:center;">
+                    <button id="langUA" class="lang-btn" style="font-weight:600;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;background:#fff;transition:background 0.2s;">🇺🇦 UA</button>
+                    <span style="font-size:1.1em;color:#888;">|</span>
+                    <button id="langRU" class="lang-btn" style="font-weight:600;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;background:#fff;transition:background 0.2s;">🇷🇺 RU</button>
+                </div>
+            </div>
         </header>
 
         <section class="upload-section">
             <div class="upload-options">
                 <div class="upload-area" id="uploadArea">
                     <span class="upload-icon">📁</span>
-                    <div class="upload-text">Перетащите изображение сюда или нажмите для выбора</div>
-                    <div class="upload-hint">Поддерживаются форматы: JPG, PNG, WebP (до 10 МБ)</div>
+                    <div class="upload-text" id="uploadText">Upload Tongue Photo</div>
+                    <div class="upload-hint" id="uploadHint">Supported formats: JPG, PNG, WebP (up to 10 MB)</div>
                     <input type="file" id="fileInput" class="file-input" accept="image/*">
                 </div>
                 <button class="camera-launch-btn" id="cameraBtn">
                     <span class="camera-icon">📷</span>
-                    <span class="camera-text">Сделать фото</span>
+                    <span class="camera-text" id="cameraBtnText">Take Photo</span>
                 </button>
             </div>
         </section>
@@ -762,21 +772,21 @@
         </div>
 
         <section class="preview-section" id="previewSection">
-            <img id="previewImage" class="preview-image" alt="Предварительный просмотр">
+            <img id="previewImage" class="preview-image" alt="Preview">
             
             <div class="analysis-buttons">
                 <button class="analysis-btn" id="detailedAnalysisBtn">
                     <div class="loading-spinner" id="detailedSpinner"></div>
-                    <div class="btn-title">🔬 Детальный анализ</div>
-                    <div class="btn-description">Морфологическое описание поверхности, цвета, текстуры, налетов</div>
-                    <div class="btn-time">~15 секунд</div>
+                    <div class="btn-title" id="detailedBtnTitle">🔬 Detailed Analysis</div>
+                    <div class="btn-description" id="detailedBtnDesc">Morphological description of surface, color, texture, coatings</div>
+                    <div class="btn-time" id="detailedBtnTime">~15 seconds</div>
                 </button>
                 
                 <button class="analysis-btn" id="comprehensiveAnalysisBtn">
                     <div class="loading-spinner" id="comprehensiveSpinner"></div>
-                    <div class="btn-title">🎯 Полный анализ</div>
-                    <div class="btn-description">Зональная диагностика + wellness рекомендации</div>
-                    <div class="btn-time">~15 секунд</div>
+                    <div class="btn-title" id="comprehensiveBtnTitle">🎯 Comprehensive Analysis</div>
+                    <div class="btn-description" id="comprehensiveBtnDesc">Zonal diagnostics + wellness recommendations</div>
+                    <div class="btn-time" id="comprehensiveBtnTime">~15 seconds</div>
                 </button>
             </div>
         </section>
@@ -786,12 +796,12 @@
 
         <section class="results-section" id="resultsSection">
             <div class="results-header">
-                <h2>Результаты анализа</h2>
+                <h2 id="resultsHeader">Results</h2>
             </div>
             <div id="analysisResults"></div>
             
-            <div class="disclaimer">
-                <p>⚠️ Это wellness анализ с использованием ИИ, не заменяет медицинскую консультацию. При серьезных симптомах обратитесь к врачу.</p>
+            <div class="disclaimer" id="disclaimerBlock">
+                <p id="disclaimerText">⚠️ This is a wellness analysis using AI, not a medical consultation. For serious symptoms, consult a doctor.</p>
             </div>
         </section>
     </div>
@@ -877,15 +887,15 @@
         }
 
         // Show/hide messages
-        function showError(message) {
-            errorMessage.textContent = message;
+        function showError(messageKey) {
+            errorMessage.textContent = t(messageKey) || messageKey;
             errorMessage.style.display = 'block';
             successMessage.style.display = 'none';
             setTimeout(() => { errorMessage.style.display = 'none'; }, 5000);
         }
 
-        function showSuccess(message) {
-            successMessage.textContent = message;
+        function showSuccess(messageKey) {
+            successMessage.textContent = t(messageKey) || messageKey;
             successMessage.style.display = 'block';
             errorMessage.style.display = 'none';
             setTimeout(() => { successMessage.style.display = 'none'; }, 3000);
@@ -903,13 +913,13 @@
             // Validate file type
             const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
             if (!allowedTypes.includes(file.type.toLowerCase())) {
-                showError('Пожалуйста, выберите изображение в формате JPG, PNG или WebP');
+                showError('error_invalid_file_type');
                 return;
             }
 
             // Validate file size
             if (file.size > 10 * 1024 * 1024) {
-                showError('Размер файла не должен превышать 10 МБ');
+                showError('error_file_too_large');
                 return;
             }
 
@@ -943,7 +953,7 @@
                 xhr.upload.onprogress = function(e) {
                     if (e.lengthComputable) {
                         const percent = Math.round((e.loaded / e.total) * 100);
-                        showGlobalProgress('Загрузка изображения...', percent);
+                        showGlobalProgress(t('loading_upload'), percent);
                     }
                 };
                 xhr.onload = function() {
@@ -955,7 +965,7 @@
                             reject(new Error('Ошибка разбора ответа сервера'));
                         }
                     } else {
-                        let errMsg = 'Ошибка загрузки файла';
+                        let errMsg = t('error_upload_failed');
                         try {
                             errMsg = JSON.parse(xhr.responseText).error || errMsg;
                         } catch {}
@@ -966,7 +976,7 @@
                     hideGlobalProgress();
                     reject(new Error('Ошибка сети при загрузке файла'));
                 };
-                showGlobalProgress('Загрузка изображения...', 0);
+                showGlobalProgress(t('loading_upload'), 0);
                 xhr.send(formData);
             });
         }
@@ -988,7 +998,7 @@
 
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.error || 'Ошибка детального анализа');
+                throw new Error(error.error || t('error_detailed_analysis_failed'));
             }
 
             return await response.json();
@@ -1012,7 +1022,7 @@
 
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.error || 'Ошибка полного анализа');
+                throw new Error(error.error || t('error_comprehensive_analysis_failed'));
             }
 
             return await response.json();
@@ -1273,11 +1283,11 @@
                         return await startCamera('environment');
                     } catch (fallbackError) {
                         console.error('Fallback camera also failed:', fallbackError);
-                        showError('Не удается получить доступ к камере. Разрешите доступ в настройках браузера.');
+                        showError('error_camera_access_denied');
                         return false;
                     }
                 } else {
-                    showError('Камера недоступна. Используйте загрузку файла.');
+                    showError('error_camera_unavailable');
                     return false;
                 }
             }
@@ -1325,7 +1335,7 @@
                     document.getElementById('cameraInterface').style.display = 'none';
                     document.getElementById('photoPreview').style.display = 'flex';
                 } else {
-                    showError('Ошибка при создании фото');
+                    showError('error_photo_capture_failed');
                 }
             }, 'image/jpeg', 0.9);
         }
@@ -1336,7 +1346,7 @@
             // Показываем индикатор переключения
             const hintElement = document.querySelector('.camera-hint');
             const originalHint = hintElement.textContent;
-            hintElement.textContent = 'Переключение камеры...';
+            hintElement.textContent = t('camera_switching');
             
             try {
                 await startCamera(newFacingMode);
@@ -1345,7 +1355,7 @@
             } catch (error) {
                 console.error('Failed to switch camera:', error);
                 hintElement.textContent = originalHint;
-                showError('Не удалось переключить камеру');
+                showError('error_camera_switch_failed');
             }
         }
 
@@ -1380,7 +1390,7 @@
             cameraInterface.style.display = 'flex';
             const hintElement = document.querySelector('.camera-hint');
             const originalHint = hintElement.textContent;
-            hintElement.textContent = 'Запуск камеры...';
+            hintElement.textContent = t('camera_starting');
             
             try {
                 const success = await startCamera('user'); // Start with front camera
@@ -1449,7 +1459,7 @@
         // Detailed analysis button
         detailedAnalysisBtn.addEventListener('click', async () => {
             if (!currentImageFile) {
-                showError('Пожалуйста, выберите изображение для анализа');
+                showError('error_no_image_for_analysis');
                 return;
             }
 
@@ -1462,24 +1472,24 @@
             clearResults();
 
             try {
-                showSuccess('Загружаем изображение...');
+                showSuccess('success_uploading_image');
                 const uploadResult = await uploadFile(currentImageFile);
                 uploadedImageUrl = uploadResult.url;
 
-                showGlobalProgress('Анализ изображения...', null);
-                showSuccess('Проводим детальный анализ...');
+                showGlobalProgress(t('loading_analysis'), null);
+                showSuccess(t('analysis_detailed_in_progress'));
                 const analysisResult = await analyzeImageDetailed(uploadedImageUrl, analysisId);
                 hideGlobalProgress();
 
                 if (analysisId === currentAnalysisId) {
                     displayDetailedResults(analysisResult);
-                    showSuccess('Детальный анализ завершен!');
+                    showSuccess(t('analysis_detailed_completed'));
                 }
 
             } catch (error) {
                 hideGlobalProgress();
                 console.error('Detailed analysis error:', error);
-                showError(error.message || 'Ошибка детального анализа');
+                showError(error.message || t('error_detailed_analysis_failed'));
             } finally {
                 btn.disabled = false;
                 spinner.style.display = 'none';
@@ -1489,7 +1499,7 @@
         // Comprehensive analysis button
         comprehensiveAnalysisBtn.addEventListener('click', async () => {
             if (!currentImageFile) {
-                showError('Пожалуйста, выберите изображение для анализа');
+                showError('error_no_image_for_analysis');
                 return;
             }
 
@@ -1502,24 +1512,24 @@
             clearResults();
 
             try {
-                showSuccess('Загружаем изображение...');
+                showSuccess('success_uploading_image');
                 const uploadResult = await uploadFile(currentImageFile);
                 uploadedImageUrl = uploadResult.url;
 
-                showGlobalProgress('Анализ изображения...', null);
-                showSuccess('Проводим полный анализ...');
+                showGlobalProgress(t('loading_analysis'), null);
+                showSuccess(t('analysis_comprehensive_in_progress'));
                 const analysisResult = await analyzeImageComprehensive(uploadedImageUrl, analysisId);
                 hideGlobalProgress();
 
                 if (analysisId === currentAnalysisId) {
                     displayComprehensiveResults(analysisResult);
-                    showSuccess('Полный анализ завершен!');
+                    showSuccess(t('analysis_comprehensive_completed'));
                 }
 
             } catch (error) {
                 hideGlobalProgress();
                 console.error('Comprehensive analysis error:', error);
-                showError(error.message || 'Ошибка полного анализа');
+                showError(error.message || t('error_comprehensive_analysis_failed'));
             } finally {
                 btn.disabled = false;
                 spinner.style.display = 'none';
@@ -1527,6 +1537,70 @@
         });
 
         console.log('Health Analyzer Pro initialized with dual analysis system');
+
+        // --- TRANSLATION SYSTEM ---
+        let currentLang = localStorage.getItem('lang') || 'ua';
+        function setLang(lang) {
+            if (!TRANSLATIONS[lang]) lang = 'ua';
+            currentLang = lang;
+            localStorage.setItem('lang', lang);
+            applyTranslations();
+            highlightLangBtn();
+        }
+        function highlightLangBtn() {
+            document.getElementById('langUA').style.background = currentLang === 'ua' ? '#e0e7ff' : '#fff';
+            document.getElementById('langRU').style.background = currentLang === 'ru' ? '#e0e7ff' : '#fff';
+        }
+        function t(key) {
+            return TRANSLATIONS[currentLang][key] || TRANSLATIONS['ua'][key] || key;
+        }
+        function applyTranslations() {
+            // Meta
+            document.title = t('meta_title');
+            const metaDesc = document.getElementById('metaDescription');
+            if (metaDesc) metaDesc.setAttribute('content', t('meta_description'));
+            // Header
+            document.getElementById('headerTitle').textContent = t('header_title');
+            document.getElementById('headerSubtitle').textContent = t('header_subtitle');
+            // Upload
+            document.getElementById('uploadText').textContent = t('upload_drag');
+            document.getElementById('uploadHint').textContent = t('upload_hint');
+            document.getElementById('cameraBtnText').textContent = t('camera_btn');
+            // Preview
+            document.getElementById('previewImage').alt = t('preview_alt');
+            // Analysis buttons
+            document.getElementById('detailedBtnTitle').textContent = t('analysis_detailed');
+            document.getElementById('detailedBtnDesc').textContent = t('analysis_detailed_desc');
+            document.getElementById('detailedBtnTime').textContent = t('analysis_time');
+            document.getElementById('comprehensiveBtnTitle').textContent = t('analysis_comprehensive');
+            document.getElementById('comprehensiveBtnDesc').textContent = t('analysis_comprehensive_desc');
+            document.getElementById('comprehensiveBtnTime').textContent = t('analysis_time');
+            // Results
+            document.getElementById('resultsHeader').textContent = t('results_header');
+            document.getElementById('disclaimerText').textContent = t('disclaimer');
+            // Preview controls
+            const previewTitle = document.querySelector('.preview-title');
+            if (previewTitle) previewTitle.textContent = t('preview_title');
+            const retakeBtn = document.getElementById('retakeBtn');
+            if (retakeBtn) retakeBtn.textContent = t('retake_btn');
+            const useBtn = document.getElementById('usePhotoBtn');
+            if (useBtn) useBtn.textContent = t('use_btn');
+            // Progress
+            const progressText = document.getElementById('progressText');
+            if (progressText && progressText.textContent.includes('Загрузка') || progressText.textContent.includes('Завантаження') || progressText.textContent.includes('Upload')) {
+                progressText.textContent = t('loading_upload');
+            }
+            if (progressText && progressText.textContent.includes('Анализ') || progressText.textContent.includes('Аналіз') || progressText.textContent.includes('Analysis')) {
+                progressText.textContent = t('loading_analysis');
+            }
+        }
+        document.getElementById('langUA').onclick = () => setLang('ua');
+        document.getElementById('langRU').onclick = () => setLang('ru');
+        // --- END TRANSLATION SYSTEM ---
+
+        // Вызов applyTranslations() при загрузке
+        applyTranslations();
+        highlightLangBtn();
     </script>
 </body>
 </html>
