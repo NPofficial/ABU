@@ -993,7 +993,8 @@
                 body: JSON.stringify({
                     imageUrl,
                     analysisId,
-                    timestamp: Date.now()
+                    timestamp: Date.now(),
+                    language: currentLang
                 })
             });
 
@@ -1017,7 +1018,8 @@
                     imageUrl,
                     analysisId,
                     timestamp: Date.now(),
-                    detailedAnalysis
+                    detailedAnalysis,
+                    language: currentLang
                 })
             });
 
