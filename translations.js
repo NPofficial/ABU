@@ -1,10 +1,10 @@
 // translations.js
 const TRANSLATIONS = {
   ua: {
-    meta_title: 'Health Analyzer Pro — ШІ-аналіз язика',
-    meta_description: 'Сучасний wellness-додаток для аналізу здоровʼя за фото язика з використанням ШІ.',
-    header_title: 'Health Analyzer Pro',
-    header_subtitle: 'ШІ-аналіз язика',
+    meta_title: 'Health Analyzer ABU — Аналіз язика',
+    meta_description: 'Сучасний wellness-додаток для аналізу здоровʼя за фото язика.',
+    header_title: 'Health Analyzer ABU',
+    header_subtitle: 'Аналіз здоров\'я',
     upload_drag: 'Перетягніть зображення сюди або натисніть для вибору',
     upload_hint: 'Підтримуються формати: JPG, PNG, WebP (до 10 МБ)',
     camera_btn: 'Зробити фото',
@@ -30,7 +30,7 @@ const TRANSLATIONS = {
     loading_upload: 'Завантаження зображення...',
     loading_analysis: 'Аналіз зображення...',
     results_header: 'Результати аналізу',
-    disclaimer: '⚠️ Це wellness-аналіз із використанням ШІ, не замінює медичну консультацію. При серйозних симптомах зверніться до лікаря.',
+    disclaimer: '⚠️ Це wellness-аналіз, не замінює медичну консультацію. При серйозних симптомах зверніться до лікаря.',
     preview_title: 'Попередній перегляд',
     retake_btn: 'Перезняти',
     use_btn: 'Використати',
@@ -46,10 +46,10 @@ const TRANSLATIONS = {
     // ...добавить все остальные тексты по мере необходимости
   },
   ru: {
-    meta_title: 'Health Analyzer Pro — ИИ-анализ языка',
-    meta_description: 'Современное wellness-приложение для анализа здоровья по фото языка с помощью ИИ.',
-    header_title: 'Health Analyzer Pro',
-    header_subtitle: 'ИИ-анализ языка',
+    meta_title: 'Health Analyzer ABU — Анализ языка',
+    meta_description: 'Современное wellness-приложение для анализа здоровья по фото языка.',
+    header_title: 'Health Analyzer ABU',
+    header_subtitle: 'Анализ здоровья',
     upload_drag: 'Перетащите изображение сюда или нажмите для выбора',
     upload_hint: 'Поддерживаются форматы: JPG, PNG, WebP (до 10 МБ)',
     camera_btn: 'Сделать фото',
@@ -75,7 +75,7 @@ const TRANSLATIONS = {
     loading_upload: 'Загрузка изображения...',
     loading_analysis: 'Анализ изображения...',
     results_header: 'Результаты анализа',
-    disclaimer: '⚠️ Это wellness анализ с использованием ИИ, не заменяет медицинскую консультацию. При серьезных симптомах обратитесь к врачу.',
+    disclaimer: '⚠️ Это wellness анализ, не заменяет медицинскую консультацию. При серьезных симптомах обратитесь к врачу.',
     preview_title: 'Предварительный просмотр',
     retake_btn: 'Переснять',
     use_btn: 'Использовать',
