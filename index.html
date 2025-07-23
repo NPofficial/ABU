@@ -689,96 +689,24 @@
             }, 50);
         }
 
-        // Camera functionality
+        // --- CAMERA FIX ---
         async function startCamera(facingMode = 'user') {
             try {
-                console.log('Starting camera with facingMode:', facingMode);
-                
-                // Stop existing stream
+                // Остановить предыдущий поток
                 if (currentStream) {
                     currentStream.getTracks().forEach(track => track.stop());
                 }
-
-                // Check if camera is available
-                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                    throw new Error('Camera API not supported');
-                }
-
-                // Try simpler constraints first
-                let constraints = {
-                    video: true
-                };
-
-                // If we have preference for camera, try to use it
-                if (facingMode) {
-                    constraints = {
-                        video: {
-                            facingMode: facingMode
-                        }
-                    };
-                }
-
-                console.log('Requesting camera with constraints:', constraints);
-                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
-                
+                const constraints = { video: { facingMode: facingMode } };
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 const videoElement = document.getElementById('cameraVideo');
-                console.log('Video element found:', videoElement);
-                
-                videoElement.srcObject = currentStream;
+                videoElement.srcObject = stream;
+                currentStream = stream;
                 currentFacingMode = facingMode;
-
-                // Применяем правильное зеркалирование в зависимости от камеры
-                if (facingMode === 'user') {
-                    videoElement.className = 'front-camera';
-                    console.log('Applied front camera mirroring');
-                } else {
-                    videoElement.className = 'back-camera';
-                    console.log('Applied back camera normal view');
-                }
-
-                // Wait for video to load
-                return new Promise((resolve, reject) => {
-                    videoElement.onloadedmetadata = () => {
-                        console.log('Video metadata loaded, playing...');
-                        videoElement.play().then(() => {
-                            console.log('Camera started successfully:', facingMode);
-                            resolve(true);
-                        }).catch(error => {
-                            console.error('Error playing video:', error);
-                            reject(error);
-                        });
-                    };
-                    
-                    videoElement.onerror = (error) => {
-                        console.error('Video element error:', error);
-                        reject(error);
-                    };
-                    
-                    // Timeout fallback
-                    setTimeout(() => {
-                        if (videoElement.readyState === 0) {
-                            reject(new Error('Video load timeout'));
-                        }
-                    }, 10000);
-                });
-
-            } catch (error) {
-                console.error('Error starting camera:', error);
-                
-                // Fallback: try different camera
-                if (facingMode === 'user') {
-                    try {
-                        console.log('Trying fallback to environment camera');
-                        return await startCamera('environment');
-                    } catch (fallbackError) {
-                        console.error('Fallback camera also failed:', fallbackError);
-                        showError('error_camera_access_denied');
-                        return false;
-                    }
-                } else {
-                    showError('error_camera_unavailable');
-                    return false;
-                }
+                await videoElement.play();
+                return true;
+            } catch (e) {
+                alert('Не вдалося отримати доступ до камери');
+                return false;
             }
         }
 
@@ -872,32 +800,18 @@
 
         // Camera event listeners
         document.getElementById('cameraBtn').addEventListener('click', async () => {
-            console.log('Camera button clicked');
             const cameraInterface = document.getElementById('cameraInterface');
-            
-            // Show loading state
             cameraInterface.style.display = 'flex';
-            const hintElement = document.querySelector('.camera-hint');
-            const originalHint = hintElement.textContent;
-            hintElement.textContent = t('camera_starting');
-            
-            try {
-                const success = await startCamera('user'); // Start with front camera
-                if (success) {
-                    hintElement.textContent = originalHint;
-                } else {
-                    cameraInterface.style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Failed to start camera:', error);
-                cameraInterface.style.display = 'none';
-                hintElement.textContent = originalHint;
-            }
+            const success = await startCamera('user');
+            if (!success) cameraInterface.style.display = 'none';
         });
 
         document.getElementById('cancelBtn').addEventListener('click', () => {
             document.getElementById('cameraInterface').style.display = 'none';
-            stopCamera();
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
         });
 
         document.getElementById('captureBtn').addEventListener('click', capturePhoto);
