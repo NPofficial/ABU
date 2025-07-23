@@ -100,13 +100,29 @@
       background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
     .camera-hint {
-      position: absolute; top: calc(32px + env(safe-area-inset-top)); left: 0; right: 0; text-align: center;
-      color: #fff; font-size: 1.1rem; font-weight: 600; z-index: 2;
-      background: rgba(0,0,0,0.3); padding: 10px 24px; border-radius: 16px;
+      position: absolute; top: calc(40px + env(safe-area-inset-top)); left: 20px; right: 20px; text-align: center;
+      color: #fff; font-size: 18px; font-weight: 600; z-index: 2;
+      background: rgba(17, 24, 39, 0.8); padding: 16px 32px; border-radius: 16px;
+      backdrop-filter: blur(12px); box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+    }
+    @media (max-width: 600px) {
+      .camera-hint {
+        font-size: 16px;
+        padding: 12px 24px;
+      }
+    }
+    @media (hover: hover) {
+      .control-btn:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+      }
+      .control-btn:hover::before {
+        transform: scale(1.1);
+      }
     }
     #cameraVideo {
       width: 100vw; height: 100vh; object-fit: cover; background: #000;
-      transform: scaleX(1) !important;
+      /* transform: scaleX(1) !important; убрано */
     }
     .tongue-guide {
       position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
@@ -114,39 +130,102 @@
       animation: tonguePulse 1.5s infinite alternate;
     }
     @media (max-width: 600px) {
-      .tongue-guide { width: 160px; height: 220px; }
-      #tonguePath { stroke-width: 3; }
+      .tongue-guide { width: 200px; height: 280px; }
     }
     @media (min-width: 601px) and (max-width: 1024px) {
-      .tongue-guide { width: 200px; height: 280px; }
-      #tonguePath { stroke-width: 2; }
+      .tongue-guide { width: 240px; height: 320px; }
     }
     @media (min-width: 1025px) {
-      .tongue-guide { width: 180px; height: 250px; }
-      #tonguePath { stroke-width: 2; }
+      .tongue-guide { width: 220px; height: 300px; }
     }
     @keyframes tonguePulse {
       0% { stroke-opacity: 0.4; }
       100% { stroke-opacity: 0.7; }
     }
     .camera-controls {
-      position: absolute; bottom: calc(48px + env(safe-area-inset-bottom)); left: 0; right: 0; display: flex; justify-content: center; gap: 32px; z-index: 4;
+      position: absolute; 
+      bottom: calc(60px + env(safe-area-inset-bottom)); 
+      left: 0; 
+      right: 0; 
+      display: flex; 
+      justify-content: center; 
+      gap: 40px; 
+      z-index: 4;
     }
     .control-btn {
-      width: 56px; height: 56px; min-width: 44px; min-height: 44px;
-      background: rgba(255,255,255,0.85); border: none; border-radius: 16px;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 2px 8px rgba(99,102,241,0.08);
-      transition: background 0.2s, box-shadow 0.2s;
+      width: 72px; 
+      height: 72px;
+      background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+      border: none; 
+      border-radius: 24px;
+      display: flex; 
+      align-items: center; 
+      justify-content: center;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      transition: all 0.3s ease;
       cursor: pointer;
+      position: relative;
     }
-    .capture-btn { width: 80px; height: 80px; border-radius: 50%; background: #6366F1; color: #fff; box-shadow: 0 4px 16px rgba(99,102,241,0.18); }
-    .control-btn:active { background: #e0e7ff; }
-    .control-btn svg { width: 32px; height: 32px; }
+    .control-btn::before {
+      content: '';
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      width: 32px;
+      height: 32px;
+      background: #111827;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .switch-btn::before { content: '1'; }
+    .capture-btn::before { content: '2'; }
+    .cancel-btn::before { content: '3'; }
+    .capture-btn { 
+      width: 88px; 
+      height: 88px; 
+      background: linear-gradient(135deg, #E9D5FF 0%, #DDD6FE 100%);
+    }
+    .cancel-btn {
+      background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+    }
+    .control-btn:active { 
+      transform: scale(0.95);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .control-btn svg { 
+      width: 36px; 
+      height: 36px; 
+    }
+    .capture-btn svg {
+      width: 44px;
+      height: 44px;
+    }
     @media (max-width: 600px) {
-      .camera-controls { gap: 24px; }
-      .control-btn { width: 48px; height: 48px; }
-      .capture-btn { width: 64px; height: 64px; }
+      .camera-controls { 
+        gap: 24px; 
+        bottom: calc(40px + env(safe-area-inset-bottom));
+      }
+      .control-btn { 
+        width: 64px; 
+        height: 64px; 
+        border-radius: 20px;
+      }
+      .capture-btn { 
+        width: 80px; 
+        height: 80px; 
+      }
+      .control-btn::before {
+        width: 28px;
+        height: 28px;
+        top: -8px;
+        right: -8px;
+        font-size: 12px;
+      }
     }
     /* Photo Preview */
     .photo-preview { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
@@ -254,35 +333,55 @@
       <video id="cameraVideo" autoplay playsinline muted></video>
       <canvas id="cameraCanvas" style="display:none;"></canvas>
       <!-- SVG-контур языка -->
-      <svg class="tongue-guide" id="tongueGuide" viewBox="0 0 240 320">
+      <svg class="tongue-guide" id="tongueGuide" viewBox="0 0 200 300">
         <path id="tonguePath"
-          d="M120,40 Q40,100 60,240 Q120,300 180,240 Q200,100 120,40 Z"
+          d="M100,20 
+             C80,20 60,30 50,50
+             C40,70 40,90 40,120
+             L40,200
+             C40,240 60,270 100,280
+             C140,270 160,240 160,200
+             L160,120
+             C160,90 160,70 150,50
+             C140,30 120,20 100,20 Z"
           fill="none"
           stroke="#fff"
-          stroke-opacity="0.4"
+          stroke-opacity="0.5"
           stroke-width="3"
           stroke-linecap="round"
           stroke-linejoin="round"
         />
-        <path
-          d="M120,80 Q130,180 120,260"
-          fill="none"
+        <!-- Центральная линия -->
+        <line x1="100" y1="40" x2="100" y2="260"
           stroke="#fff"
-          stroke-opacity="0.4"
+          stroke-opacity="0.3"
           stroke-width="2"
-          stroke-dasharray="10,8"
-          stroke-linecap="round"
+          stroke-dasharray="8,6"
         />
       </svg>
       <div class="camera-controls">
+        <!-- Кнопка переключения камеры -->
         <button id="switchCameraBtn" class="control-btn switch-btn" title="Перемкнути камеру">
-          <svg width="32" height="32" fill="none" stroke="#6366F1" stroke-width="2"><path d="M4 17v3a2 2 0 0 0 2 2h3"/><polyline points="1 21 4 17 7 21"/><path d="M20 7V4a2 2 0 0 0-2-2h-3"/><polyline points="23 3 20 7 17 3"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2.5">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="3"/>
+            <path d="M17 8h.01"/>
+          </svg>
         </button>
+        <!-- Кнопка съемки -->
         <button id="captureBtn" class="control-btn capture-btn" title="Зробити знімок">
-          <svg width="40" height="40" fill="none" stroke="#6366F1" stroke-width="2"><circle cx="20" cy="20" r="18" fill="#6366F1" stroke="#fff" stroke-width="2"/><circle cx="20" cy="20" r="10" fill="#fff"/></svg>
+          <svg viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="10" fill="#9333EA"/>
+            <circle cx="12" cy="12" r="7" fill="#A855F7"/>
+            <circle cx="12" cy="12" r="4" fill="#C084FC"/>
+          </svg>
         </button>
+        <!-- Кнопка отмены -->
         <button id="cancelBtn" class="control-btn cancel-btn" title="Відміна">
-          <svg width="32" height="32" fill="none" stroke="#ef4444" stroke-width="2"><line x1="8" y1="8" x2="24" y2="24"/><line x1="24" y1="8" x2="8" y2="24"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2.5">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
         </button>
       </div>
     </div>
@@ -773,6 +872,12 @@
                 const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 const videoElement = document.getElementById('cameraVideo');
                 videoElement.srcObject = stream;
+                // Динамическое зеркалирование
+                if (facingMode === 'user') {
+                    videoElement.style.transform = 'scaleX(-1)';
+                } else {
+                    videoElement.style.transform = 'scaleX(1)';
+                }
                 currentStream = stream;
                 currentFacingMode = facingMode;
                 await videoElement.play();
