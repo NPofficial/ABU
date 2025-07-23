@@ -95,14 +95,59 @@
     .loading-spinner { display: none; width: 20px; height: 20px; border: 2px solid #fff; border-top: 2px solid #3B82F6; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px; }
     @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     /* Camera Interface */
-    .camera-interface { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-    #cameraVideo { width: 100vw; height: 100vh; object-fit: cover; background: #000; }
-    .camera-controls { position: absolute; bottom: 40px; left: 0; right: 0; display: flex; justify-content: center; gap: 32px; }
-    .control-btn { border: none; border-radius: 50%; width: 60px; height: 60px; font-size: 1.2rem; font-weight: 600; cursor: pointer; background: #fff; color: #2563EB; box-shadow: 0 2px 8px rgba(59,130,246,0.08); transition: background 0.2s; }
+    .camera-interface {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .camera-hint {
+      position: absolute; top: calc(32px + env(safe-area-inset-top)); left: 0; right: 0; text-align: center;
+      color: #fff; font-size: 1.1rem; font-weight: 600; z-index: 2;
+      background: rgba(0,0,0,0.3); padding: 10px 24px; border-radius: 16px;
+    }
+    #cameraVideo {
+      width: 100vw; height: 100vh; object-fit: cover; background: #000;
+      transform: scaleX(1) !important;
+    }
+    .tongue-guide {
+      position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+      pointer-events: none; z-index: 3;
+      animation: tonguePulse 1.5s infinite alternate;
+    }
+    @media (max-width: 600px) {
+      .tongue-guide { width: 160px; height: 220px; }
+      #tonguePath { stroke-width: 3; }
+    }
+    @media (min-width: 601px) and (max-width: 1024px) {
+      .tongue-guide { width: 200px; height: 280px; }
+      #tonguePath { stroke-width: 2; }
+    }
+    @media (min-width: 1025px) {
+      .tongue-guide { width: 180px; height: 250px; }
+      #tonguePath { stroke-width: 2; }
+    }
+    @keyframes tonguePulse {
+      0% { stroke-opacity: 0.4; }
+      100% { stroke-opacity: 0.7; }
+    }
+    .camera-controls {
+      position: absolute; bottom: calc(48px + env(safe-area-inset-bottom)); left: 0; right: 0; display: flex; justify-content: center; gap: 32px; z-index: 4;
+    }
+    .control-btn {
+      width: 56px; height: 56px; min-width: 44px; min-height: 44px;
+      background: rgba(255,255,255,0.85); border: none; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.08);
+      transition: background 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .capture-btn { width: 80px; height: 80px; border-radius: 50%; background: #6366F1; color: #fff; box-shadow: 0 4px 16px rgba(99,102,241,0.18); }
     .control-btn:active { background: #e0e7ff; }
-    .capture-btn { background: #3B82F6; color: #fff; font-size: 1.5rem; }
-    .cancel-btn { background: #f87171; color: #fff; }
-    .switch-btn { background: #fbbf24; color: #fff; }
+    .control-btn svg { width: 32px; height: 32px; }
+    @media (max-width: 600px) {
+      .camera-controls { gap: 24px; }
+      .control-btn { width: 48px; height: 48px; }
+      .capture-btn { width: 64px; height: 64px; }
+    }
     /* Photo Preview */
     .photo-preview { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     .preview-img { max-width: 90vw; max-height: 60vh; border-radius: 16px; margin-bottom: 24px; }
@@ -205,13 +250,41 @@
 
     <!-- Camera Interface -->
     <div id="cameraInterface" class="camera-interface" style="display:none;">
-        <video id="cameraVideo" autoplay playsinline muted></video>
-        <canvas id="cameraCanvas" style="display:none;"></canvas>
-        <div class="camera-controls">
-            <button id="cancelBtn" class="control-btn cancel-btn">Відміна</button>
-            <button id="captureBtn" class="control-btn capture-btn">📷</button>
-            <button id="switchCameraBtn" class="control-btn switch-btn">🔄</button>
-        </div>
+      <div class="camera-hint" id="cameraHint">Розмістіть язик у контурі</div>
+      <video id="cameraVideo" autoplay playsinline muted></video>
+      <canvas id="cameraCanvas" style="display:none;"></canvas>
+      <!-- SVG-контур языка -->
+      <svg class="tongue-guide" id="tongueGuide" viewBox="0 0 240 320">
+        <path id="tonguePath"
+          d="M120,40 Q40,100 60,240 Q120,300 180,240 Q200,100 120,40 Z"
+          fill="none"
+          stroke="#fff"
+          stroke-opacity="0.4"
+          stroke-width="3"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M120,80 Q130,180 120,260"
+          fill="none"
+          stroke="#fff"
+          stroke-opacity="0.4"
+          stroke-width="2"
+          stroke-dasharray="10,8"
+          stroke-linecap="round"
+        />
+      </svg>
+      <div class="camera-controls">
+        <button id="switchCameraBtn" class="control-btn switch-btn" title="Перемкнути камеру">
+          <svg width="32" height="32" fill="none" stroke="#6366F1" stroke-width="2"><path d="M4 17v3a2 2 0 0 0 2 2h3"/><polyline points="1 21 4 17 7 21"/><path d="M20 7V4a2 2 0 0 0-2-2h-3"/><polyline points="23 3 20 7 17 3"/></svg>
+        </button>
+        <button id="captureBtn" class="control-btn capture-btn" title="Зробити знімок">
+          <svg width="40" height="40" fill="none" stroke="#6366F1" stroke-width="2"><circle cx="20" cy="20" r="18" fill="#6366F1" stroke="#fff" stroke-width="2"/><circle cx="20" cy="20" r="10" fill="#fff"/></svg>
+        </button>
+        <button id="cancelBtn" class="control-btn cancel-btn" title="Відміна">
+          <svg width="32" height="32" fill="none" stroke="#ef4444" stroke-width="2"><line x1="8" y1="8" x2="24" y2="24"/><line x1="24" y1="8" x2="8" y2="24"/></svg>
+        </button>
+      </div>
     </div>
 
     <!-- Photo Preview -->
@@ -1004,6 +1077,44 @@
         // Вызов applyTranslations() при загрузке
         applyTranslations();
         highlightLangBtn();
+
+        // --- Индикатор расстояния и подсказки ---
+        const cameraHint = document.getElementById('cameraHint');
+        const tonguePath = document.getElementById('tonguePath');
+        const cameraVideo = document.getElementById('cameraVideo');
+        const cameraCanvas = document.getElementById('cameraCanvas');
+
+        function updateContourAndHint(percent) {
+          if (percent < 0.3) {
+            tonguePath.setAttribute('stroke', '#ef4444');
+            cameraHint.textContent = "Наблизьте камеру";
+          } else if (percent < 0.5) {
+            tonguePath.setAttribute('stroke', '#f59e42');
+            cameraHint.textContent = "Відсуньте камеру";
+          } else {
+            tonguePath.setAttribute('stroke', '#22c55e');
+            cameraHint.textContent = "Чудово! Натисніть для знімку";
+          }
+        }
+
+        // Пример анализа размера языка (вызывайте периодически, например, через setInterval)
+        function analyzeTongueSize() {
+          if (!cameraVideo.videoWidth) return;
+          cameraCanvas.width = cameraVideo.videoWidth;
+          cameraCanvas.height = cameraVideo.videoHeight;
+          const ctx = cameraCanvas.getContext('2d');
+          ctx.drawImage(cameraVideo, 0, 0, cameraCanvas.width, cameraCanvas.height);
+          // Пример: анализируем яркость центральной области (замените на свой алгоритм)
+          const imageData = ctx.getImageData(cameraCanvas.width/2-40, cameraCanvas.height/2-60, 80, 120);
+          let count = 0;
+          for (let i = 0; i < imageData.data.length; i += 4) {
+            if (imageData.data[i+0] > 180 && imageData.data[i+1] > 100 && imageData.data[i+2] > 100) count++;
+          }
+          // percent = доля "языка" в центральной зоне (заглушка)
+          const percent = Math.min(1, count / 3000);
+          updateContourAndHint(percent);
+        }
+        setInterval(analyzeTongueSize, 500);
     });
     </script>
 </body>
