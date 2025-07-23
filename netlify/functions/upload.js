@@ -157,27 +157,13 @@ exports.handler = async (event, context) => {
                     unique_filename: true,
                     overwrite: false,
                     invalidate: true,
+                    // === 1. Базовая оптимизация размера при загрузке ===
                     transformation: [
-
-                        // Базовые настройки
-                        { width: 1200, height: 1200, crop: 'limit' },
-                        
-                        // Улучшение контраста и четкости
-                        { 
-                            effect: 'sharpen:300',           // Резкость для деталей
-                            quality: 'auto:best'            // Максимальное качество
-                        },
-                        
-                        // Улучшение контуров
-                        { 
-                            effect: 'unsharp_mask:500',     // Подчеркивание контуров
-                            color_space: 'srgb'             // Правильное цветовое пространство
-                        },
-                        
-                        // Усиление контраста для выделения патологий
-                        { 
-                            effect: 'contrast:30',          // Увеличение контраста
-                            effect: 'brightness:10'         // Небольшое осветление
+                        {
+                            width: 1200,
+                            height: 1200,
+                            crop: 'limit',
+                            quality: 'auto:best'
                         }
                     ]
                 },
@@ -193,37 +179,49 @@ exports.handler = async (event, context) => {
             ).end(file.data);
         });
 
-        // Создаем специальную версию для медицинского анализа
+        // === 2. Новый medicalAnalysisUrl ===
         const medicalAnalysisUrl = cloudinary.url(result.public_id, {
             transformation: [
-                { width: 1000, height: 1000, crop: 'limit' },
-                
-                // Медицинские улучшения
-                { effect: 'sharpen:400' },
-                { effect: 'contrast:40' },
-                { effect: 'saturation:20' },
-                
-                // Подчеркивание текстуры
-                { effect: 'unsharp_mask:800' },
-                
-                // Выделение воспалений (красных зон)
-                { effect: 'hue:10' },
-                { effect: 'vibrance:30' },
-                
-                // Финальная обработка
-                { quality: 'auto:best' },
-                { format: 'jpg' }
-
+                // 1. Обрезка 25% с каждой стороны для фокуса на языке
+                {
+                    crop: 'crop',
+                    width: 0.5,  // 50% от ширины (убираем по 25% с каждой стороны)
+                    height: 0.5, // 50% от высоты
+                    gravity: 'center'  // Обрезаем от центра
+                },
+                // 2. Масштабирование обрезанного изображения
+                {
+                    width: 1000,
+                    height: 1000,
+                    crop: 'limit'
+                },
+                // 3. Умеренные медицинские улучшения БЕЗ искажения цветов
+                { effect: 'auto_brightness' },    // Автокоррекция яркости
+                { effect: 'auto_color' },         // Автокоррекция цвета БЕЗ искажений
+                { effect: 'sharpen:150' },        // Умеренная резкость
+                { effect: 'contrast:20' },        // Легкий контраст
+                { effect: 'unsharp_mask:200' },   // Умеренные контуры
+                // 4. Финальные настройки
+                { quality: 100 },                 // Максимальное качество
+                { format: 'jpg' }                 // Формат JPG
             ]
         });
-
-        // Добавляем timestamp к URL для предотвращения кэширования
-        const versionedUrl = `${result.secure_url}?v=${Date.now()}`;
-        const versionedAnalysisUrl = `${medicalAnalysisUrl}?v=${Date.now()}`;
-        
+        // === 3. Версия для пользователя (userDisplayUrl) ===
+        const userDisplayUrl = cloudinary.url(result.public_id, {
+            transformation: [
+                { width: 800, height: 800, crop: 'limit' },
+                { effect: 'improve:50' },         // Легкое улучшение
+                { quality: 'auto:good' }
+            ]
+        });
+        // === 4. Версионированный URL теперь на userDisplayUrl ===
+        const versionedUrl = `${userDisplayUrl}?v=${Date.now()}`;
+        // === 5. Обновить console.log ===
+        console.log('=== CLOUDINARY URLS ===');
         console.log('Original URL:', result.secure_url);
-        console.log('Versioned URL:', versionedUrl);
-        console.log('Medical Analysis URL:', versionedAnalysisUrl);
+        console.log('User Display URL:', versionedUrl);
+        console.log('Medical Analysis URL (cropped + enhanced):', medicalAnalysisUrl);
+        console.log('=======================');
 
         return {
             statusCode: 200,
@@ -231,7 +229,7 @@ exports.handler = async (event, context) => {
             body: JSON.stringify({ 
                 success: true,
                 url: versionedUrl,                    // Для показа пользователю
-                analysisUrl: versionedAnalysisUrl,    // Для отправки в Claude
+                analysisUrl: medicalAnalysisUrl,    // Для отправки в Claude
                 originalUrl: result.secure_url,
                 publicId: result.public_id,
                 uniqueId: uniqueId
