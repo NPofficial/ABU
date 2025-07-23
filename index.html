@@ -100,29 +100,40 @@
       background: #000; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
     }
     .camera-hint {
-      position: absolute; top: calc(40px + env(safe-area-inset-top)); left: 20px; right: 20px; text-align: center;
-      color: #fff; font-size: 18px; font-weight: 600; z-index: 2;
-      background: rgba(17, 24, 39, 0.8); padding: 16px 32px; border-radius: 16px;
-      backdrop-filter: blur(12px); box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+      position: absolute; 
+      top: calc(40px + env(safe-area-inset-top)); 
+      left: 20px; 
+      right: 20px; 
+      text-align: center;
+      color: #fff; 
+      z-index: 2;
+      background: rgba(17, 24, 39, 0.9); 
+      padding: 20px 24px; 
+      border-radius: 20px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    }
+    .hint-main {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .hint-sub {
+      font-size: 14px;
+      font-weight: 400;
+      opacity: 0.9;
+      line-height: 1.4;
     }
     @media (max-width: 600px) {
       .camera-hint {
+        padding: 16px 20px;
+      }
+      .hint-main {
         font-size: 16px;
-        padding: 12px 24px;
       }
-    }
-    @media (hover: hover) {
-      .control-btn:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+      .hint-sub {
+        font-size: 13px;
       }
-      .control-btn:hover::before {
-        transform: scale(1.1);
-      }
-    }
-    #cameraVideo {
-      width: 100vw; height: 100vh; object-fit: cover; background: #000;
-      /* transform: scaleX(1) !important; убрано */
     }
     .tongue-guide {
       position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
@@ -130,17 +141,22 @@
       animation: tonguePulse 1.5s infinite alternate;
     }
     @media (max-width: 600px) {
-      .tongue-guide { width: 200px; height: 280px; }
+      .tongue-guide { 
+        width: 240px; 
+        height: 340px; 
+      }
     }
     @media (min-width: 601px) and (max-width: 1024px) {
-      .tongue-guide { width: 240px; height: 320px; }
+      .tongue-guide { 
+        width: 280px; 
+        height: 380px; 
+      }
     }
     @media (min-width: 1025px) {
-      .tongue-guide { width: 220px; height: 300px; }
-    }
-    @keyframes tonguePulse {
-      0% { stroke-opacity: 0.4; }
-      100% { stroke-opacity: 0.7; }
+      .tongue-guide { 
+        width: 260px; 
+        height: 360px; 
+      }
     }
     .camera-controls {
       position: absolute; 
@@ -164,27 +180,7 @@
       box-shadow: 0 8px 24px rgba(0,0,0,0.15);
       transition: all 0.3s ease;
       cursor: pointer;
-      position: relative;
     }
-    .control-btn::before {
-      content: '';
-      position: absolute;
-      top: -10px;
-      right: -10px;
-      width: 32px;
-      height: 32px;
-      background: #111827;
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-      font-weight: 700;
-    }
-    .switch-btn::before { content: '1'; }
-    .capture-btn::before { content: '2'; }
-    .cancel-btn::before { content: '3'; }
     .capture-btn { 
       width: 88px; 
       height: 88px; 
@@ -218,13 +214,6 @@
       .capture-btn { 
         width: 80px; 
         height: 80px; 
-      }
-      .control-btn::before {
-        width: 28px;
-        height: 28px;
-        top: -8px;
-        right: -8px;
-        font-size: 12px;
       }
     }
     /* Photo Preview */
@@ -329,32 +318,35 @@
 
     <!-- Camera Interface -->
     <div id="cameraInterface" class="camera-interface" style="display:none;">
-      <div class="camera-hint" id="cameraHint">Розмістіть язик у контурі</div>
+      <div class="camera-hint" id="cameraHint">
+        <div class="hint-main">Розмістіть язик у контурі</div>
+        <div class="hint-sub">Висуньте язик максимально далеко та зробіть фото крупним планом</div>
+      </div>
       <video id="cameraVideo" autoplay playsinline muted></video>
       <canvas id="cameraCanvas" style="display:none;"></canvas>
       <!-- SVG-контур языка -->
-      <svg class="tongue-guide" id="tongueGuide" viewBox="0 0 200 300">
+      <svg class="tongue-guide" id="tongueGuide" viewBox="0 0 180 280">
         <path id="tonguePath"
-          d="M100,20 
-             C80,20 60,30 50,50
-             C40,70 40,90 40,120
-             L40,200
-             C40,240 60,270 100,280
-             C140,270 160,240 160,200
-             L160,120
-             C160,90 160,70 150,50
-             C140,30 120,20 100,20 Z"
+          d="M90,15 
+             C70,15 50,25 40,45
+             C30,65 30,85 30,115
+             L30,195
+             C30,235 50,265 90,275
+             C130,265 150,235 150,195
+             L150,115
+             C150,85 150,65 140,45
+             C130,25 110,15 90,15 Z"
           fill="none"
           stroke="#fff"
-          stroke-opacity="0.5"
+          stroke-opacity="0.6"
           stroke-width="3"
           stroke-linecap="round"
           stroke-linejoin="round"
         />
         <!-- Центральная линия -->
-        <line x1="100" y1="40" x2="100" y2="260"
+        <line x1="90" y1="35" x2="90" y2="255"
           stroke="#fff"
-          stroke-opacity="0.3"
+          stroke-opacity="0.4"
           stroke-width="2"
           stroke-dasharray="8,6"
         />
@@ -1190,15 +1182,21 @@
         const cameraCanvas = document.getElementById('cameraCanvas');
 
         function updateContourAndHint(percent) {
+          const hintMain = document.querySelector('.hint-main');
+          const hintSub = document.querySelector('.hint-sub');
+          const tonguePath = document.getElementById('tonguePath');
           if (percent < 0.3) {
             tonguePath.setAttribute('stroke', '#ef4444');
-            cameraHint.textContent = "Наблизьте камеру";
+            hintMain.textContent = "Наблизьте камеру";
+            hintSub.textContent = "Підійдіть ближче для кращого аналізу";
           } else if (percent < 0.5) {
             tonguePath.setAttribute('stroke', '#f59e42');
-            cameraHint.textContent = "Відсуньте камеру";
+            hintMain.textContent = "Відсуньте камеру";
+            hintSub.textContent = "Трохи далі для оптимального кадру";
           } else {
             tonguePath.setAttribute('stroke', '#22c55e');
-            cameraHint.textContent = "Чудово! Натисніть для знімку";
+            hintMain.textContent = "Чудово! Натисніть для знімку";
+            hintSub.textContent = "Тримайте язик нерухомо";
           }
         }
 
