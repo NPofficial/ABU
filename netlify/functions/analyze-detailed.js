@@ -181,12 +181,12 @@ exports.handler = async (event, context) => {
             
             console.log('Request params - ID:', requestId, 'Temperature: 0.35', 'TopP: 0.9');
 
-            const response = await Promise.race([
-                anthropic.messages.create({
-                    model: MODELS.PRIMARY,
-                    max_tokens: 2000,
-                    temperature: 0.35,
-                    top_p: 0.9,
+                            const response = await Promise.race([
+                    anthropic.messages.create({
+                        model: MODELS.PRIMARY,
+                        max_tokens: 3000,
+                        temperature: 0.35,
+                        top_p: 0.9,
                     system: `${DETAILED_SYSTEM_PROMPT}\nСЕССИЯ: ${sessionId}\nЗАПРОС: ${requestId}`,
                     messages: [{
                         role: "user",
@@ -232,7 +232,7 @@ exports.handler = async (event, context) => {
                 const response = await Promise.race([
                     anthropic.messages.create({
                         model: MODELS.FALLBACK,
-                        max_tokens: 2000,
+                        max_tokens: 3000,
                         temperature: 0.35,
                         system: `${DETAILED_SYSTEM_PROMPT}\nСЕССИЯ: ${sessionId}`,
                         messages: [{
@@ -240,7 +240,7 @@ exports.handler = async (event, context) => {
                             content: [
                                 {
                                     type: "text",
-                                    text: `Проведи экспресс анализ образца ${antiCacheId}. Используй заботливый тон, делай мягкие акценты на важных находках. Верни JSON согласно формату. Фокус на клиентском опыте!`
+                                    text: `Проведи объективный экспресс анализ образца ${antiCacheId}. Анализируй как под микроскопом, описывай только реальные находки. Используй градацию серьезности. Верни JSON согласно формату.`
                                 },
                                 {
                                     type: "image",
@@ -337,8 +337,30 @@ exports.handler = async (event, context) => {
             }
             
             // Validation
-            if (!parsedAnalysis.general_impression || !parsedAnalysis.key_findings) {
-                throw new Error('Missing required fields in express analysis');
+            console.log('Parsed analysis keys:', Object.keys(parsedAnalysis));
+            console.log('Checking required fields...');
+            
+            if (!parsedAnalysis.general_assessment || !parsedAnalysis.detailed_findings) {
+                console.error('Missing required fields. Available fields:', Object.keys(parsedAnalysis));
+                console.error('general_assessment exists:', !!parsedAnalysis.general_assessment);
+                console.error('detailed_findings exists:', !!parsedAnalysis.detailed_findings);
+                
+                // Fallback: check for old field names
+                if (parsedAnalysis.general_impression && parsedAnalysis.key_findings) {
+                    console.log('Found old field names, mapping to new format...');
+                    parsedAnalysis.general_assessment = parsedAnalysis.general_impression;
+                    parsedAnalysis.detailed_findings = parsedAnalysis.key_findings;
+                } else {
+                    // Check if we have all 5 new fields
+                    const requiredFields = ['general_assessment', 'detailed_findings', 'severity_indicators', 'health_implications', 'attention_required'];
+                    const missingFields = requiredFields.filter(field => !parsedAnalysis[field]);
+                    
+                    if (missingFields.length > 0) {
+                        console.error('Missing new format fields:', missingFields);
+                        console.error('Available fields:', Object.keys(parsedAnalysis));
+                        throw new Error(`Missing required fields in express analysis: ${missingFields.join(', ')}`);
+                    }
+                }
             }
             
             const parseTime = Date.now() - parseStartTime;
