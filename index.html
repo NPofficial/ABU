@@ -142,20 +142,20 @@
     }
     @media (max-width: 600px) {
       .tongue-guide { 
-        width: 240px; 
-        height: 340px; 
+        width: 200px; 
+        height: 280px; 
       }
     }
     @media (min-width: 601px) and (max-width: 1024px) {
       .tongue-guide { 
-        width: 280px; 
-        height: 380px; 
+        width: 220px; 
+        height: 300px; 
       }
     }
     @media (min-width: 1025px) {
       .tongue-guide { 
-        width: 260px; 
-        height: 360px; 
+        width: 210px; 
+        height: 290px; 
       }
     }
     .camera-controls {
@@ -278,7 +278,7 @@
                     </svg>
                 </div>
                 <h2 class="upload-title" id="uploadText">Завантажте фото язика</h2>
-                <p class="upload-subtitle" id="uploadHint">Зробіть чітке фото язика або завантажте з галереї</p>
+                <p class="upload-subtitle" id="uploadHint">Зробіть чітке фото язика або завантажте з галереї. Контур язика повинен бути укорочений на 30%</p>
                 <div class="button-group">
                     <button class="btn btn-primary" id="cameraBtn">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -319,23 +319,23 @@
     <!-- Camera Interface -->
     <div id="cameraInterface" class="camera-interface" style="display:none;">
       <div class="camera-hint" id="cameraHint">
-        <div class="hint-main">Розмістіть язик у контурі</div>
+        <div class="hint-main">Заповніть контур язиком повністю</div>
         <div class="hint-sub">Висуньте язик максимально далеко та зробіть фото крупним планом</div>
       </div>
       <video id="cameraVideo" autoplay playsinline muted></video>
       <canvas id="cameraCanvas" style="display:none;"></canvas>
       <!-- SVG-контур языка -->
-      <svg class="tongue-guide" id="tongueGuide" viewBox="0 0 180 280">
+      <svg class="tongue-guide" id="tongueGuide" viewBox="0 0 140 220">
         <path id="tonguePath"
-          d="M90,15 
-             C70,15 50,25 40,45
-             C30,65 30,85 30,115
-             L30,195
-             C30,235 50,265 90,275
-             C130,265 150,235 150,195
-             L150,115
-             C150,85 150,65 140,45
-             C130,25 110,15 90,15 Z"
+          d="M70,12 
+             C55,12 40,20 32,35
+             C25,50 25,65 25,90
+             L25,150
+             C25,180 40,200 70,208
+             C100,200 115,180 115,150
+             L115,90
+             C115,65 115,50 108,35
+             C100,20 85,12 70,12 Z"
           fill="none"
           stroke="#fff"
           stroke-opacity="0.6"
@@ -344,7 +344,7 @@
           stroke-linejoin="round"
         />
         <!-- Центральная линия -->
-        <line x1="90" y1="35" x2="90" y2="255"
+        <line x1="70" y1="25" x2="70" y2="195"
           stroke="#fff"
           stroke-opacity="0.4"
           stroke-width="2"
