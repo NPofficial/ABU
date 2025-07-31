@@ -683,17 +683,27 @@
 
         // Display detailed results
         function displayDetailedResults(analysisData) {
+            console.log('Received analysis data:', analysisData);
+            console.log('Available fields:', Object.keys(analysisData));
             let resultsHTML = `
                 <div class="analysis-card fade-in">
-                    <h3>�� Комплексний візуальний аналіз</h3>
+                    <h3> Комплексний візуальний аналіз</h3>
             `;
 
-            // Общая характеристика с разделением на строки
-            if (analysisData.detailed_analysis) {
-                let formattedAnalysis = analysisData.detailed_analysis;
+            // Fallback для старых полей
+            const generalAssessment = analysisData.general_assessment || analysisData.detailed_analysis;
+            const detailedFindings = analysisData.detailed_findings || analysisData.visual_findings;
+            const severityIndicators = analysisData.severity_indicators;
+            const healthImplications = analysisData.health_implications;
+            const attentionRequired = analysisData.attention_required;
+            const morphologicalFeatures = analysisData.morphological_features;
+
+            // Общая оценка состояния
+            if (generalAssessment) {
+                let formattedAssessment = generalAssessment;
                 
                 // Разбиваем текст на предложения и форматируем как список
-                formattedAnalysis = formattedAnalysis
+                formattedAssessment = formattedAssessment
                     .split('. ')
                     .filter(sentence => sentence.trim().length > 10)
                     .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
@@ -701,15 +711,15 @@
 
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">📋</span>Загальна характеристика:</h4>
-                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedAnalysis)}</p>
+                        <h4><span class="section-icon">📋</span>Загальна оцінка:</h4>
+                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedAssessment)}</p>
                     </div>
                 `;
             }
 
-            // Визуальные находки с разделением на строки
-            if (analysisData.visual_findings) {
-                let formattedFindings = analysisData.visual_findings;
+            // Детальные находки
+            if (detailedFindings) {
+                let formattedFindings = detailedFindings;
                 
                 // Разбиваем текст на предложения и форматируем как список
                 formattedFindings = formattedFindings
@@ -720,16 +730,70 @@
 
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">🔍</span>Ключові знахідки:</h4>
+                        <h4><span class="section-icon">🔍</span>Детальні знахідки:</h4>
                         <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedFindings)}</p>
                     </div>
                 `;
             }
 
-            // Морфологические особенности
-            if (analysisData.morphological_features) {
+            // Индикаторы серьезности
+            if (severityIndicators) {
+                let formattedSeverity = severityIndicators;
+                
+                formattedSeverity = formattedSeverity
+                    .split('. ')
+                    .filter(sentence => sentence.trim().length > 10)
+                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                    .join('\n\n');
+
+                resultsHTML += `
+                    <div class="mini-card">
+                        <h4><span class="section-icon">⚠️</span>Індикатори серйозності:</h4>
+                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedSeverity)}</p>
+                    </div>
+                `;
+            }
+
+            // Влияние на здоровье
+            if (healthImplications) {
+                let formattedHealth = healthImplications;
+                
+                formattedHealth = formattedHealth
+                    .split('. ')
+                    .filter(sentence => sentence.trim().length > 10)
+                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                    .join('\n\n');
+
+                resultsHTML += `
+                    <div class="mini-card">
+                        <h4><span class="section-icon">💊</span>Вплив на здоров'я:</h4>
+                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedHealth)}</p>
+                    </div>
+                `;
+            }
+
+            // Требует внимания
+            if (attentionRequired) {
+                let formattedAttention = attentionRequired;
+                
+                formattedAttention = formattedAttention
+                    .split('. ')
+                    .filter(sentence => sentence.trim().length > 10)
+                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                    .join('\n\n');
+
+                resultsHTML += `
+                    <div class="mini-card">
+                        <h4><span class="section-icon">🎯</span>Потребує уваги:</h4>
+                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedAttention)}</p>
+                    </div>
+                `;
+            }
+
+            // Морфологические особенности (fallback для старых данных)
+            if (morphologicalFeatures) {
                 // Форматируем морфологические особенности в список
-                let formattedFeatures = analysisData.morphological_features;
+                let formattedFeatures = morphologicalFeatures;
                 
                 // Убираем дублирующий заголовок из текста если он есть
                 formattedFeatures = formattedFeatures.replace(/^⚙️\s*Морфологічні особливості:\s*/i, '');
