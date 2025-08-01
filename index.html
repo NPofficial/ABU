@@ -691,19 +691,20 @@
             `;
 
             // Fallback для старых полей
-            const generalAssessment = analysisData.general_assessment || analysisData.detailed_analysis;
+            const healthStory = analysisData.health_story || analysisData.general_assessment || analysisData.detailed_analysis;
             const detailedFindings = analysisData.detailed_findings || analysisData.visual_findings;
-            const severityIndicators = analysisData.severity_indicators;
-            const healthImplications = analysisData.health_implications;
-            const attentionRequired = analysisData.attention_required;
+            const whatItMeans = analysisData.what_it_means || analysisData.severity_indicators;
+            const futureOutlook = analysisData.future_outlook || analysisData.health_implications;
+            const personalInsights = analysisData.personal_insights;
+            const actionMotivation = analysisData.action_motivation || analysisData.attention_required;
             const morphologicalFeatures = analysisData.morphological_features;
 
-            // Общая оценка состояния
-            if (generalAssessment) {
-                let formattedAssessment = generalAssessment;
+            // История здоровья
+            if (healthStory) {
+                let formattedStory = healthStory;
                 
                 // Разбиваем текст на предложения и форматируем как список
-                formattedAssessment = formattedAssessment
+                formattedStory = formattedStory
                     .split('. ')
                     .filter(sentence => sentence.trim().length > 10)
                     .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
@@ -711,8 +712,8 @@
 
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">📋</span>Загальна оцінка:</h4>
-                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedAssessment)}</p>
+                        <h4><span class="section-icon">📖</span>Історія здоров'я:</h4>
+                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedStory)}</p>
                     </div>
                 `;
             }
@@ -736,11 +737,11 @@
                 `;
             }
 
-            // Индикаторы серьезности
-            if (severityIndicators) {
-                let formattedSeverity = severityIndicators;
+            // Что это означает
+            if (whatItMeans) {
+                let formattedMeaning = whatItMeans;
                 
-                formattedSeverity = formattedSeverity
+                formattedMeaning = formattedMeaning
                     .split('. ')
                     .filter(sentence => sentence.trim().length > 10)
                     .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
@@ -748,17 +749,17 @@
 
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">⚠️</span>Індикатори серйозності:</h4>
-                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedSeverity)}</p>
+                        <h4><span class="section-icon">🔍</span>Що це означає:</h4>
+                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedMeaning)}</p>
                     </div>
                 `;
             }
 
-            // Влияние на здоровье
-            if (healthImplications) {
-                let formattedHealth = healthImplications;
+            // Прогноз на будущее
+            if (futureOutlook) {
+                let formattedOutlook = futureOutlook;
                 
-                formattedHealth = formattedHealth
+                formattedOutlook = formattedOutlook
                     .split('. ')
                     .filter(sentence => sentence.trim().length > 10)
                     .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
@@ -766,17 +767,17 @@
 
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">💊</span>Вплив на здоров'я:</h4>
-                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedHealth)}</p>
+                        <h4><span class="section-icon">🔮</span>Прогноз на майбутнє:</h4>
+                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedOutlook)}</p>
                     </div>
                 `;
             }
 
-            // Требует внимания
-            if (attentionRequired) {
-                let formattedAttention = attentionRequired;
+            // Персональные инсайты
+            if (personalInsights) {
+                let formattedInsights = personalInsights;
                 
-                formattedAttention = formattedAttention
+                formattedInsights = formattedInsights
                     .split('. ')
                     .filter(sentence => sentence.trim().length > 10)
                     .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
@@ -784,8 +785,26 @@
 
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">🎯</span>Потребує уваги:</h4>
-                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedAttention)}</p>
+                        <h4><span class="section-icon">💡</span>Персональні інсайти:</h4>
+                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedInsights)}</p>
+                    </div>
+                `;
+            }
+
+            // Мотивация к действию
+            if (actionMotivation) {
+                let formattedMotivation = actionMotivation;
+                
+                formattedMotivation = formattedMotivation
+                    .split('. ')
+                    .filter(sentence => sentence.trim().length > 10)
+                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                    .join('\n\n');
+
+                resultsHTML += `
+                    <div class="mini-card">
+                        <h4><span class="section-icon">🚀</span>Мотивація до дії:</h4>
+                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedMotivation)}</p>
                     </div>
                 `;
             }
