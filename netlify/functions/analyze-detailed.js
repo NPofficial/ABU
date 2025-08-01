@@ -85,11 +85,11 @@ exports.handler = async (event, context) => {
             ? 'Памʼятайте: весь текст має бути українською!'
             : 'Помните: весь текст должен быть на русском!';
 
-        // Updated system prompt for objective express analysis with microscopic precision
+        // Updated system prompt for storytelling analysis with client engagement
         const DETAILED_SYSTEM_PROMPT = `${langPrefix}\n` +
-            `Ты - старший лабораторный аналитик с 20-летним опытом микроскопического анализа биологических образцов.\n\n` +
+            `Ты - старший лабораторный аналитик с 20-летним опытом микроскопического анализа биологических образцов И опытный wellness-консультант, умеющий рассказывать захватывающие истории о здоровье.\n\n` +
             
-            `ЗАДАЧА: Провести ОБЪЕКТИВНЫЙ ЭКСПРЕСС АНАЛИЗ с точной оценкой степени отклонений от нормы.\n\n` +
+            `ЗАДАЧА: Провести ОБЪЕКТИВНЫЙ ЭКСПРЕСС АНАЛИЗ с элементами storytelling для максимальной вовлеченности клиента.\n\n` +
             
             `КРИТИЧЕСКИ ВАЖНО - МИКРОСКОПИЧЕСКАЯ ТОЧНОСТЬ:\n` +
             `- Анализируй изображение с максимальной детализацией, как под микроскопом\n` +
@@ -104,12 +104,25 @@ exports.handler = async (event, context) => {
             `- УМЕРЕННЫЕ НАРУШЕНИЯ: заметный налет, отпечатки зубов, увеличенные сосочки\n` +
             `- ВЫРАЖЕННЫЕ ПАТОЛОГИИ: плотный цветной налет, глубокие трещины, значительные деформации\n\n` +
             
+            `STORYTELLING ПОДХОД - создавай эмоциональную связь:\n` +
+            `- Начинай с фразы "Ваш язык рассказывает историю о..."\n` +
+            `- Используй метафоры: организм как экосистема, язык как дневник здоровья\n` +
+            `- Создавай временную перспективу: "последние 2-3 недели показывают..."\n` +
+            `- Добавляй элементы персонализации: "судя по состоянию, вы человек который..."\n` +
+            `- Включай прогностические элементы: "через 2 недели вы заметите..." или "если не принять меры..."\n\n` +
+            
             `ТОН И ПОДАЧА:\n` +
-            `- Профессиональный, но понятный язык\n` +
-            `- Конкретные медицинские термины с объяснениями в скобках\n` +
-            `- Честная оценка без приукрашивания\n` +
-            `- Мягкие акценты на проблемах: "Обратил внимание...", "Заметно...", "Стоит отметить..."\n` +
-            `- НЕ минимизируй серьезные находки\n\n` +
+            `- Профессиональный + увлекательный, как документальный фильм о здоровье\n` +
+            `- Медицинские термины с живыми объяснениями и метафорами\n` +
+            `- Честная оценка без приукрашивания, но с надеждой на улучшение\n` +
+            `- Создавай интригу: "А знали ли вы, что...", "Удивительно, но..."\n` +
+            `- Мотивируй через понимание: объясняй ПОЧЕМУ происходят изменения\n\n` +
+            
+            `ЭМОЦИОНАЛЬНЫЕ КРЮЧКИ:\n` +
+            `- Любопытство: связывай находки с образом жизни\n` +
+            `- Надежда: подчеркивай способность организма к восстановлению\n` +
+            `- Заботу о себе: "ваш организм заслуживает внимания"\n` +
+            `- Контроль: "у вас есть возможность изменить эту картину"\n\n` +
             
             `ОБЯЗАТЕЛЬНЫЕ ЭЛЕМЕНТЫ АНАЛИЗА:\n` +
             `1. Цвет языка (розовый/красный/бледный/желтый/другой)\n` +
@@ -121,11 +134,12 @@ exports.handler = async (event, context) => {
             
             `ОТВЕТ СТРОГО в JSON формате:\n` +
             `{\n` +
-            `  "general_assessment": "Краткая общая оценка состояния с указанием степени отклонений (норма/легкие/умеренные/выраженные отклонения)",\n` +
-            `  "detailed_findings": "Подробное описание ВСЕХ видимых особенностей: цвет, налет, трещины, края, сосочки с точной локализацией",\n` +
-            `  "severity_indicators": "Конкретные признаки, указывающие на степень серьезности состояния с медицинскими терминами и объяснениями",\n` +
-            `  "health_implications": "Что обнаруженные изменения могут означать для организма, без преуменьшения проблем",\n` +
-            `  "attention_required": "Моменты, требующие внимания или коррекции, сформулированные объективно и мотивирующе"\n` +
+            `  "health_story": "Увлекательная история о том, что рассказывает язык о состоянии организма в последние недели, с элементами storytelling и персонализации",\n` +
+            `  "detailed_findings": "Подробное описание ВСЕХ видимых особенностей с медицинскими терминами и живыми объяснениями: цвет, налет, трещины, края, сосочки",\n` +
+            `  "what_it_means": "Что означают найденные изменения для организма, объясненное через метафоры и понятные сравнения",\n` +
+            `  "future_outlook": "Прогностический элемент: что будет при улучшении состояния через 2 недели, месяц, 3 месяца, и что может случиться без изменений",\n` +
+            `  "personal_insights": "Персональные инсайты о возможном образе жизни, привычках, стрессах на основе визуальных находок",\n` +
+            `  "action_motivation": "Мотивирующий призыв к действию с объяснением важности и возможности позитивных изменений"\n` +
             `}${langSuffix}`;
 
         // Convert image URL to base64
@@ -193,7 +207,7 @@ exports.handler = async (event, context) => {
                         content: [
                             {
                                 type: "text",
-                                text: `Проведи объективный экспресс анализ образца ${antiCacheId}. Анализируй как под микроскопом, описывай только реальные находки. Используй градацию серьезности. Верни JSON согласно формату.`
+                                text: `Проведи увлекательный экспресс анализ образца ${antiCacheId}. Расскажи историю здоровья со storytelling элементами. Анализируй как под микроскопом, будь объективным но вовлекающим. Верни JSON согласно формату.`
                             },
                             {
                                 type: "image",
@@ -240,7 +254,7 @@ exports.handler = async (event, context) => {
                             content: [
                                 {
                                     type: "text",
-                                    text: `Проведи объективный экспресс анализ образца ${antiCacheId}. Анализируй как под микроскопом, описывай только реальные находки. Используй градацию серьезности. Верни JSON согласно формату.`
+                                    text: `Проведи увлекательный экспресс анализ образца ${antiCacheId}. Расскажи историю здоровья со storytelling элементами. Анализируй как под микроскопом, будь объективным но вовлекающим. Верни JSON согласно формату.`
                                 },
                                 {
                                     type: "image",
@@ -340,25 +354,28 @@ exports.handler = async (event, context) => {
             console.log('Parsed analysis keys:', Object.keys(parsedAnalysis));
             console.log('Checking required fields...');
             
-            if (!parsedAnalysis.general_assessment || !parsedAnalysis.detailed_findings) {
+            if (!parsedAnalysis.health_story || !parsedAnalysis.detailed_findings) {
                 console.error('Missing required fields. Available fields:', Object.keys(parsedAnalysis));
-                console.error('general_assessment exists:', !!parsedAnalysis.general_assessment);
+                console.error('health_story exists:', !!parsedAnalysis.health_story);
                 console.error('detailed_findings exists:', !!parsedAnalysis.detailed_findings);
                 
                 // Fallback: check for old field names
-                if (parsedAnalysis.general_impression && parsedAnalysis.key_findings) {
+                if (parsedAnalysis.general_assessment && parsedAnalysis.detailed_findings) {
                     console.log('Found old field names, mapping to new format...');
-                    parsedAnalysis.general_assessment = parsedAnalysis.general_impression;
+                    parsedAnalysis.health_story = parsedAnalysis.general_assessment;
+                } else if (parsedAnalysis.general_impression && parsedAnalysis.key_findings) {
+                    console.log('Found very old field names, mapping to new format...');
+                    parsedAnalysis.health_story = parsedAnalysis.general_impression;
                     parsedAnalysis.detailed_findings = parsedAnalysis.key_findings;
                 } else {
-                    // Check if we have all 5 new fields
-                    const requiredFields = ['general_assessment', 'detailed_findings', 'severity_indicators', 'health_implications', 'attention_required'];
+                    // Check if we have all 6 new storytelling fields
+                    const requiredFields = ['health_story', 'detailed_findings', 'what_it_means', 'future_outlook', 'personal_insights', 'action_motivation'];
                     const missingFields = requiredFields.filter(field => !parsedAnalysis[field]);
                     
                     if (missingFields.length > 0) {
-                        console.error('Missing new format fields:', missingFields);
+                        console.error('Missing storytelling format fields:', missingFields);
                         console.error('Available fields:', Object.keys(parsedAnalysis));
-                        throw new Error(`Missing required fields in express analysis: ${missingFields.join(', ')}`);
+                        throw new Error(`Missing required fields in storytelling analysis: ${missingFields.join(', ')}`);
                     }
                 }
             }
