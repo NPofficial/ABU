@@ -1,0 +1,297 @@
+# ABU Health Analyzer - Cursor AI Rules
+
+## 🎯 PROJECT CONTEXT
+
+You are working on **ABU Health Analyzer** - a web application for tongue photo analysis using Claude AI with supplement recommendations and multilingual support.
+
+**Tech Lead:** Claude AI (Anthropic)  
+**Developer:** Human  
+**AI Assistant:** Cursor AI (you)
+
+## 📚 TECH STACK
+
+- **Frontend:** Vanilla JavaScript (ES6+), HTML5, CSS3
+- **Backend:** Netlify Serverless Functions (Node.js)
+  - `analyze-comprehensive.js` - Complex analysis with detailed recommendations
+  - `analyze-detailed.js` - Detailed analysis with structured output
+  - `upload.js` - Image upload to Cloudinary
+- **AI:** Anthropic Claude API (claude-3-5-sonnet-20241022)
+- **Storage:** Cloudinary (image hosting)
+- **Hosting:** Netlify
+- **Internationalization:** translations.js (multilingual support)
+- **Future:** Supabase (database), Telegram Bot API
+
+## 🏗️ PROJECT STRUCTURE
+
+```
+ABU/
+├── index.html                     # Main UI with analyzer interface
+├── translations.js                # Multilingual support (language strings)
+├── netlify/functions/
+│   ├── analyze-comprehensive.js   # Comprehensive tongue analysis
+│   ├── analyze-detailed.js        # Detailed structured analysis
+│   └── upload.js                  # Image upload to Cloudinary
+├── package.json                   # Dependencies
+├── netlify.toml                   # Netlify configuration
+├── .env                           # Environment variables (NOT in git)
+├── .cursorrules                   # This file
+├── .gitignore                     # Git ignore patterns
+└── README-github.md               # Project documentation
+```
+
+## 🎨 CODING STANDARDS
+
+### JavaScript
+- Use **ES6+ syntax** (arrow functions, destructuring, async/await)
+- **No jQuery, no frameworks** - pure Vanilla JS only
+- **Meaningful variable names** (e.g., `tongueImageData`, not `data1`)
+- **Error handling:** Always use try-catch for async operations
+- **Comments:** JSDoc for functions, inline for complex logic
+- **Translations:** Use translations.js for all user-facing text
+
+### HTML/CSS
+- **Semantic HTML5** (use `<section>`, `<article>`, `<nav>`)
+- **Mobile-first approach** with responsive design
+- **BEM methodology** for CSS classes (e.g., `analyzer__button--primary`)
+- **Accessibility:** ARIA labels, alt texts, keyboard navigation
+- **Multilingual support:** All text should be translatable
+
+### Serverless Functions Architecture
+- **Multiple specialized functions** instead of one monolithic function
+- **analyze-comprehensive.js:** For complex, detailed analysis with supplement recommendations
+- **analyze-detailed.js:** For structured analysis with specific health markers
+- **upload.js:** Dedicated function for image upload to Cloudinary
+- **Single responsibility principle:** Each function does ONE thing well
+- **Shared error handling patterns** across all functions
+- **Consistent response format** for easy frontend integration
+
+## 🔐 SECURITY RULES
+
+1. **NEVER commit API keys** - use Netlify Environment Variables
+2. **Validate all user inputs** in serverless functions
+3. **Sanitize file uploads** - check file type, size, format
+4. **Rate limiting** considerations for API calls
+5. **HTTPS only** - enforce in Netlify settings
+6. **Image validation** - verify image is actually a photo before sending to Claude
+
+## 🚀 NETLIFY FUNCTIONS BEST PRACTICES
+
+### Shared Function Structure (all functions follow this pattern)
+```javascript
+exports.handler = async (event, context) => {
+  // 1. Set CORS headers
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Content-Type': 'application/json'
+  };
+
+  // 2. Handle OPTIONS preflight
+  if (event.httpMethod === 'OPTIONS') {
+    return { statusCode: 200, headers, body: '' };
+  }
+
+  try {
+    // 3. Validate request method
+    if (event.httpMethod !== 'POST') {
+      return {
+        statusCode: 405,
+        headers,
+        body: JSON.stringify({ error: 'Method not allowed' })
+      };
+    }
+
+    // 4. Parse and validate body
+    const body = JSON.parse(event.body);
+    
+    // 5. Specific function logic here
+    
+    // 6. Return success
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({ data: result })
+    };
+
+  } catch (error) {
+    console.error('Error:', error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: error.message })
+    };
+  }
+};
+```
+
+### Function-Specific Guidelines
+
+#### analyze-comprehensive.js
+- **Purpose:** Detailed tongue analysis with comprehensive health recommendations
+- **Input:** Base64 image data
+- **Output:** Detailed analysis with supplement recommendations
+- **Max tokens:** Higher limit for detailed responses (2048-4096)
+- **Prompt:** Include instructions for comprehensive analysis
+
+#### analyze-detailed.js
+- **Purpose:** Structured analysis with specific health markers
+- **Input:** Base64 image data
+- **Output:** Structured JSON with categorized findings
+- **Max tokens:** Medium limit (1024-2048)
+- **Prompt:** Request structured, categorized output
+
+#### upload.js
+- **Purpose:** Upload images to Cloudinary before analysis
+- **Input:** Base64 image data or file upload
+- **Output:** Cloudinary URL and metadata
+- **Validation:** Check file size, format, dimensions
+- **Error handling:** Handle Cloudinary API errors gracefully
+
+## 🤖 CLAUDE API INTEGRATION
+
+### Request Format (for analyze functions)
+```javascript
+const response = await fetch('https://api.anthropic.com/v1/messages', {
+  method: 'POST',
+  headers: {
+    'x-api-key': process.env.ANTHROPIC_API_KEY,
+    'anthropic-version': '2023-06-01',
+    'content-type': 'application/json'
+  },
+  body: JSON.stringify({
+    model: 'claude-3-5-sonnet-20241022',
+    max_tokens: 2048, // Adjust based on function type
+    messages: [{
+      role: 'user',
+      content: [
+        {
+          type: 'image',
+          source: {
+            type: 'base64',
+            media_type: 'image/jpeg',
+            data: base64ImageData
+          }
+        },
+        {
+          type: 'text',
+          text: 'Analyze this tongue photo for health indicators...'
+        }
+      ]
+    }]
+  })
+});
+```
+
+### Error Handling for All Functions
+- **429 Rate Limit:** Implement exponential backoff
+- **401 Unauthorized:** Check API key validity
+- **400 Bad Request:** Validate input format
+- **500 Server Error:** Log and retry with fallback
+- **Cloudinary Errors:** Handle upload failures gracefully
+
+## 🌍 INTERNATIONALIZATION
+
+### translations.js Structure
+```javascript
+const translations = {
+  en: {
+    // English translations
+  },
+  ru: {
+    // Russian translations
+  },
+  uk: {
+    // Ukrainian translations
+  }
+  // Add more languages as needed
+};
+```
+
+### Best Practices
+- **All user-facing text** must be in translations.js
+- **Default to English** if translation missing
+- **Use clear keys** like `analyze.button.start` not `btn1`
+- **Keep translations organized** by feature/section
+- **Test all languages** before committing
+
+## 📝 COMMIT MESSAGE FORMAT
+
+Use conventional commits:
+- `feat:` new feature
+- `fix:` bug fix
+- `docs:` documentation
+- `style:` formatting
+- `refactor:` code restructuring
+- `test:` adding tests
+- `chore:` maintenance
+- `i18n:` internationalization changes
+
+Example: `feat: add comprehensive analysis function`
+
+## 🐛 DEBUGGING GUIDELINES
+
+1. **Netlify Functions:** Check Netlify Function logs for each function separately
+2. **Frontend:** Use `console.log` with descriptive labels
+3. **API Errors:** Log full error object, not just message
+4. **Network:** Check Network tab in DevTools
+5. **Translations:** Verify all languages display correctly
+6. **Image Upload:** Check Cloudinary dashboard for upload status
+
+## ✅ TESTING CHECKLIST
+
+Before committing:
+- [ ] All functions work independently
+- [ ] Code runs without errors locally
+- [ ] Netlify Functions deploy successfully
+- [ ] All environment variables configured
+- [ ] Mobile responsive design tested
+- [ ] Error handling works for edge cases
+- [ ] No API keys in code
+- [ ] All languages display correctly
+- [ ] Image upload to Cloudinary works
+- [ ] Both analysis types return proper results
+
+## 🎯 CURRENT ARCHITECTURE NOTES
+
+### Why Multiple Functions?
+1. **Separation of concerns** - each function has a specific purpose
+2. **Independent scaling** - high-traffic functions can scale separately
+3. **Easier debugging** - isolated function logs
+4. **Faster cold starts** - smaller function bundles
+5. **Better error isolation** - one function failure doesn't affect others
+
+### Function Relationships
+```
+Frontend (index.html)
+    ↓
+    ├──→ upload.js (Cloudinary) → Returns image URL
+    │
+    ├──→ analyze-comprehensive.js (Claude API) → Detailed analysis
+    │
+    └──→ analyze-detailed.js (Claude API) → Structured analysis
+```
+
+## 🎯 CURRENT PRIORITIES
+
+1. ✅ Core tongue analysis working (two analysis types)
+2. ✅ Image upload to Cloudinary working
+3. ✅ Multilingual support implemented
+4. 🔄 UI/UX improvements
+5. 📋 History/results storage (upcoming Supabase)
+6. 🤖 Telegram Bot integration (planned)
+
+## 💡 WHEN IN DOUBT
+
+- Ask for clarification before implementing
+- Prioritize code readability over cleverness
+- Follow existing patterns in the codebase
+- Check Claude AI (Tech Lead) for architecture decisions
+- Maintain consistency between similar functions
+- Test each function independently
+
+## 🔗 USEFUL LINKS
+
+- [Anthropic Claude API Docs](https://docs.anthropic.com/claude/reference/getting-started-with-the-api)
+- [Netlify Functions Docs](https://docs.netlify.com/functions/overview/)
+- [Cloudinary Node SDK](https://cloudinary.com/documentation/node_integration)
+- [Web Internationalization Best Practices](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl)

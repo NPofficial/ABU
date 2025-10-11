@@ -199,8 +199,8 @@ exports.handler = async (event, context) => {
                     anthropic.messages.create({
                         model: MODELS.PRIMARY,
                         max_tokens: 3000,
-                        temperature: 0.35,
-                        top_p: 0.9,
+                        temperature: 0.3,  // Fixed optimal value for medical analysis
+                        top_p: 0.95,       // Fixed high quality setting
                     system: `${DETAILED_SYSTEM_PROMPT}\nСЕССИЯ: ${sessionId}\nЗАПРОС: ${requestId}`,
                     messages: [{
                         role: "user",
@@ -247,7 +247,7 @@ exports.handler = async (event, context) => {
                     anthropic.messages.create({
                         model: MODELS.FALLBACK,
                         max_tokens: 3000,
-                        temperature: 0.35,
+                        temperature: 0.3,  // Fixed optimal value for medical analysis
                         system: `${DETAILED_SYSTEM_PROMPT}\nСЕССИЯ: ${sessionId}`,
                         messages: [{
                             role: "user",
@@ -415,6 +415,32 @@ exports.handler = async (event, context) => {
 
     } catch (error) {
         console.error('Analysis error:', error);
+        
+        // Special handling for 429 Rate Limit / Quota errors
+        const isRateLimitError = error.status === 429 || 
+                                (error.message && (
+                                    error.message.toLowerCase().includes('rate_limit') ||
+                                    error.message.toLowerCase().includes('quota')
+                                ));
+        
+        if (isRateLimitError) {
+            const language = requestBody?.language || 'ru';
+            const errorMessage = language === 'ua' 
+                ? 'Перевищено ліміт запитів до AI. Будь ласка, спробуйте через кілька хвилин.'
+                : 'Превышен лимит запросов к AI. Пожалуйста, попробуйте через несколько минут.';
+            
+            return {
+                statusCode: 429,
+                headers,
+                body: JSON.stringify({
+                    error: errorMessage,
+                    error_code: 'RATE_LIMIT_EXCEEDED',
+                    retry_after: 60
+                })
+            };
+        }
+        
+        // Default error handling for all other errors
         return {
             statusCode: 500,
             headers,

@@ -1,0 +1,106 @@
+# ============================================
+# DEPENDENCIES
+# ============================================
+node_modules/
+package-lock.json
+yarn.lock
+
+# ============================================
+# ENVIRONMENT VARIABLES (КРИТИЧНО!)
+# ============================================
+# Локальные .env файлы НИКОГДА не должны попадать в Git
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+.env.production.local
+
+# ============================================
+# NETLIFY
+# ============================================
+.netlify/
+.netlify.toml.backup
+
+# ============================================
+# LOGS
+# ============================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# ============================================
+# OPERATING SYSTEM FILES
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+
+# ============================================
+# IDEs AND EDITORS
+# ============================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs (WebStorm, IntelliJ, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Vim
+*.swp
+*.swo
+*~
+
+# ============================================
+# BUILD AND DISTRIBUTION
+# ============================================
+dist/
+build/
+out/
+coverage/
+.cache/
+
+# ============================================
+# TEMPORARY FILES
+# ============================================
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+
+# ============================================
+# CLOUDINARY CACHE (если используется локально)
+# ============================================
+.cloudinary/
+
+# ============================================
+# TEST COVERAGE
+# ============================================
+.nyc_output/
+coverage/
+
+# ============================================
+# MISC
+# ============================================
+*.pem
+.env.backup

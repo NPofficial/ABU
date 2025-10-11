@@ -137,10 +137,10 @@ exports.handler = async (event, context) => {
             console.log('�� STEP 3: Starting Claude 4.0 comprehensive analysis...');
             
             const requestId = `req_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
-            const temperature = 0.2 + Math.random() * 0.4;
-            const topP = 0.8 + Math.random() * 0.2;
+            const temperature = 0.3;  // Fixed optimal value for medical analysis
+            const topP = 0.95;         // Fixed high quality setting
             
-            console.log('Request params - ID:', requestId, 'Temperature:', temperature.toFixed(3), 'TopP:', topP.toFixed(3));
+            console.log('Request params - ID:', requestId, 'Temperature:', temperature, 'TopP:', topP);
 
             // Include detailed analysis as context if provided
             let contextText = `Проанализируй зонально образец ${antiCacheId}\nВерни JSON с zone_analysis, health_interpretation, wellness_recommendations\nЗОНАЛЬНЫЙ + WELLNESS АНАЛИЗ!`;
@@ -322,6 +322,32 @@ exports.handler = async (event, context) => {
 
     } catch (error) {
         console.error('Analysis error:', error);
+        
+        // Special handling for 429 Rate Limit / Quota errors
+        const isRateLimitError = error.status === 429 || 
+                                (error.message && (
+                                    error.message.toLowerCase().includes('rate_limit') ||
+                                    error.message.toLowerCase().includes('quota')
+                                ));
+        
+        if (isRateLimitError) {
+            const language = requestBody?.language || 'ru';
+            const errorMessage = language === 'ua' 
+                ? 'Перевищено ліміт запитів до AI. Будь ласка, спробуйте через кілька хвилин.'
+                : 'Превышен лимит запросов к AI. Пожалуйста, попробуйте через несколько минут.';
+            
+            return {
+                statusCode: 429,
+                headers,
+                body: JSON.stringify({
+                    error: errorMessage,
+                    error_code: 'RATE_LIMIT_EXCEEDED',
+                    retry_after: 60
+                })
+            };
+        }
+        
+        // Default error handling for all other errors
         return {
             statusCode: 500,
             headers,
