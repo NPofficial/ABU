@@ -685,161 +685,231 @@
         function displayDetailedResults(analysisData) {
             console.log('Received analysis data:', analysisData);
             console.log('Available fields:', Object.keys(analysisData));
+            
             let resultsHTML = `
                 <div class="analysis-card fade-in">
-                    <h3> Комплексний візуальний аналіз</h3>
+                    <h3>🔬 Детальний аналіз язика</h3>
             `;
 
-            // Fallback для старых полей
-            const healthStory = analysisData.health_story || analysisData.general_assessment || analysisData.detailed_analysis;
-            const detailedFindings = analysisData.detailed_findings || analysisData.visual_findings;
-            const whatItMeans = analysisData.what_it_means || analysisData.severity_indicators;
-            const futureOutlook = analysisData.future_outlook || analysisData.health_implications;
-            const personalInsights = analysisData.personal_insights;
-            const actionMotivation = analysisData.action_motivation || analysisData.attention_required;
-            const morphologicalFeatures = analysisData.morphological_features;
-
-            // История здоровья
-            if (healthStory) {
-                let formattedStory = healthStory;
+            // НОВЫЙ ФОРМАТ: Проверяем наличие objective_findings
+            if (analysisData.objective_findings && analysisData.overall_score) {
+                // === НОВЫЙ ФОРМАТ С ОЦЕНКАМИ ===
                 
-                // Разбиваем текст на предложения и форматируем как список
-                formattedStory = formattedStory
-                    .split('. ')
-                    .filter(sentence => sentence.trim().length > 10)
-                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
-                    .join('\n\n');
-
+                // Общая оценка и категория
+                const overallScore = analysisData.overall_score;
+                const category = analysisData.category || '';
+                
+                // Определяем цвет по оценке
+                let scoreColor = '#22c55e'; // зеленый
+                if (overallScore < 5) scoreColor = '#ef4444'; // красный
+                else if (overallScore < 7) scoreColor = '#f59e0b'; // оранжевый
+                else if (overallScore < 9) scoreColor = '#eab308'; // желтый
+                
                 resultsHTML += `
-                    <div class="mini-card">
-                        <h4><span class="section-icon">📖</span>Історія здоров'я:</h4>
-                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedStory)}</p>
+                    <div class="mini-card" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 4px solid ${scoreColor};">
+                        <h4><span class="section-icon">📊</span>Загальна оцінка</h4>
+                        <div style="display: flex; align-items: center; gap: 16px; margin-top: 12px;">
+                            <div style="font-size: 48px; font-weight: 800; color: ${scoreColor};">
+                                ${overallScore.toFixed(1)}
+                            </div>
+                            <div>
+                                <div style="font-size: 14px; color: #64748b;">з 10 балів</div>
+                                <div style="font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 4px;">
+                                    ${category}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `;
-            }
-
-            // Детальные находки
-            if (detailedFindings) {
-                let formattedFindings = detailedFindings;
                 
-                // Разбиваем текст на предложения и форматируем как список
-                formattedFindings = formattedFindings
-                    .split('. ')
-                    .filter(sentence => sentence.trim().length > 10)
-                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
-                    .join('\n\n');
-
+                // Параметры с оценками
+                const findings = analysisData.objective_findings;
+                const parameters = [
+                    { key: 'color', icon: '🎨', label: 'Колір' },
+                    { key: 'coating', icon: '🔬', label: 'Наліт' },
+                    { key: 'cracks', icon: '📐', label: 'Тріщини' },
+                    { key: 'edges', icon: '📏', label: 'Краї' },
+                    { key: 'papillae', icon: '👅', label: 'Сосочки' }
+                ];
+                
                 resultsHTML += `
                     <div class="mini-card">
-                        <h4><span class="section-icon">🔍</span>Детальні знахідки:</h4>
-                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedFindings)}</p>
-                    </div>
+                        <h4><span class="section-icon">📋</span>Об'єктивні знахідки</h4>
+                        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
                 `;
-            }
-
-            // Что это означает
-            if (whatItMeans) {
-                let formattedMeaning = whatItMeans;
                 
-                formattedMeaning = formattedMeaning
-                    .split('. ')
-                    .filter(sentence => sentence.trim().length > 10)
-                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
-                    .join('\n\n');
-
+                parameters.forEach(param => {
+                    if (findings[param.key]) {
+                        const score = findings[param.key].score || 0;
+                        const description = findings[param.key].description || '';
+                        
+                        // Цвет прогресс-бара
+                        let barColor = '#22c55e';
+                        if (score < 5) barColor = '#ef4444';
+                        else if (score < 7) barColor = '#f59e0b';
+                        else if (score < 9) barColor = '#eab308';
+                        
+                        resultsHTML += `
+                            <div style="border-left: 3px solid ${barColor}; padding-left: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="font-weight: 600; font-size: 15px;">
+                                        ${param.icon} ${param.label}
+                                    </div>
+                                    <div style="font-size: 18px; font-weight: 700; color: ${barColor};">
+                                        ${score}/10
+                                    </div>
+                                </div>
+                                <div style="background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
+                                    <div style="background: ${barColor}; height: 100%; width: ${score * 10}%; transition: width 0.3s;"></div>
+                                </div>
+                                <div style="font-size: 14px; color: #64748b; line-height: 1.5;">
+                                    ${description}
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
                 resultsHTML += `
-                    <div class="mini-card">
-                        <h4><span class="section-icon">🔍</span>Що це означає:</h4>
-                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedMeaning)}</p>
+                        </div>
                     </div>
                 `;
-            }
-
-            // Прогноз на будущее
-            if (futureOutlook) {
-                let formattedOutlook = futureOutlook;
                 
-                formattedOutlook = formattedOutlook
-                    .split('. ')
-                    .filter(sentence => sentence.trim().length > 10)
-                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
-                    .join('\n\n');
-
-                resultsHTML += `
-                    <div class="mini-card">
-                        <h4><span class="section-icon">🔮</span>Прогноз на майбутнє:</h4>
-                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedOutlook)}</p>
-                    </div>
-                `;
-            }
-
-            // Персональные инсайты
-            if (personalInsights) {
-                let formattedInsights = personalInsights;
-                
-                formattedInsights = formattedInsights
-                    .split('. ')
-                    .filter(sentence => sentence.trim().length > 10)
-                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
-                    .join('\n\n');
-
-                resultsHTML += `
-                    <div class="mini-card">
-                        <h4><span class="section-icon">💡</span>Персональні інсайти:</h4>
-                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedInsights)}</p>
-                    </div>
-                `;
-            }
-
-            // Мотивация к действию
-            if (actionMotivation) {
-                let formattedMotivation = actionMotivation;
-                
-                formattedMotivation = formattedMotivation
-                    .split('. ')
-                    .filter(sentence => sentence.trim().length > 10)
-                    .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
-                    .join('\n\n');
-
-                resultsHTML += `
-                    <div class="mini-card">
-                        <h4><span class="section-icon">🚀</span>Мотивація до дії:</h4>
-                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedMotivation)}</p>
-                    </div>
-                `;
-            }
-
-            // Морфологические особенности (fallback для старых данных)
-            if (morphologicalFeatures) {
-                // Форматируем морфологические особенности в список
-                let formattedFeatures = morphologicalFeatures;
-                
-                // Убираем дублирующий заголовок из текста если он есть
-                formattedFeatures = formattedFeatures.replace(/^⚙️\s*Морфологічні особливості:\s*/i, '');
-                formattedFeatures = formattedFeatures.replace(/^Морфологічні особливості:\s*/i, '');
-                
-                // Если текст содержит " - " (дефис с пробелами), разбиваем на пункты
-                if (formattedFeatures.includes(' - ')) {
-                    formattedFeatures = formattedFeatures
-                        .split(' - ')
-                        .map((item, index) => {
-                            if (index === 0) {
-                                // Первый элемент может содержать заголовок
-                                return item.trim();
-                            } else {
-                                // Остальные элементы форматируем как пункты списка
-                                return `- ${item.trim()}`;
-                            }
-                        })
-                        .join('\n\n');
+                // Детальные находки
+                if (analysisData.detailed_findings) {
+                    resultsHTML += `
+                        <div class="mini-card">
+                            <h4><span class="section-icon">🔍</span>Детальний опис</h4>
+                            <p style="white-space: pre-line; line-height: 1.7;">
+                                ${analysisData.detailed_findings}
+                            </p>
+                        </div>
+                    `;
                 }
                 
-                resultsHTML += `
-                    <div class="mini-card">
-                        <h4><span class="section-icon">⚙️</span>Морфологічні особливості:</h4>
-                        <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedFeatures)}</p>
-                    </div>
-                `;
+                // Интерпретация
+                if (analysisData.interpretation) {
+                    resultsHTML += `
+                        <div class="mini-card">
+                            <h4><span class="section-icon">💡</span>Медична інтерпретація</h4>
+                            <p style="white-space: pre-line; line-height: 1.7;">
+                                ${analysisData.interpretation}
+                            </p>
+                        </div>
+                    `;
+                }
+                
+                // Рекомендации
+                if (analysisData.recommendations) {
+                    resultsHTML += `
+                        <div class="mini-card">
+                            <h4><span class="section-icon">🌱</span>Рекомендації</h4>
+                            <p style="white-space: pre-line; line-height: 1.7;">
+                                ${analysisData.recommendations}
+                            </p>
+                        </div>
+                    `;
+                }
+                
+            } else {
+                // === СТАРЫЙ ФОРМАТ (FALLBACK) ===
+                
+                const healthStory = analysisData.health_story || analysisData.general_assessment || analysisData.detailed_analysis;
+                const detailedFindings = analysisData.detailed_findings || analysisData.visual_findings;
+                const whatItMeans = analysisData.what_it_means || analysisData.severity_indicators;
+                const futureOutlook = analysisData.future_outlook || analysisData.health_implications;
+                const personalInsights = analysisData.personal_insights;
+                const actionMotivation = analysisData.action_motivation || analysisData.attention_required;
+
+                if (healthStory) {
+                    let formattedStory = healthStory
+                        .split('. ')
+                        .filter(sentence => sentence.trim().length > 10)
+                        .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                        .join('\n\n');
+
+                    resultsHTML += `
+                        <div class="mini-card">
+                            <h4><span class="section-icon">📖</span>Історія здоров'я:</h4>
+                            <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedStory)}</p>
+                        </div>
+                    `;
+                }
+
+                if (detailedFindings) {
+                    let formattedFindings = detailedFindings
+                        .split('. ')
+                        .filter(sentence => sentence.trim().length > 10)
+                        .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                        .join('\n\n');
+
+                    resultsHTML += `
+                        <div class="mini-card">
+                            <h4><span class="section-icon">🔍</span>Детальні знахідки:</h4>
+                            <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedFindings)}</p>
+                        </div>
+                    `;
+                }
+
+                if (whatItMeans) {
+                    let formattedMeaning = whatItMeans
+                        .split('. ')
+                        .filter(sentence => sentence.trim().length > 10)
+                        .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                        .join('\n\n');
+
+                    resultsHTML += `
+                        <div class="mini-card">
+                            <h4><span class="section-icon">🔍</span>Що це означає:</h4>
+                            <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedMeaning)}</p>
+                        </div>
+                    `;
+                }
+
+                if (futureOutlook) {
+                    let formattedOutlook = futureOutlook
+                        .split('. ')
+                        .filter(sentence => sentence.trim().length > 10)
+                        .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                        .join('\n\n');
+
+                    resultsHTML += `
+                        <div class="mini-card">
+                            <h4><span class="section-icon">🔮</span>Прогноз на майбутнє:</h4>
+                            <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedOutlook)}</p>
+                        </div>
+                    `;
+                }
+
+                if (personalInsights) {
+                    let formattedInsights = personalInsights
+                        .split('. ')
+                        .filter(sentence => sentence.trim().length > 10)
+                        .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                        .join('\n\n');
+
+                    resultsHTML += `
+                        <div class="mini-card">
+                            <h4><span class="section-icon">💡</span>Персональні інсайти:</h4>
+                            <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedInsights)}</p>
+                        </div>
+                    `;
+                }
+
+                if (actionMotivation) {
+                    let formattedMotivation = actionMotivation
+                        .split('. ')
+                        .filter(sentence => sentence.trim().length > 10)
+                        .map(sentence => sentence.trim() + (sentence.endsWith('.') ? '' : '.'))
+                        .join('\n\n');
+
+                    resultsHTML += `
+                        <div class="mini-card">
+                            <h4><span class="section-icon">🚀</span>Мотивація до дії:</h4>
+                            <p style="white-space: pre-line;">${enhanceTextWithAccents(formattedMotivation)}</p>
+                        </div>
+                    `;
+                }
             }
 
             resultsHTML += `</div>`;
