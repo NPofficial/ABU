@@ -926,76 +926,210 @@
         function displayComprehensiveResults(analysisData) {
             let resultsHTML = '';
 
-            if (analysisData.zone_analysis) {
+            // Проверяем формат данных
+            if (analysisData.zone_analysis && analysisData.zone_analysis.anterior && 
+                typeof analysisData.zone_analysis.anterior === 'object' && 
+                analysisData.zone_analysis.anterior.score !== undefined) {
+                
+                // === НОВЫЙ ФОРМАТ С ОЦЕНКАМИ ===
+                
+                // Общая оценка и категория
+                const overallScore = analysisData.overall_score;
+                const category = analysisData.category || '';
+                
+                // Определяем цвет по оценке
+                let scoreColor = '#22c55e'; // зеленый
+                if (overallScore < 50) scoreColor = '#ef4444'; // красный
+                else if (overallScore < 70) scoreColor = '#f59e0b'; // оранжевый
+                else if (overallScore < 90) scoreColor = '#eab308'; // желтый
+                
                 resultsHTML += `
                     <div class="analysis-card fade-in">
-                        <h3>🗺️ Зональний аналіз</h3>
-                        <div class="zone-grid">
-                            <div class="zone-card">
-                                <h4>Передня зона (Серце/Легкі)</h4>
-                                <p>${analysisData.zone_analysis.anterior || 'Не вказано'}</p>
-                            </div>
-                            <div class="zone-card">
-                                <h4>Середня зона (Шлунково-кишковий тракт)</h4>
-                                <p>${analysisData.zone_analysis.middle || 'Не вказано'}</p>
-                            </div>
-                            <div class="zone-card">
-                                <h4>Задня зона (Нирки)</h4>
-                                <p>${analysisData.zone_analysis.posterior || 'Не вказано'}</p>
-                            </div>
-                            <div class="zone-card">
-                                <h4>Бічні зони (Печінка)</h4>
-                                <p>${analysisData.zone_analysis.lateral || 'Не вказано'}</p>
+                        <h3>📊 Загальна оцінка</h3>
+                        <div class="mini-card" style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 4px solid ${scoreColor};">
+                            <div style="display: flex; align-items: center; gap: 16px; margin-top: 12px;">
+                                <div style="font-size: 48px; font-weight: 800; color: ${scoreColor};">
+                                    ${overallScore.toFixed(1)}
+                                </div>
+                                <div>
+                                    <div style="font-size: 14px; color: #64748b;">з 100 балів</div>
+                                    <div style="font-size: 16px; font-weight: 600; color: #1e293b; margin-top: 4px;">
+                                        ${category}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 `;
-            }
-
-            // Объединенный блок wellness оценки (ЗАДАЧА 2)
-            if (analysisData.health_interpretation || analysisData.overall_health_score) {
+                
+                // Зональный анализ с оценками
+                const zones = [
+                    { key: 'anterior', icon: '🫀', label: 'Передня зона (Серце/Легкі)' },
+                    { key: 'middle', icon: '🍽️', label: 'Середня зона (Травлення)' },
+                    { key: 'posterior', icon: '💧', label: 'Задня зона (Нирки/Кишечник)' },
+                    { key: 'lateral', icon: '🔶', label: 'Бічні краї (Печінка)' }
+                ];
+                
                 resultsHTML += `
                     <div class="analysis-card fade-in">
-                        <h3>🏥 Оцінка Wellness</h3>
+                        <h3>🗺️ Зональний аналіз</h3>
+                        <div style="display: flex; flex-direction: column; gap: 16px; margin-top: 16px;">
                 `;
                 
+                zones.forEach(zone => {
+                    const zoneData = analysisData.zone_analysis[zone.key];
+                    if (zoneData) {
+                        const score = zoneData.score || 0;
+                        const visualFindings = zoneData.visual_findings || '';
+                        const interpretation = zoneData.interpretation || '';
+                        
+                        // Цвет по оценке
+                        let barColor = '#22c55e';
+                        if (score < 50) barColor = '#ef4444';
+                        else if (score < 70) barColor = '#f59e0b';
+                        else if (score < 90) barColor = '#eab308';
+                        
+                        resultsHTML += `
+                            <div class="mini-card" style="border-left: 3px solid ${barColor}; padding-left: 12px;">
+                                <h4 style="margin-bottom: 12px;">
+                                    ${zone.icon} ${zone.label}
+                                </h4>
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <div style="font-size: 24px; font-weight: 700; color: ${barColor};">
+                                        ${score}/100
+                                    </div>
+                                    <div style="background: #f1f5f9; height: 8px; border-radius: 4px; overflow: hidden; width: 200px;">
+                                        <div style="background: ${barColor}; height: 100%; width: ${score}%; transition: width 0.3s;"></div>
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 8px;">
+                                    <div style="font-weight: 600; font-size: 14px; color: #374151; margin-bottom: 4px;">
+                                        Візуальні знахідки:
+                                    </div>
+                                    <div style="font-size: 14px; color: #64748b; line-height: 1.5;">
+                                        ${visualFindings}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; font-size: 14px; color: #374151; margin-bottom: 4px;">
+                                        Інтерпретація:
+                                    </div>
+                                    <div style="font-size: 14px; color: #64748b; line-height: 1.5;">
+                                        ${interpretation}
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+                
+                resultsHTML += `
+                        </div>
+                    </div>
+                `;
+                
+                // Общая интерпретация
                 if (analysisData.health_interpretation) {
-                    resultsHTML += `<p>${analysisData.health_interpretation}</p>`;
+                    resultsHTML += `
+                        <div class="analysis-card fade-in">
+                            <h3>💡 Загальна інтерпретація</h3>
+                            <div class="mini-card">
+                                <p style="white-space: pre-line; line-height: 1.7;">
+                                    ${analysisData.health_interpretation}
+                                </p>
+                            </div>
+                        </div>
+                    `;
                 }
                 
-                if (analysisData.overall_health_score) {
-                    resultsHTML += `<p><strong>Загальна оцінка:</strong> ${analysisData.overall_health_score}</p>`;
+                // Рекомендации
+                if (analysisData.recommendations) {
+                    resultsHTML += `
+                        <div class="analysis-card fade-in">
+                            <h3>🌱 Рекомендації</h3>
+                            <div class="mini-card">
+                                <p style="white-space: pre-line; line-height: 1.7;">
+                                    ${analysisData.recommendations}
+                                </p>
+                            </div>
+                        </div>
+                    `;
                 }
                 
-                resultsHTML += `</div>`;
-            }
+            } else {
+                // === СТАРЫЙ ФОРМАТ (FALLBACK) ===
+                
+                if (analysisData.zone_analysis) {
+                    resultsHTML += `
+                        <div class="analysis-card fade-in">
+                            <h3>🗺️ Зональний аналіз</h3>
+                            <div class="zone-grid">
+                                <div class="zone-card">
+                                    <h4>Передня зона (Серце/Легкі)</h4>
+                                    <p>${analysisData.zone_analysis.anterior || 'Не вказано'}</p>
+                                </div>
+                                <div class="zone-card">
+                                    <h4>Середня зона (Шлунково-кишковий тракт)</h4>
+                                    <p>${analysisData.zone_analysis.middle || 'Не вказано'}</p>
+                                </div>
+                                <div class="zone-card">
+                                    <h4>Задня зона (Нирки)</h4>
+                                    <p>${analysisData.zone_analysis.posterior || 'Не вказано'}</p>
+                                </div>
+                                <div class="zone-card">
+                                    <h4>Бічні зони (Печінка)</h4>
+                                    <p>${analysisData.zone_analysis.lateral || 'Не вказано'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
 
-            // Объединенный блок рекомендаций (ЗАДАЧА 3)
-            if (analysisData.wellness_recommendations || analysisData.lifestyle_advice) {
-                resultsHTML += `
-                    <div class="analysis-card fade-in">
-                        <h3>🌱 Персональні рекомендації</h3>
-                `;
-                
-                if (analysisData.wellness_recommendations) {
+                // Объединенный блок wellness оценки
+                if (analysisData.health_interpretation || analysisData.overall_health_score) {
                     resultsHTML += `
-                        <div class="recommendation-section">
-                            <h4>Рекомендовані продукти</h4>
-                            <p>${analysisData.wellness_recommendations}</p>
-                        </div>
+                        <div class="analysis-card fade-in">
+                            <h3>🏥 Оцінка Wellness</h3>
                     `;
+                    
+                    if (analysisData.health_interpretation) {
+                        resultsHTML += `<p>${analysisData.health_interpretation}</p>`;
+                    }
+                    
+                    if (analysisData.overall_health_score) {
+                        resultsHTML += `<p><strong>Загальна оцінка:</strong> ${analysisData.overall_health_score}</p>`;
+                    }
+                    
+                    resultsHTML += `</div>`;
                 }
-                
-                if (analysisData.lifestyle_advice) {
+
+                // Объединенный блок рекомендаций
+                if (analysisData.wellness_recommendations || analysisData.lifestyle_advice) {
                     resultsHTML += `
-                        <div class="recommendation-section">
-                            <h4>Стан життя</h4>
-                            <p>${analysisData.lifestyle_advice}</p>
-                        </div>
+                        <div class="analysis-card fade-in">
+                            <h3>🌱 Персональні рекомендації</h3>
                     `;
+                    
+                    if (analysisData.wellness_recommendations) {
+                        resultsHTML += `
+                            <div class="recommendation-section">
+                                <h4>Рекомендовані продукти</h4>
+                                <p>${analysisData.wellness_recommendations}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    if (analysisData.lifestyle_advice) {
+                        resultsHTML += `
+                            <div class="recommendation-section">
+                                <h4>Стан життя</h4>
+                                <p>${analysisData.lifestyle_advice}</p>
+                            </div>
+                        `;
+                    }
+                    
+                    resultsHTML += `</div>`;
                 }
-                
-                resultsHTML += `</div>`;
             }
 
             analysisResults.innerHTML = resultsHTML;
