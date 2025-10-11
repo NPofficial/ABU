@@ -37,7 +37,7 @@
         .upload-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #111827; }
         .upload-subtitle { color: #6B7280; font-size: 15px; margin-bottom: 32px; line-height: 1.5; }
         .button-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-        .btn { padding: 12px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: none; font-family: inherit; position: relative; overflow: hidden; }
+        .btn { padding: 12px 24px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; border: none; font-family: inherit; position: relative; overflow: hidden; min-height: 44px; min-width: 44px; }
         .btn::before { content: ''; position: absolute; top: 50%; left: 50%; width: 0; height: 0; border-radius: 50%; transform: translate(-50%, -50%); transition: all 0.5s; }
         .btn-primary { background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); color: white; box-shadow: 0 2px 8px rgba(59,130,246,0.3); }
         .btn-primary::before { background: rgba(255,255,255,0.2); }
@@ -233,6 +233,51 @@
     .results-header h2 { color: #2563EB; font-size: 2rem; margin-bottom: 10px; }
     .analysis-card { background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%); border-radius: 15px; padding: 20px; margin-bottom: 15px; border-left: 4px solid #667eea; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     /* ... остальные стили из макета ... */
+    
+    /* === MOBILE OPTIMIZATIONS === */
+    /* Touch target sizes for iOS/Android (44x44px minimum) */
+    button, 
+    a.btn, 
+    input[type="file"] + label,
+    .lang-btn,
+    .mobile-menu {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* iOS Safari zoom prevention (font-size must be >= 16px) */
+    input, 
+    select, 
+    textarea {
+        font-size: 16px !important;
+    }
+    
+    /* Touch feedback for better UX */
+    .btn:active {
+        transform: scale(0.98);
+        opacity: 0.9;
+    }
+    
+    /* Ensure containers don't exceed viewport width */
+    .container, 
+    .upload-section, 
+    .results-section,
+    .preview-section {
+        max-width: 100%;
+    }
+    
+    /* Better touch targets for analysis buttons */
+    .analysis-btn {
+        min-height: 48px;
+    }
+    
+    /* Improve clickable areas for social links */
+    .social-links a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* === END MOBILE OPTIMIZATIONS === */
     </style>
 </head>
 <body>
