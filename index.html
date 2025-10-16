@@ -442,6 +442,39 @@
             <h2 id="resultsHeader">Результати аналізу</h2>
         </div>
         <div id="analysisResults"></div>
+        
+        <!-- Email Section -->
+        <div id="emailSection" style="margin-top: 32px; padding: 24px; background: linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%); border-radius: 16px; border: 2px solid #DBEAFE;">
+            <h3 style="color: #1e40af; margin: 0 0 16px 0; font-size: 20px; display: flex; align-items: center; gap: 8px;">
+                <span>📧</span>
+                <span>Отримати результати на пошту</span>
+            </h3>
+            <p style="color: #4b5563; margin: 0 0 20px 0; font-size: 14px;">
+                Збережіть звіт та отримайте його на email для подальшого перегляду
+            </p>
+            
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <input 
+                    type="email" 
+                    id="userEmail" 
+                    placeholder="ваш@email.com" 
+                    style="flex: 1; min-width: 200px; padding: 14px 16px; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 16px; font-family: inherit;"
+                    required
+                >
+                <button 
+                    onclick="sendResultsToEmail()" 
+                    id="sendEmailBtn"
+                    style="padding: 14px 28px; background: #3B82F6; color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; min-height: 48px;"
+                >
+                    Надіслати
+                </button>
+            </div>
+            
+            <p style="color: #6b7280; margin: 16px 0 0 0; font-size: 12px;">
+                🔒 Не надсилаємо спам. Тільки ваш звіт.
+            </p>
+        </div>
+        
         <div class="disclaimer" id="disclaimerBlock">
             <p id="disclaimerText">⚠️ Це wellness-аналіз, не замінює медичну консультацію. При серйозних симптомах зверніться до лікаря.</p>
         </div>
@@ -533,6 +566,11 @@
         let currentImageFile = null;
         let uploadedImageUrl = null;
         let currentAnalysisId = null;
+        
+        // Email variables - for sending results to email
+        let currentAnalysisData = null;
+        let currentAnalysisType = null;
+        let currentImageUrl = null;
 
         // Camera variables
         let currentStream = null;
@@ -597,6 +635,74 @@
             setTimeout(() => { successMessage.style.display = 'none'; }, 3000);
         }
 
+        // Function to send results to email
+        async function sendResultsToEmail() {
+            const emailInput = document.getElementById('userEmail');
+            const sendBtn = document.getElementById('sendEmailBtn');
+            const email = emailInput.value.trim();
+            
+            // Валидация email
+            if (!email || !email.includes('@')) {
+                alert('❌ Будь ласка, введіть коректний email');
+                emailInput.focus();
+                return;
+            }
+            
+            // Проверка что есть данные анализа
+            if (!currentAnalysisData) {
+                alert('❌ Немає даних для відправки');
+                return;
+            }
+            
+            // UI feedback
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Надсилання...';
+            sendBtn.style.opacity = '0.6';
+            
+            try {
+                const response = await fetch('/.netlify/functions/send-results', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        analysisData: currentAnalysisData,
+                        imageUrl: currentImageUrl,
+                        analysisType: currentAnalysisType
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Успех
+                    alert('✅ Звіт надіслано на ' + email);
+                    sendBtn.textContent = '✓ Надіслано';
+                    sendBtn.style.background = '#10B981';
+                    emailInput.value = '';
+                    
+                    // Вернуть кнопку в норму через 3 секунды
+                    setTimeout(() => {
+                        sendBtn.textContent = 'Надіслати';
+                        sendBtn.style.background = '#3B82F6';
+                        sendBtn.style.opacity = '1';
+                        sendBtn.disabled = false;
+                    }, 3000);
+                    
+                } else {
+                    throw new Error(result.error || 'Failed to send email');
+                }
+                
+            } catch (error) {
+                console.error('Error sending email:', error);
+                alert('❌ Помилка відправки. Спробуйте ще раз.');
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Надіслати';
+                sendBtn.style.opacity = '1';
+            }
+        }
+        
         function clearResults() {
             resultsSection.style.display = 'none';
             analysisResults.innerHTML = '';
@@ -1389,6 +1495,11 @@
                 if (analysisId === currentAnalysisId) {
                     displayDetailedResults(analysisResult);
                     showSuccess(t('analysis_detailed_completed'));
+                    
+                    // Save data for email sending
+                    currentAnalysisData = analysisResult;
+                    currentAnalysisType = 'detailed';
+                    currentImageUrl = uploadedImageUrl;
                 }
 
             } catch (error) {
@@ -1429,6 +1540,11 @@
                 if (analysisId === currentAnalysisId) {
                     displayComprehensiveResults(analysisResult);
                     showSuccess(t('analysis_comprehensive_completed'));
+                    
+                    // Save data for email sending
+                    currentAnalysisData = analysisResult;
+                    currentAnalysisType = 'comprehensive';
+                    currentImageUrl = uploadedImageUrl;
                 }
 
             } catch (error) {
