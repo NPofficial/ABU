@@ -549,6 +549,16 @@
         </div>
     </footer>
     <script>
+    // ============================================
+    // GLOBAL VARIABLES FOR EMAIL FUNCTIONALITY
+    // ============================================
+    let currentAnalysisData = null;
+    let currentAnalysisType = null;
+    let currentImageUrl = null;
+
+    // ============================================
+    // MAIN APP INITIALIZATION
+    // ============================================
     window.addEventListener('DOMContentLoaded', function() {
         // DOM elements
         const uploadArea = document.getElementById('uploadArea');
@@ -566,11 +576,6 @@
         let currentImageFile = null;
         let uploadedImageUrl = null;
         let currentAnalysisId = null;
-        
-        // Email variables - for sending results to email
-        let currentAnalysisData = null;
-        let currentAnalysisType = null;
-        let currentImageUrl = null;
 
         // Camera variables
         let currentStream = null;
@@ -635,74 +640,6 @@
             setTimeout(() => { successMessage.style.display = 'none'; }, 3000);
         }
 
-        // Function to send results to email
-        async function sendResultsToEmail() {
-            const emailInput = document.getElementById('userEmail');
-            const sendBtn = document.getElementById('sendEmailBtn');
-            const email = emailInput.value.trim();
-            
-            // Валидация email
-            if (!email || !email.includes('@')) {
-                alert('❌ Будь ласка, введіть коректний email');
-                emailInput.focus();
-                return;
-            }
-            
-            // Проверка что есть данные анализа
-            if (!currentAnalysisData) {
-                alert('❌ Немає даних для відправки');
-                return;
-            }
-            
-            // UI feedback
-            sendBtn.disabled = true;
-            sendBtn.textContent = 'Надсилання...';
-            sendBtn.style.opacity = '0.6';
-            
-            try {
-                const response = await fetch('/.netlify/functions/send-results', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email: email,
-                        analysisData: currentAnalysisData,
-                        imageUrl: currentImageUrl,
-                        analysisType: currentAnalysisType
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    // Успех
-                    alert('✅ Звіт надіслано на ' + email);
-                    sendBtn.textContent = '✓ Надіслано';
-                    sendBtn.style.background = '#10B981';
-                    emailInput.value = '';
-                    
-                    // Вернуть кнопку в норму через 3 секунды
-                    setTimeout(() => {
-                        sendBtn.textContent = 'Надіслати';
-                        sendBtn.style.background = '#3B82F6';
-                        sendBtn.style.opacity = '1';
-                        sendBtn.disabled = false;
-                    }, 3000);
-                    
-                } else {
-                    throw new Error(result.error || 'Failed to send email');
-                }
-                
-            } catch (error) {
-                console.error('Error sending email:', error);
-                alert('❌ Помилка відправки. Спробуйте ще раз.');
-                sendBtn.disabled = false;
-                sendBtn.textContent = 'Надіслати';
-                sendBtn.style.opacity = '1';
-            }
-        }
-        
         function clearResults() {
             resultsSection.style.display = 'none';
             analysisResults.innerHTML = '';
@@ -1666,7 +1603,77 @@
           updateContourAndHint(percent);
         }
         setInterval(analyzeTongueSize, 500);
-    });
+    }); // END OF DOMContentLoaded
+
+    // ============================================
+    // GLOBAL EMAIL FUNCTION
+    // ============================================
+    async function sendResultsToEmail() {
+        const emailInput = document.getElementById('userEmail');
+        const sendBtn = document.getElementById('sendEmailBtn');
+        const email = emailInput.value.trim();
+        
+        // Валидация email
+        if (!email || !email.includes('@')) {
+            alert('❌ Будь ласка, введіть коректний email');
+            emailInput.focus();
+            return;
+        }
+        
+        // Проверка что есть данные анализа
+        if (!currentAnalysisData) {
+            alert('❌ Немає даних для відправки');
+            return;
+        }
+        
+        // UI feedback
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Надсилання...';
+        sendBtn.style.opacity = '0.6';
+        
+        try {
+            const response = await fetch('/.netlify/functions/send-results', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    analysisData: currentAnalysisData,
+                    imageUrl: currentImageUrl,
+                    analysisType: currentAnalysisType
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (response.ok) {
+                // Успех
+                alert('✅ Звіт надіслано на ' + email);
+                sendBtn.textContent = '✓ Надіслано';
+                sendBtn.style.background = '#10B981';
+                emailInput.value = '';
+                
+                // Вернуть кнопку в норму через 3 секунды
+                setTimeout(() => {
+                    sendBtn.textContent = 'Надіслати';
+                    sendBtn.style.background = '#3B82F6';
+                    sendBtn.style.opacity = '1';
+                    sendBtn.disabled = false;
+                }, 3000);
+                
+            } else {
+                throw new Error(result.error || 'Failed to send email');
+            }
+            
+        } catch (error) {
+            console.error('Error sending email:', error);
+            alert('❌ Помилка відправки. Спробуйте ще раз.');
+            sendBtn.disabled = false;
+            sendBtn.textContent = 'Надіслати';
+            sendBtn.style.opacity = '1';
+        }
+    }
     </script>
 </body>
 </html>
